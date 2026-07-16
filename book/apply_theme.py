@@ -48,6 +48,19 @@ body { font-family: var(--jp-content-font-family) !important; }
 a#book-nav { position: fixed; top: 16px; left: 18px; font-size: .85rem; z-index: 10;
   background: var(--jp-layout-color1); border: 1px solid var(--jp-border-color1);
   padding: 8px 18px; border-radius: 999px; text-decoration: none; color: var(--book-nav-fg); }
+/* ===== hover motion (เฉพาะเว็บ · Colab/notebook ไม่กระทบ · เคารพ reduced-motion) ===== */
+@media (prefers-reduced-motion: no-preference) {
+  .jp-InputArea-editor, .highlight, div.highlight { transition: transform .18s cubic-bezier(.22,1,.36,1), box-shadow .18s ease-out; }
+  .jp-InputArea-editor:hover, .highlight:hover, div.highlight:hover {
+    transform: translateY(-2px); box-shadow: 0 8px 24px -8px rgba(0,0,0,.28); }
+  .jp-RenderedHTMLCommon img { transition: transform .22s cubic-bezier(.22,1,.36,1), box-shadow .22s ease-out; border-radius: 8px; }
+  .jp-RenderedHTMLCommon img:hover { transform: scale(1.015); box-shadow: 0 12px 32px -10px rgba(0,0,0,.35); }
+  .jp-RenderedHTMLCommon tbody tr { transition: background-color .14s ease-out; }
+  .jp-RenderedHTMLCommon tbody tr:hover { background: var(--jp-rendermime-table-row-hover-background, #eef); }
+  a#book-nav { transition: transform .16s ease-out, box-shadow .16s ease-out; }
+  a#book-nav:hover { transform: translateY(-1px); box-shadow: 0 6px 18px -6px rgba(0,0,0,.3); }
+  .jp-RenderedHTMLCommon a { transition: color .12s ease-out; }
+}
 @media print { html { font-size: 15px; } a#book-nav { display: none; } }
 
 /* ===== DARK: flip token ทั้งชุด (nbconvert อ่านค่าจากตัวแปรพวกนี้) ===== */
