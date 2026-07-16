@@ -1,0 +1,271 @@
+<title>Speaker Deck — Second Brain ด้วย Vector Search (Workshop 26 ก.ค.)</title>
+<style>
+  :root{
+    --bg:#141413; --panel:#1e1e1c; --line:#33322e; --ink:#f4f3ec; --ink2:#c4c2b7; --ink3:#8a887f;
+    --blue:#5c9ded; --aqua:#3dbd8a; --amber:#e6b23a; --red:#e77; --violet:#a99bf0;
+    --mono:ui-monospace,"SF Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);
+    font-family:"Sukhumvit Set","Thonburi","Noto Sans Thai",sans-serif;overflow:hidden}
+  #stage{height:100vh;width:100vw;position:relative}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;
+    padding:6vh 8vw;opacity:0;transition:opacity .35s ease}
+  .slide.on{display:flex;opacity:1}
+  .eyebrow{font-family:var(--mono);font-size:1rem;letter-spacing:.04em;color:var(--ink3);margin-bottom:2.2vh}
+  .eyebrow .en{letter-spacing:.12em;text-transform:uppercase}
+  h1{font-size:clamp(2.4rem,6vw,5rem);line-height:1.08;letter-spacing:-.02em;text-wrap:balance}
+  h2{font-size:clamp(1.8rem,4.4vw,3.3rem);line-height:1.15;text-wrap:balance;margin-bottom:2vh}
+  .lead{font-size:clamp(1.1rem,2.2vw,1.7rem);color:var(--ink2);line-height:1.5;max-width:28ch}
+  .row{display:flex;gap:5vw;align-items:center;flex-wrap:wrap}
+  .col{flex:1 1 300px;min-width:0}
+  .k{color:var(--aqua)} .b{color:var(--blue)} .a{color:var(--amber)} .r{color:var(--red)} .v{color:var(--violet)}
+  .dim{color:var(--ink3)}
+  .mono{font-family:var(--mono)}
+  code,pre{font-family:var(--mono)}
+  pre{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:3vh 2.4vw;
+    font-size:clamp(.85rem,1.5vw,1.15rem);line-height:1.7;color:var(--ink);overflow:auto;white-space:pre-wrap}
+  pre .cm{color:var(--ink3)} pre .kw{color:var(--violet)} pre .st{color:var(--amber)} pre .fn{color:var(--aqua)}
+  .formula{font-family:var(--mono);font-size:clamp(1.6rem,5vw,3.4rem);font-weight:600;letter-spacing:-.01em}
+  ul{list-style:none;display:flex;flex-direction:column;gap:1.6vh;margin-top:2vh}
+  li{font-size:clamp(1.1rem,2.3vw,1.9rem);line-height:1.35;padding-left:1.6em;position:relative;color:var(--ink)}
+  li::before{content:"→";position:absolute;left:0;color:var(--blue)}
+  .cmp{display:grid;grid-template-columns:1fr auto 1fr;gap:2.4vw;align-items:center;margin-top:2.5vh}
+  .cmp.two{grid-template-columns:1fr 1fr}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:3vh 2vw;text-align:center}
+  .card .n{font-size:clamp(2.4rem,7vw,5rem);font-weight:800;font-family:var(--mono);line-height:1}
+  .card .n .g{font-size:.42em;vertical-align:.15em}
+  .card .l{color:var(--ink2);font-size:clamp(.95rem,1.7vw,1.3rem);margin-top:1vh;line-height:1.3}
+  .arrow{font-family:var(--mono);font-size:2.2rem;font-weight:400;color:var(--ink3);text-align:center}
+  .vecmap{display:flex;gap:4vw;align-items:center;flex-wrap:wrap;margin-top:2.5vh}
+  .bar{position:fixed;bottom:0;left:0;height:4px;background:var(--blue);transition:width .35s ease;z-index:5}
+  .hud{position:fixed;bottom:2.4vh;right:3vw;font-family:var(--mono);font-size:.85rem;color:var(--ink3);z-index:5}
+  .hint{position:fixed;bottom:2.4vh;left:3vw;font-family:var(--mono);font-size:.8rem;color:var(--ink3);z-index:5}
+  .pill{display:inline-block;font-family:var(--mono);font-size:clamp(.8rem,1.4vw,1.05rem);
+    padding:.3em .9em;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink2)}
+  .quote{font-size:clamp(1.6rem,4vw,3rem);line-height:1.3;text-wrap:balance;font-weight:600}
+  .foot{margin-top:3.5vh;color:var(--ink2);font-size:clamp(1rem,1.6vw,1.25rem);line-height:1.4;max-width:52ch}
+  @media (prefers-reduced-motion:reduce){.slide{transition:none}.bar{transition:none}}
+</style>
+
+<div id="stage">
+  <!-- 0 title -->
+  <section class="slide">
+    <div class="eyebrow">ARRA Oracle Workshop · 26 กรกฎาคม 2026</div>
+    <h1>Second Brain<br>ด้วย <span class="b">Vector Search</span></h1>
+    <p class="lead" style="margin-top:3vh">จากสมการสู่ระบบจริง — เรียนด้วยการลงมือทำ ทุกอย่างรันได้จริง วัดผลได้จริง</p>
+    <div class="foot dim" style="font-family:var(--mono)">ChromaDB · LanceDB · Cloudflare Edge · 17 บท เปิดใน Colab คลิกเดียว</div>
+  </section>
+
+  <!-- 1 hook -->
+  <section class="slide">
+    <div class="eyebrow">ปัญหาที่ทุกคนมี</div>
+    <h2>จดโน้ตไว้เป็นพันไฟล์<br>พอถึงเวลา… <span class="r">หาไม่เจอ</span></h2>
+    <p class="lead">เพราะเราจำ "คำ" ที่เขียนไม่ได้ — จำได้แต่ "ความหมาย"</p>
+    <ul>
+      <li>เขียนว่า <span class="mono">"ประชุมกับอาจารย์ฝน"</span></li>
+      <li>ค้นว่า <span class="mono">"นัดหมายกับใครบ้าง"</span> → Ctrl+F <span class="r">ไม่เจอ</span></li>
+    </ul>
+    <p class="foot">vector search = ค้นด้วยความหมาย ไม่ใช่ตัวอักษร</p>
+  </section>
+
+  <!-- 2 theme -->
+  <section class="slide" style="align-items:center;text-align:center">
+    <div class="eyebrow">ธีมเดียวของทั้ง workshop</div>
+    <p class="quote">"<span class="a">วัด</span> อย่า <span class="dim">เดา</span>"</p>
+    <p class="lead" style="margin:3vh auto 0">ทุกข้อสรุปวันนี้มีตัวเลขรองรับ ที่เรารันซ้ำเองได้</p>
+  </section>
+
+  <!-- 3 demo1 -->
+  <section class="slide">
+    <div class="eyebrow">Demo 1 · เห็นมันทำงานก่อน</div>
+    <h2>Second Brain ใน <span class="b">20 บรรทัด</span></h2>
+    <pre><span class="kw">import</span> chromadb
+col = chromadb.<span class="fn">PersistentClient</span>(<span class="st">"./db"</span>).<span class="fn">get_or_create_collection</span>(<span class="st">"brain"</span>)
+col.<span class="fn">upsert</span>(ids=[<span class="st">"n1"</span>], documents=[<span class="st">"ประชุมกับอาจารย์ฝน เรื่อง workshop"</span>])
+col.<span class="fn">query</span>(query_texts=[<span class="st">"นัดหมายกับใครบ้าง"</span>])  <span class="cm"># → เจอ!</span></pre>
+    <p class="foot">ยังไม่ต้องอ่าน syntax — ดูแค่บรรทัดสุดท้าย: ถามคนละคำ แต่ระบบเข้าใจว่าเรื่องเดียวกัน</p>
+  </section>
+
+  <!-- 4 thai problem -->
+  <section class="slide">
+    <div class="eyebrow">⚠️ แต่เดี๋ยวก่อน…</div>
+    <h2>ค้นภาษาไทย <span class="r">เพี้ยน</span></h2>
+    <ul>
+      <li><span class="mono">"อยากสอนเรื่อง AI"</span> → ได้โน้ต<span class="r">ประชุม</span>ขึ้นก่อน ✗</li>
+      <li><span class="mono">"เครื่องดื่ม"</span> → คะแนน <span class="r">ติดลบ</span> ✗</li>
+    </ul>
+    <p class="foot">ระบบไม่พัง — แต่มีเรื่องภาษาไทยบางอย่างที่ต้องรู้…</p>
+  </section>
+
+  <!-- 5 who understands -->
+  <section class="slide" style="align-items:center;text-align:center">
+    <div class="eyebrow">บทเรียนสำคัญที่สุด</div>
+    <h2>vector DB <span class="dim">ไม่ได้</span>เข้าใจภาษา<br><span class="k">embedding model</span> ต่างหากที่เข้าใจ</h2>
+    <p class="lead" style="margin:2vh auto 0">DB แค่หา "ตัวเลขที่ใกล้ที่สุด" · ตัวที่แปลงภาษา→ตัวเลข คือ embedder</p>
+  </section>
+
+  <!-- 6 NEW: text→vector mental model -->
+  <section class="slide">
+    <div class="eyebrow">แล้ว "ตัวเลข" ที่ว่าคืออะไร</div>
+    <h2>ประโยค → <span class="b">ทิศทาง</span>ในพื้นที่</h2>
+    <div class="vecmap">
+      <div class="mono" style="font-size:clamp(1rem,2vw,1.5rem);color:var(--ink2)">
+        "ประชุมกับอาจารย์ฝน"<br><span class="dim">↓ embedder</span><br><span class="a">[0.12, −0.4, 0.9, …]</span>
+      </div>
+      <div style="flex:1 1 300px">
+        <svg viewBox="0 0 300 200" style="width:100%;height:auto">
+          <line x1="20" y1="180" x2="280" y2="180" stroke="#4a4842" stroke-width="1.5"/>
+          <line x1="20" y1="180" x2="20" y2="20" stroke="#4a4842" stroke-width="1.5"/>
+          <line x1="20" y1="180" x2="235" y2="55" stroke="#5c9ded" stroke-width="3"/>
+          <line x1="20" y1="180" x2="215" y2="70" stroke="#3dbd8a" stroke-width="3"/>
+          <line x1="20" y1="180" x2="90" y2="45" stroke="#e77" stroke-width="3"/>
+          <text x="240" y="50" fill="#5c9ded" font-size="13" font-family="sans-serif">ประชุม</text>
+          <text x="150" y="82" fill="#3dbd8a" font-size="13" font-family="sans-serif">นัดหมาย</text>
+          <text x="60" y="38" fill="#e77" font-size="13" font-family="sans-serif">กาแฟ</text>
+        </svg>
+      </div>
+    </div>
+    <p class="foot">ความหมายใกล้กัน = ทิศใกล้กัน · "ประชุม" กับ "นัดหมาย" ชี้ทางเดียวกัน — "กาแฟ" คนละทาง</p>
+  </section>
+
+  <!-- 7 before/after -->
+  <section class="slide">
+    <div class="eyebrow">แก้ด้วย <span class="mono">bge-m3</span> (multilingual) · query ชุดเดิมเป๊ะ</div>
+    <h2>เปลี่ยนแค่ embedder → <span class="k">ถูก 3/3</span></h2>
+    <div class="cmp two">
+      <div class="card"><div class="n r">1/3 <span class="g">▼</span></div><div class="l">all-MiniLM (แถม)<br>เทรนอังกฤษ · คะแนนติดลบ</div></div>
+      <div class="card"><div class="n k">3/3 <span class="g">▲</span></div><div class="l">bge-m3<br>100+ ภาษา · ตัวที่ ARRA ใช้จริง</div></div>
+    </div>
+    <p class="foot">database ตัวเดิม · โน้ตชุดเดิม · เปลี่ยนอย่างเดียวคือ embedding model</p>
+  </section>
+
+  <!-- 8 cosine -->
+  <section class="slide">
+    <div class="eyebrow">เปิดฝาดูข้างใน · สมการเดียวที่ต้องรู้</div>
+    <h2>Cosine Similarity</h2>
+    <p class="formula">cos(A,B) = A·B / (|A|·|B|)</p>
+    <ul style="margin-top:3vh">
+      <li><span class="dim">A, B = ตัวเลขชุดที่ embedder แปลงจากประโยค 2 อัน</span></li>
+      <li>"แมวนอนโซฟา" ↔ "ลูกแมวหลับเก้าอี้" = <span class="k">0.82</span> <span class="dim">(ไม่มีคำซ้ำกันเลย!)</span></li>
+      <li>จำ "คะแนนติดลบ" เมื่อกี้ได้ไหม? = <span class="r">ทิศตรงข้ามกัน</span></li>
+    </ul>
+  </section>
+
+  <!-- 9 ANN reality -->
+  <section class="slide">
+    <div class="eyebrow">วัดจริง · scale-appropriate</div>
+    <h2>"ทางลัด" ไม่ได้เร็วกว่า<span class="dim">เสมอ</span></h2>
+    <p class="lead" style="max-width:40ch">ANN (เช่น HNSW) = ทางลัดที่ทุกคนเชื่อว่าเร็วกว่าการค้นทุกตัว — แต่ที่ scale เรา…</p>
+    <div class="cmp two" style="margin-top:1.5vh">
+      <div class="card"><div class="n k">2.9<span class="g">ms ▲</span></div><div class="l">ค้นตรงๆ ทุกตัว (brute force)<br>20,000 โน้ต</div></div>
+      <div class="card"><div class="n r">12.6<span class="g">ms ▼</span></div><div class="l">ทางลัดอัจฉริยะ (HNSW)</div></div>
+    </div>
+    <p class="foot">scale ส่วนตัว (หมื่น-แสน): ค้นตรงๆ = เร็วสุด · ทางลัดคุ้มตอนล้านโน้ตขึ้นไป</p>
+  </section>
+
+  <!-- 10 hybrid -->
+  <section class="slide">
+    <div class="eyebrow">ระบบจริง</div>
+    <h2>Hybrid = vector + keyword</h2>
+    <ul>
+      <li><span class="b">vector</span> เก่งความหมาย — แต่พลาด <span class="mono">"PR #2740"</span>, คำว่า "ไม่"</li>
+      <li><span class="a">keyword</span> เก่ง exact term + รหัส</li>
+      <li>รวมด้วยสูตรรวมผล (<span class="k">RRF</span>) — สูตรเดียวกับ ARRA production</li>
+    </ul>
+    <p class="foot">ไอเดีย: ให้แต่ละตัวเด่นในเขตของมัน → ครอบทั้ง exact + ความหมาย</p>
+  </section>
+
+  <!-- 11 RAG -->
+  <section class="slide">
+    <div class="eyebrow">ต่อ LLM ให้ตอบจากโน้ตเรา</div>
+    <h2>RAG: ตอบ + <span class="k">อ้างอิง</span> + รู้จักบอก "<span class="r">ไม่รู้</span>"</h2>
+    <ul>
+      <li>ค้นเจอ → ป้อน context พร้อม <span class="k">source</span> → LLM ตอบ + cite ไฟล์จริง</li>
+      <li>ถามเรื่องนอก vault → <span class="r">"ไม่พบข้อมูล"</span> (ไม่มโน — ซื่อสัตย์ = เชื่อได้)</li>
+    </ul>
+  </section>
+
+  <!-- 12 measure / golden set -->
+  <section class="slide">
+    <div class="eyebrow">วัดผลอย่างมั่นใจ · golden set</div>
+    <h2>ตัวเลขที่จบทุกข้อสงสัย</h2>
+    <p class="lead" style="max-width:44ch">เมื่อกี้เห็น 3 ตัวอย่าง — คราวนี้วัดจริงบน "ข้อสอบ" ภาษาไทยที่เราตั้งเอง</p>
+    <div class="cmp" style="margin-top:1.5vh">
+      <div class="card col"><div class="n r">0.36 <span class="g">▼</span></div><div class="l">MiniLM</div></div>
+      <div class="arrow">→</div>
+      <div class="card col"><div class="n k">0.93 <span class="g">▲</span></div><div class="l">bge-m3</div></div>
+    </div>
+    <p class="foot">Recall@3 = ใน 3 อันดับแรก เจอคำตอบที่ถูกไหม · วัดบนไทยของเราเอง ไม่เชื่อ leaderboard อังกฤษ</p>
+  </section>
+
+  <!-- 13 multi-engine myth -->
+  <section class="slide">
+    <div class="eyebrow">"มีเยอะ = ดีกว่า" จริงไหม?</div>
+    <h2>รวม 3 engine → <span class="r">แย่กว่า</span> bge-m3 เดี่ยว</h2>
+    <div class="cmp two">
+      <div class="card"><div class="n k">0.97 <span class="g">▲</span></div><div class="l">bge-m3 เดี่ยว</div></div>
+      <div class="card"><div class="n r">0.79 <span class="g">▼</span></div><div class="l">รวม 3 ตัว (RRF)</div></div>
+    </div>
+    <p class="foot">2 ตัวเก่งเรื่องเดียวกัน + อีกตัวอ่อน → ตัวอ่อนดึงคะแนนรวมลง · <span class="a">วัด อย่าเดา</span> <span class="dim">(nDCG@10 = คะแนนคุณภาพการค้น ยิ่งสูงยิ่งดี)</span></p>
+  </section>
+
+  <!-- 14 production/edge -->
+  <section class="slide">
+    <div class="eyebrow">สู่ production</div>
+    <h2>ความรู้ <span class="k">portable</span> ข้าม backend</h2>
+    <ul>
+      <li>Chroma (สอน) → <span class="b">LanceDB</span> (production) → top-1 ตรงกันเป๊ะ</li>
+      <li>local → <span class="v">Cloudflare Edge</span> (Workers AI + Vectorize) 300+ เมือง</li>
+      <li>โมเดล + สมการ + hybrid เหมือนกันหมด — เปลี่ยนแค่ที่รัน</li>
+    </ul>
+  </section>
+
+  <!-- 15 hands-on -->
+  <section class="slide" style="align-items:center;text-align:center">
+    <div class="eyebrow">ลงมือเลย · ไม่ต้องติดตั้งอะไร</div>
+    <h2>เปิดใน <span class="b">Google Colab</span> คลิกเดียว</h2>
+    <p class="pill" style="margin:3vh 0">github.com/laris-co/ajfon-oracle</p>
+    <p class="lead" style="margin:0 auto">17 บท · ทุกบทมีปุ่ม Open in Colab + เซลล์วัดผล (self-check ✓)</p>
+  </section>
+
+  <!-- 16 recap -->
+  <section class="slide">
+    <div class="eyebrow">พกกลับบ้าน</div>
+    <h2>3 อย่างที่จำไว้</h2>
+    <ul>
+      <li>เลือก <span class="k">embedding model</span> ก่อน database (model = ตัวเข้าใจภาษา)</li>
+      <li>ทดสอบด้วย <span class="a">query ภาษาจริงของเราเอง</span> เสมอ</li>
+      <li>ระบบที่ดีที่สุด = <span class="b">พอดีกับ scale จริง</span> ไม่ใช่ซับซ้อนที่สุด</li>
+    </ul>
+    <p class="foot">"วัด อย่าเดา" · second brain เป็นของเรา 100% (local + privacy)</p>
+  </section>
+</div>
+
+<div class="bar" id="bar"></div>
+<div class="hud" id="hud">1 / 17</div>
+<div class="hint">← → หรือ Space · กด F เต็มจอ</div>
+
+<script>
+(()=>{
+  const slides=[...document.querySelectorAll('.slide')];
+  let i=0;
+  const bar=document.getElementById('bar'), hud=document.getElementById('hud');
+  function show(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,j)=>s.classList.toggle('on',j===i));
+    bar.style.width=((i+1)/slides.length*100)+'%';
+    hud.textContent=(i+1)+' / '+slides.length;
+    location.hash=i;
+  }
+  addEventListener('keydown',e=>{
+    if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();show(i+1)}
+    else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();show(i-1)}
+    else if(e.key==='Home')show(0); else if(e.key==='End')show(slides.length-1);
+    else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
+  });
+  addEventListener('click',e=>{ if(e.clientX < innerWidth*0.28) show(i-1); else show(i+1); });
+  show(location.hash?parseInt(location.hash.slice(1))||0:0);
+})();
+</script>
