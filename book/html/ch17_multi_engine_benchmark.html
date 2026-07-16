@@ -8192,6 +8192,101 @@ triple-RRF     : Recall@5=0.929  nDCG@10=0.791
 </div>
 </div>
 </div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=c2f45577">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="5)-%E2%AD%90-%E0%B8%97%E0%B8%B3%E0%B9%84%E0%B8%A1-fusion-%E0%B9%84%E0%B8%A1%E0%B9%88%E0%B8%8A%E0%B9%88%E0%B8%A7%E0%B8%A2-%E2%80%94-%E0%B8%A7%E0%B8%B4%E0%B8%99%E0%B8%B4%E0%B8%88%E0%B8%89%E0%B8%B1%E0%B8%A2%E0%B8%94%E0%B9%89%E0%B8%A7%E0%B8%A2%E0%B8%95%E0%B8%B1%E0%B8%A7%E0%B9%80%E0%B8%A5%E0%B8%82">5) ⭐ ทำไม fusion ไม่ช่วย — วินิจฉัยด้วยตัวเลข<a class="anchor-link" href="#5)-%E2%AD%90-%E0%B8%97%E0%B8%B3%E0%B9%84%E0%B8%A1-fusion-%E0%B9%84%E0%B8%A1%E0%B9%88%E0%B8%8A%E0%B9%88%E0%B8%A7%E0%B8%A2-%E2%80%94-%E0%B8%A7%E0%B8%B4%E0%B8%99%E0%B8%B4%E0%B8%88%E0%B8%89%E0%B8%B1%E0%B8%A2%E0%B8%94%E0%B9%89%E0%B8%A7%E0%B8%A2%E0%B8%95%E0%B8%B1%E0%B8%A7%E0%B9%80%E0%B8%A5%E0%B8%82">¶</a></h2><p>คำถาม arra-v3: 'มี threshold บอกไหมว่า correlated เกินไป?' → วัด 2 อย่าง:</p>
+<ol>
+<li><strong>complementary recall</strong> — nomic/qwen3 เอา relevant ที่ bge-m3 พลาดมาได้ไหม? (ถ้า ≈0 → fuse ไม่ช่วย)</li>
+<li><strong>Kendall's tau</strong> — อันดับ 2 engine เห็นด้วยกันแค่ไหน (สูง = correlated = fuse ไม่คุ้ม)</li>
+</ol>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=5cce783b">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># complementary recall: engine อื่นเติม relevant ที่ bge-m3 (top-5) พลาด ได้เท่าไร</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">unique_hits</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">gained</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">total</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">for</span> <span class="n">q</span><span class="p">,</span><span class="n">rel</span> <span class="ow">in</span> <span class="n">GOLDEN</span><span class="p">:</span>
+        <span class="n">base_top</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">rank</span><span class="p">(</span><span class="n">base</span><span class="p">,</span><span class="n">q</span><span class="p">)[:</span><span class="n">k</span><span class="p">]);</span> <span class="n">other_top</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">rank</span><span class="p">(</span><span class="n">other</span><span class="p">,</span><span class="n">q</span><span class="p">)[:</span><span class="n">k</span><span class="p">])</span>
+        <span class="n">miss</span><span class="o">=</span><span class="n">rel</span><span class="o">-</span><span class="n">base_top</span>                       <span class="c1"># relevant ที่ base พลาด</span>
+        <span class="n">gained</span><span class="o">+=</span><span class="nb">len</span><span class="p">(</span><span class="n">miss</span> <span class="o">&amp;</span> <span class="n">other_top</span><span class="p">);</span> <span class="n">total</span><span class="o">+=</span><span class="nb">len</span><span class="p">(</span><span class="n">miss</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">gained</span><span class="o">/</span><span class="n">total</span> <span class="k">if</span> <span class="n">total</span> <span class="k">else</span> <span class="mi">0</span>
+
+<span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'nomic-embed-text'</span><span class="p">,</span><span class="s1">'qwen3-embedding:0.6b'</span><span class="p">]:</span>
+    <span class="n">cr</span><span class="o">=</span><span class="n">unique_hits</span><span class="p">(</span><span class="s1">'bge-m3'</span><span class="p">,</span><span class="n">m</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">m</span><span class="si">:</span><span class="s1">&lt;24</span><span class="si">}</span><span class="s1"> เติม relevant ที่ bge-m3 พลาด = </span><span class="si">{</span><span class="n">cr</span><span class="si">:</span><span class="s1">.0%</span><span class="si">}</span><span class="s1">  → </span><span class="si">{</span><span class="s2">"คุ้ม fuse"</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">cr</span><span class="o">&gt;</span><span class="mf">0.15</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s2">"เกือบไม่เติมอะไร (อย่า fuse)"</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+
+<span class="c1"># Kendall tau ระหว่างอันดับ (เฉลี่ยทุก query)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">kendall</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">):</span>
+    <span class="n">n</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">);</span> <span class="n">pos</span><span class="o">=</span><span class="p">{</span><span class="n">x</span><span class="p">:</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">b</span><span class="p">)};</span> <span class="n">bb</span><span class="o">=</span><span class="p">[</span><span class="n">pos</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">a</span><span class="p">]</span>
+    <span class="n">conc</span><span class="o">=</span><span class="n">disc</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">s</span><span class="o">=</span><span class="p">(</span><span class="n">bb</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">bb</span><span class="p">[</span><span class="n">j</span><span class="p">]);</span> <span class="n">conc</span><span class="o">+=</span><span class="n">s</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">;</span> <span class="n">disc</span><span class="o">+=</span><span class="n">s</span><span class="o">&gt;</span><span class="mi">0</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">conc</span><span class="o">-</span><span class="n">disc</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">conc</span><span class="o">+</span><span class="n">disc</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">conc</span><span class="o">+</span><span class="n">disc</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'nomic-embed-text'</span><span class="p">,</span><span class="s1">'qwen3-embedding:0.6b'</span><span class="p">]:</span>
+    <span class="n">taus</span><span class="o">=</span><span class="p">[</span><span class="n">kendall</span><span class="p">(</span><span class="n">rank</span><span class="p">(</span><span class="s1">'bge-m3'</span><span class="p">,</span><span class="n">q</span><span class="p">),</span><span class="n">rank</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">q</span><span class="p">))</span> <span class="k">for</span> <span class="n">q</span><span class="p">,</span><span class="n">_</span> <span class="ow">in</span> <span class="n">GOLDEN</span><span class="p">]</span>
+    <span class="n">t</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">taus</span><span class="p">);</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Kendall tau(bge-m3, </span><span class="si">{</span><span class="n">m</span><span class="si">:</span><span class="s1">&lt;22</span><span class="si">}</span><span class="s1">) = </span><span class="si">{</span><span class="n">t</span><span class="si">:</span><span class="s1">+.2f</span><span class="si">}</span><span class="s1">  → </span><span class="si">{</span><span class="s2">"correlated มาก"</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">t</span><span class="o">&gt;</span><span class="mf">0.6</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s2">"ต่างพอควร"</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'สรุปวินิจฉัย: nomic/qwen3 เติม relevant ที่ bge-m3 พลาดน้อยมาก + อันดับ correlated'</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'→ RRF equal-weight เลยเอาตัวอ่อนมาถ่วง = triple แย่ลง (ยืนยันผลข้อ 4 ด้วยเหตุผล)'</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>nomic-embed-text         เติม relevant ที่ bge-m3 พลาด = 0%  → เกือบไม่เติมอะไร (อย่า fuse)
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>qwen3-embedding:0.6b     เติม relevant ที่ bge-m3 พลาด = 0%  → เกือบไม่เติมอะไร (อย่า fuse)
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Kendall tau(bge-m3, nomic-embed-text      ) = -0.03  → ต่างพอควร
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Kendall tau(bge-m3, qwen3-embedding:0.6b  ) = +0.32  → ต่างพอควร
+
+สรุปวินิจฉัย: nomic/qwen3 เติม relevant ที่ bge-m3 พลาดน้อยมาก + อันดับ correlated
+→ RRF equal-weight เลยเอาตัวอ่อนมาถ่วง = triple แย่ลง (ยืนยันผลข้อ 4 ด้วยเหตุผล)
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=8914219e">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
@@ -8207,7 +8302,7 @@ triple-RRF     : Recall@5=0.929  nDCG@10=0.791
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -8255,7 +8350,7 @@ triple-RRF     : Recall@5=0.929  nDCG@10=0.791
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># metric ต้อง valid: nDCG ∈ [0,1], recall ∈ [0,1]</span>
