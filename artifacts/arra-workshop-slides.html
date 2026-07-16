@@ -1,0 +1,333 @@
+<title>ARRA Oracle Second Brain for Research — Workshop</title>
+<style>
+  :root {
+    --bg:#0a0b10; --panel:#12141c; --panel2:#171a24;
+    --ink:#eef0f7; --ink-soft:#a2a8bd; --ink-faint:#5c6178; --line:#23273a;
+    --cyan:#7fd4ff; --green:#52d98a; --amber:#f8a860; --gold:#ffcf4a; --rose:#ff7bab; --blue:#5b9dff; --red:#ff6b6b;
+    --thai:"Noto Sans Thai","IBM Plex Sans Thai","Sarabun","Thonburi",system-ui,-apple-system,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace;
+  }
+  * { box-sizing:border-box; margin:0; }
+  html,body { height:100%; }
+  body {
+    background:
+      radial-gradient(120% 90% at 50% -20%, #171d33 0%, #0a0b1000 55%),
+      radial-gradient(70% 50% at 88% 6%, #241a33 0%, #0a0b1000 60%),
+      var(--bg);
+    color:var(--ink); font-family:var(--thai); -webkit-font-smoothing:antialiased; overflow:hidden;
+  }
+  .deck { position:fixed; inset:0; }
+  .slide {
+    position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center;
+    padding:clamp(32px,6vw,96px);
+    opacity:0; visibility:hidden; transform:translateY(14px);
+    transition:opacity .4s ease, transform .4s ease, visibility .4s;
+  }
+  .slide.active { opacity:1; visibility:visible; transform:none; }
+  @media (prefers-reduced-motion:reduce){ .slide{ transition:opacity .01s; transform:none; } }
+  .inner { max-width:1000px; width:100%; margin:0 auto; }
+
+  .eyebrow { font-family:var(--mono); font-size:clamp(12px,1.4vw,15px); letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-faint); font-weight:700; margin-bottom:22px; display:flex; align-items:center; gap:12px; }
+  .eyebrow .n { color:var(--gold); }
+  h1 { font-size:clamp(34px,6.2vw,70px); font-weight:800; letter-spacing:-0.02em; line-height:1.08; text-wrap:balance; }
+  h2 { font-size:clamp(27px,4.8vw,52px); font-weight:800; letter-spacing:-0.015em; line-height:1.12; text-wrap:balance; }
+  .lead { font-size:clamp(18px,2.5vw,27px); color:var(--ink-soft); line-height:1.55; margin-top:22px; max-width:42ch; }
+  .accent-cyan{color:var(--cyan);} .accent-green{color:var(--green);} .accent-amber{color:var(--amber);}
+  .accent-gold{color:var(--gold);} .accent-rose{color:var(--rose);} .accent-red{color:var(--red);}
+  b,strong{font-weight:800;}
+
+  .title-mark { font-size:clamp(40px,7vw,72px); line-height:1; filter:drop-shadow(0 4px 24px #ffcf4a44); margin-bottom:6px; }
+  .title-sub { font-size:clamp(18px,2.8vw,28px); color:var(--cyan); font-weight:600; margin-top:14px; }
+  .title-meta { margin-top:36px; display:flex; flex-wrap:wrap; gap:10px 18px; font-family:var(--mono); font-size:clamp(13px,1.6vw,16px); color:var(--ink-soft); }
+  .title-meta .pill { border:1px solid var(--line); border-radius:999px; padding:7px 15px; background:#12141c88; }
+
+  ul.b { list-style:none; margin-top:30px; display:grid; gap:15px; }
+  ul.b li { position:relative; padding-left:34px; font-size:clamp(17px,2.2vw,25px); line-height:1.45; }
+  ul.b li::before { content:""; position:absolute; left:4px; top:0.6em; width:11px; height:11px; border-radius:3px; background:var(--dot,var(--cyan)); }
+  ul.b li .muted { color:var(--ink-soft); font-size:0.86em; }
+
+  /* big stat */
+  .stat-hero { font-size:clamp(64px,13vw,150px); font-weight:800; letter-spacing:-0.04em; line-height:0.95; font-variant-numeric:tabular-nums; }
+  .stat-cap { font-size:clamp(17px,2.3vw,24px); color:var(--ink-soft); margin-top:16px; max-width:40ch; }
+  .trend { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-top:26px; font-family:var(--mono); font-size:clamp(15px,2vw,22px); }
+  .trend .a { color:var(--ink-faint); } .trend .arrow { color:var(--gold); } .trend .b { color:var(--red); font-weight:700; }
+
+  /* three-analogy cards */
+  .cards { margin-top:32px; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; }
+  .card { border:1px solid var(--line); border-radius:16px; background:linear-gradient(180deg,#141824,#0f1119); padding:22px; }
+  .card .h { font-family:var(--mono); font-size:12.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--ink-faint); font-weight:700; margin-bottom:8px; }
+  .card .t { font-size:clamp(17px,2vw,21px); font-weight:800; }
+  .card .d { font-size:15px; color:var(--ink-soft); margin-top:8px; line-height:1.5; }
+
+  /* skill rows */
+  .skills { margin-top:28px; display:grid; gap:12px; }
+  .srow { display:grid; grid-template-columns:minmax(140px,210px) 1fr; gap:18px; align-items:baseline; padding:12px 0; border-top:1px solid var(--line); }
+  @media (max-width:620px){ .srow{ grid-template-columns:1fr; gap:3px; } }
+  .srow .cmd { font-family:var(--mono); font-size:clamp(15px,1.9vw,20px); color:var(--cyan); font-weight:600; }
+  .srow .what { font-size:clamp(15px,1.9vw,20px); color:var(--ink); }
+  .srow .what .m { color:var(--ink-faint); font-size:0.85em; }
+
+  .live { display:inline-flex; align-items:center; gap:9px; font-family:var(--mono); font-size:clamp(12px,1.5vw,15px); font-weight:700; letter-spacing:0.1em; color:#0d1310; background:var(--green); padding:7px 14px; border-radius:8px; margin-bottom:22px; }
+  .live .dot { width:9px; height:9px; border-radius:50%; background:#0d1310; animation:pulse 1.6s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.35;} }
+  @media (prefers-reduced-motion:reduce){ .live .dot{ animation:none; } }
+
+  .callout { margin-top:28px; border:1px solid #2f4a3a; border-radius:16px; background:linear-gradient(180deg,#101c16,#0d1310); padding:22px 24px; font-size:clamp(16px,2.1vw,23px); line-height:1.5; }
+  .callout.warn { border-color:#4a3a24; background:linear-gradient(180deg,#1a140c,#12100b); }
+  .callout b { color:var(--ink); }
+
+  .quote { font-size:clamp(22px,3.4vw,40px); font-weight:800; line-height:1.25; letter-spacing:-0.01em; text-wrap:balance; }
+  .quote .hl { color:var(--gold); }
+
+  .progress { position:fixed; top:0; left:0; height:3px; background:linear-gradient(90deg,var(--cyan),var(--gold)); width:0; transition:width .35s ease; z-index:10; }
+  .counter { position:fixed; bottom:22px; right:26px; font-family:var(--mono); font-size:13px; color:var(--ink-faint); z-index:10; font-variant-numeric:tabular-nums; }
+  .brand { position:fixed; bottom:22px; left:26px; font-family:var(--mono); font-size:12px; color:var(--ink-faint); z-index:10; }
+  .hint { position:fixed; bottom:22px; left:50%; transform:translateX(-50%); font-family:var(--mono); font-size:12px; color:var(--ink-faint); z-index:10; opacity:.7; }
+  .nav-zone { position:fixed; top:0; bottom:0; width:22%; z-index:5; cursor:pointer; }
+  .nav-zone.prev{ left:0; } .nav-zone.next{ right:0; }
+  :focus-visible { outline:2px solid var(--cyan); outline-offset:3px; }
+</style>
+
+<div class="progress" id="progress"></div>
+<div class="deck" id="deck">
+
+  <!-- 1 · Title -->
+  <section class="slide active">
+    <div class="inner">
+      <div class="title-mark">⭐</div>
+      <div class="eyebrow"><span class="n">ARRA ORACLE</span> · AI for Research Community</div>
+      <h1>ARRA Oracle<br>Second Brain for Research</h1>
+      <div class="title-sub">สร้างระบบความรู้ส่วนตัวด้วย AI Agent</div>
+      <div class="title-meta">
+        <span class="pill">อ.นัท Nat Weerawan + ทีม</span>
+        <span class="pill">อาทิตย์ 26 ก.ค. · 09:00–12:00</span>
+        <span class="pill">Online Zoom</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · Hook: citation crisis -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow">เริ่มด้วยเรื่องจริงที่วงการกำลังเจ็บ</div>
+      <div class="stat-hero accent-red">1 : 277</div>
+      <div class="stat-cap">paper ที่ตีพิมพ์ปี 2026 <b>มี citation ปลอม (AI แต่งขึ้น)</b> — จาก audit 2.5 ล้าน paper</div>
+      <div class="trend"><span class="a">1 : 2,828 (2023)</span><span class="arrow">→</span><span class="b">1 : 277 (2026)</span></div>
+      <p class="lead" style="font-size:clamp(15px,1.7vw,18px); font-family:var(--mono); color:var(--ink-faint)">แม้แต่ NeurIPS 2025 (peer-reviewed) มี ~100 citation ที่ AI hallucinate</p>
+    </div>
+  </section>
+
+  <!-- 3 · Why AI hallucinates -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow">ทำไมถึงมั่ว</div>
+      <h2>AI ทั่วไป<span class="accent-red">มั่ว</span> เพราะมันไม่ได้ผูกกับ<br>ความรู้ที่<span class="accent-gold">คุณตรวจแล้ว</span></h2>
+      <p class="lead">มันเดาจากอินเทอร์เน็ตทั้งใบ ไม่ใช่จากโน้ต/paper ที่คุณอ่านและยืนยันเอง — เลยสร้างชื่อ paper ที่ฟังดูน่าเชื่อแต่ไม่มีจริง</p>
+      <div class="callout warn">💡 ทางแก้ไม่ใช่ "เลิกใช้ AI" — แต่คือ <b>ให้ AI ทำงานบนความรู้ของคุณเอง</b> แล้วอ้างอิงกลับไปที่โน้ตจริงได้</div>
+    </div>
+  </section>
+
+  <!-- 4 · What is agentic AI -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow">ปรับความเข้าใจก่อน · Agentic AI คืออะไร</div>
+      <h2>ผู้ช่วยวิจัย<span class="accent-cyan">ระดับ junior</span><br>ที่คุณยังต้องคุม</h2>
+      <ul class="b" style="--dot:var(--cyan)">
+        <li>ไม่ใช่แค่ chatbot ตอบทีละคำถาม — มัน <b>รับเป้าหมาย → วางแผนเอง → เรียกเครื่องมือ → ปรับตามผล</b></li>
+        <li>เหมือน <b>PI ที่แตกงานให้ผู้ช่วย</b> (ค้น / เขียน / ทวน) แล้วรวม+ตรวจเอง</li>
+        <li>แต่มันเป็น "grad student ที่เร็วมากแต่ literal" — <span class="accent-red">ยังต้อง review เสมอ</span></li>
+      </ul>
+      <p class="lead">workshop นี้สอน <b class="accent-gold">Agentic AI แบบกว้าง</b> — ARRA Oracle เป็นตัวอย่างจริงหนึ่งตัว เอาไปต่อยอดกับ tool อื่นได้</p>
+    </div>
+  </section>
+
+  <!-- 5 · 3 memory mechanisms -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow">3 วิธีที่ AI "จำ" — ต่างกันคนละเรื่อง</div>
+      <h2>Second Brain ใช้แบบที่<span class="accent-green">จำข้ามวัน</span>ได้จริง</h2>
+      <div class="cards">
+        <div class="card"><div class="h">RAG</div><div class="t">= บรรณารักษ์</div><div class="d">ดึงเอกสารที่เกี่ยวมาตอบ ณ ตอนนั้น — ไม่จำอะไร</div></div>
+        <div class="card"><div class="h">Long context</div><div class="t">= อ่านห้องสมุดใหม่</div><div class="d">ยัดทุกอย่างเข้าไปทุกครั้ง — แพงและช้า</div></div>
+        <div class="card"><div class="h">Memory</div><div class="t">= สมุดโน้ตของคุณ</div><div class="d">จำสิ่งที่คุณอ่าน/จด ข้ามสัปดาห์ ข้ามเดือน ← หัวใจ</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · The gap: tools forget you -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow">ช่องว่างของ tool วิจัยทุกวันนี้</div>
+      <h2>Elicit · NotebookLM · ChatGPT<br>ล้วน<span class="accent-rose">ลืม "คุณ"</span> ข้าม session</h2>
+      <ul class="b" style="--dot:var(--rose)">
+        <li>Elicit ลืม decision ที่คุณคัดกรอง paper ไว้เมื่อวาน</li>
+        <li>NotebookLM แยกเป็นห้องๆ ต่อ project ไม่เชื่อมกัน</li>
+        <li>ChatGPT/Claude ไม่พกโน้ตสะสมของคุณต่อ</li>
+      </ul>
+      <p class="lead">ทุกครั้งเริ่มใหม่จากศูนย์ — <b>"ที่อ่านไปเมื่อ 3 เดือนก่อน หายไปไหนหมด"</b></p>
+    </div>
+  </section>
+
+  <!-- 7 · Second Brain fixes it -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow">ARRA Oracle แก้ตรงนี้</div>
+      <h2>ระบบที่<span class="accent-green">จำโน้ตคุณ</span> + <span class="accent-cyan">อ้างกลับ</span> + อยู่ในเครื่อง</h2>
+      <div class="cards">
+        <div class="card"><div class="h">จำ</div><div class="t">ข้ามวัน/เดือน</div><div class="d">โน้ต paper ไอเดีย เก็บเป็นไฟล์ ค้นกลับได้เสมอ</div></div>
+        <div class="card"><div class="h">เชื่อถือ</div><div class="t">cite กลับโน้ตคุณเอง</div><div class="d">คำตอบชี้ไฟล์จริง ไม่ใช่เดาจากเว็บ → ลด hallucination</div></div>
+        <div class="card"><div class="h">เป็นส่วนตัว</div><div class="t">อยู่ในเครื่อง 100%</div><div class="d">markdown บนเครื่องคุณ ไม่ขึ้น cloud ไม่ผ่านใคร</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 · How we'll show it: skills -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow">วันนี้ทำยังไง</div>
+      <h2>เราจะ<span class="accent-gold">ดู workflow จริง</span> ผ่าน "คำสั่ง"</h2>
+      <p class="lead">ไม่ต้องเป็น dev · ไม่ต้องติดตั้งอะไรวันนี้ — ดูทีมสาธิตบนจอ แล้วเห็นว่าแต่ละ <b class="accent-cyan">/คำสั่ง</b> ช่วยงานวิจัยขั้นไหน</p>
+      <div class="skills" style="margin-top:24px">
+        <div class="srow"><span class="cmd">เริ่ม</span><span class="what">/about-oracle · /awaken <span class="m">— สร้าง oracle ของคุณเอง</span></span></div>
+        <div class="srow"><span class="cmd">ค้นคืน</span><span class="what">/trace · /seek <span class="m">— หาอะไรก็เจอในความรู้ตัวเอง</span></span></div>
+        <div class="srow"><span class="cmd">คิดงานวิจัย</span><span class="what">/oracle-prism · /oracle-deep-research · /kien-thai</span></div>
+        <div class="srow"><span class="cmd">จำข้ามวัน</span><span class="what">/recap → /rrr → /forward · /oracle-cheatsheet</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 · Skill tour 1: start -->
+  <section class="slide">
+    <div class="inner">
+      <span class="live"><span class="dot"></span>LIVE DEMO</span>
+      <div class="eyebrow"><span class="n">1 / 4</span> · เริ่มต้น</div>
+      <h2>สร้าง <span class="accent-cyan">oracle ของคุณเอง</span></h2>
+      <div class="skills">
+        <div class="srow"><span class="cmd">/about-oracle</span><span class="what">ให้ AI เล่าว่า ARRA Oracle คืออะไร (เปิดเรื่อง 0 setup)</span></div>
+        <div class="srow"><span class="cmd">/awaken</span><span class="what">พิธี "เกิด" oracle วิจัยของคุณ — ตั้งชื่อ + พันธกิจ</span></div>
+      </div>
+      <p class="lead">อจ.ฝนทำแล้วจริง — oracle "jarvis" เกิด 1 ก.ค. · <b>หมอที่ไม่ใช่ dev ก็สร้างได้</b></p>
+    </div>
+  </section>
+
+  <!-- 10 · Skill tour 2: recall -->
+  <section class="slide">
+    <div class="inner">
+      <span class="live"><span class="dot"></span>LIVE DEMO</span>
+      <div class="eyebrow"><span class="n">2 / 4</span> · ใส่ความรู้ → ค้นคืน</div>
+      <h2>drop โน้ต/paper → <span class="accent-green">หาเจอทันที</span></h2>
+      <div class="skills">
+        <div class="srow"><span class="cmd">/trace</span><span class="what">ค้นข้าม โน้ต · ไฟล์ · git ในคำสั่งเดียว</span></div>
+        <div class="srow"><span class="cmd">/seek</span><span class="what">ถามคำถาม → ประกอบคำตอบจากทุกที่ที่คุณเคยจด</span></div>
+      </div>
+      <p class="lead">= จุด "อ๋อ!" ของนักวิจัย — แทนการเปิดหาโฟลเดอร์เอง · <span class="accent-amber">วันนี้ใช้ Full-Text Search ก่อน</span> (ค้นด้วยความหมายกำลังจะตามมา)</p>
+    </div>
+  </section>
+
+  <!-- 11 · Skill tour 3: research reasoning -->
+  <section class="slide">
+    <div class="inner">
+      <span class="live"><span class="dot"></span>LIVE DEMO</span>
+      <div class="eyebrow"><span class="n">3 / 4</span> · หัวใจงานวิจัย</div>
+      <h2>paper → insight → <span class="accent-gold">research gap → RQ</span> → เขียน</h2>
+      <div class="skills">
+        <div class="srow"><span class="cmd">/oracle-prism</span><span class="what">มอง paper เดียวจาก 5 มุม (Skeptic/Auditor) → ปั่น research question</span></div>
+        <div class="srow"><span class="cmd">/oracle-deep-research</span><span class="what">ค้นเว็บหลายแหล่ง + <b>ตรวจสอบเชิงadversarial</b> + มี citation</span></div>
+        <div class="srow"><span class="cmd">/kien-thai</span><span class="what">เขียนไทยวิชาการที่ไม่เป็นโทน AI</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 · Skill tour 4: memory loop -->
+  <section class="slide">
+    <div class="inner">
+      <span class="live"><span class="dot"></span>LIVE DEMO</span>
+      <div class="eyebrow"><span class="n">4 / 4</span> · จำข้ามวัน + ของแจก</div>
+      <h2>วันพรุ่งนี้เปิดมา — <span class="accent-green">agent จำได้</span></h2>
+      <div class="skills">
+        <div class="srow"><span class="cmd">/recap</span><span class="what">เปิด session — รู้ว่าค้างอะไร ทำถึงไหน</span></div>
+        <div class="srow"><span class="cmd">/rrr</span><span class="what">สรุปสิ่งที่ทำ + บทเรียน เข้า memory</span></div>
+        <div class="srow"><span class="cmd">/forward</span><span class="what">ส่งไม้ต่อให้ session พรุ่งนี้จำได้</span></div>
+        <div class="srow"><span class="cmd">/oracle-cheatsheet</span><span class="what">gen สรุปคำสั่งทั้ง workshop แจกกลับบ้าน 🎁</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13 · Honest reality check -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow">พูดตรงๆ · Agentic AI ไม่ใช่เวทมนตร์</div>
+      <h2>รู้ทันข้อจำกัด = ใช้เป็น</h2>
+      <ul class="b" style="--dot:var(--amber)">
+        <li><b>~70%</b> ของงาน "หลาย agent" จริงๆ agent เดียวถูก/เร็ว/เชื่อถือกว่า</li>
+        <li>ต่อกันหลายขั้นความผิดพลาดสะสม — <b>85%/ขั้น × 10 ขั้น = สำเร็จแค่ 19.7%</b></li>
+        <li><b class="accent-red">ตรวจ citation ทุกอันเสมอ</b> — AI สร้างชื่อ paper ปลอมได้เนียนมาก</li>
+      </ul>
+      <p class="lead">กฎง่ายๆ: มันคือ <b>ผู้ช่วย junior ที่ต้องคุม</b> ไม่ใช่ผู้เชี่ยวชาญอิสระ</p>
+    </div>
+  </section>
+
+  <!-- 14 · Why ARRA Oracle stands -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow">ทำไม ARRA Oracle ยืนได้ (มีหลักฐาน)</div>
+      <h2>ไฟล์ธรรมดา + อยู่ในเครื่อง = <span class="accent-green">เลือกที่ถูก</span></h2>
+      <ul class="b" style="--dot:var(--green)">
+        <li><b>ไฟล์ชนะ vector database เมื่อ &lt; 10,000 docs</b> — งานวิจัยคนเดียวอยู่ในช่วงนี้พอดี</li>
+        <li>Letta filesystem <b>74%</b> ชนะ mem0-graph 68.5% (LoCoMo) — <span class="muted accent-amber" style="font-size:0.85em">*ตัวเลข vendor ขัดกัน อ้างอย่างระวัง</span></li>
+        <li><b>60,000+ โปรเจกต์</b> ใช้ markdown เป็นความจำ ไม่มี infra เลย (Claude Code, Cursor)</li>
+        <li>ข้อมูล<b>อยู่ในเครื่องคุณ 100%</b> · cite กลับโน้ตที่คุณ verify เอง</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 15 · Takeaway + closing -->
+  <section class="slide">
+    <div class="inner">
+      <div class="title-mark">🙏</div>
+      <h2>กลับบ้านได้<span class="accent-gold">ของจริง</span> · ขอบคุณครับ</h2>
+      <ul class="b" style="--dot:var(--gold)">
+        <li><b>อ่านต่อ</b>: Oracle 101 · ai-library-th.pages.dev (มีอยู่แล้ว)</li>
+        <li><b>ลองเอง</b> (ถ้าอยาก): ติด Claude Code → 1 คำสั่ง <span style="font-family:var(--mono);color:var(--cyan);font-size:0.8em">bunx …skills-cli install -p standard</span></li>
+        <li><b>เรียนฟรี</b> · ร่วมบริจาคตามกำลัง (แนะนำ 999) รพ.ใดก็ได้ — <em>ฝึกฝนการให้</em></li>
+      </ul>
+      <p class="lead" style="font-family:var(--mono); font-size:15px; color:var(--ink-faint)">ARRA Oracle Community · Second Brain for Research</p>
+    </div>
+  </section>
+
+</div>
+
+<div class="nav-zone prev" id="navPrev"></div>
+<div class="nav-zone next" id="navNext"></div>
+<div class="counter" id="counter">1 / 15</div>
+<div class="brand">ARRA Oracle · buildwithoracle.com</div>
+<div class="hint" id="hint">← → เลื่อนสไลด์</div>
+
+<script>
+  (function () {
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const progress = document.getElementById('progress');
+    const counter = document.getElementById('counter');
+    const hint = document.getElementById('hint');
+    let i = 0;
+    function show(n) {
+      i = Math.max(0, Math.min(slides.length - 1, n));
+      slides.forEach((s, k) => s.classList.toggle('active', k === i));
+      progress.style.width = ((i + 1) / slides.length * 100) + '%';
+      counter.textContent = (i + 1) + ' / ' + slides.length;
+      if (i > 0 && hint) hint.style.display = 'none';
+    }
+    document.addEventListener('keydown', (e) => {
+      if (['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)) { e.preventDefault(); show(i+1); }
+      else if (['ArrowLeft','ArrowUp','PageUp'].includes(e.key)) { e.preventDefault(); show(i-1); }
+      else if (e.key === 'Home') show(0);
+      else if (e.key === 'End') show(slides.length-1);
+    });
+    document.getElementById('navNext').addEventListener('click', () => show(i+1));
+    document.getElementById('navPrev').addEventListener('click', () => show(i-1));
+    let sx = null;
+    document.addEventListener('touchstart', (e)=>{ sx=e.touches[0].clientX; }, {passive:true});
+    document.addEventListener('touchend', (e)=>{ if(sx===null)return; const dx=e.changedTouches[0].clientX-sx; if(Math.abs(dx)>45) show(dx<0?i+1:i-1); sx=null; }, {passive:true});
+    show(0);
+  })();
+</script>

@@ -1,0 +1,432 @@
+<title>เห็น Vector Search ด้วยตา — วิชวลประกอบหนังสือ</title>
+<style>
+  :root {
+    --surface: #fcfcfb; --card: #f4f3f0; --line: #e4e2dc;
+    --ink: #0b0b0b; --ink-2: #52514e; --ink-3: #8a887f;
+    --blue: #2a78d6; --aqua: #1baf7a; --red: #e34948; --yellow: #eda100;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --surface:#1a1a19; --card:#232322; --line:#3a3934;
+      --ink:#ffffff; --ink-2:#c3c2b7; --ink-3:#8a887f;
+      --blue:#3987e5; --aqua:#199e70; --red:#e66767; --yellow:#c98500; }
+  }
+  :root[data-theme="dark"] { --surface:#1a1a19; --card:#232322; --line:#3a3934;
+    --ink:#ffffff; --ink-2:#c3c2b7; --ink-3:#8a887f;
+    --blue:#3987e5; --aqua:#199e70; --red:#e66767; --yellow:#c98500; }
+  :root[data-theme="light"] { --surface:#fcfcfb; --card:#f4f3f0; --line:#e4e2dc;
+    --ink:#0b0b0b; --ink-2:#52514e; --ink-3:#8a887f;
+    --blue:#2a78d6; --aqua:#1baf7a; --red:#e34948; --yellow:#eda100; }
+
+  * { box-sizing: border-box; }
+  body { background: var(--surface); color: var(--ink);
+    font-family: "Sukhumvit Set", "Thonburi", "Noto Sans Thai", "Leelawadee UI", sans-serif;
+    line-height: 1.6; margin: 0; }
+
+  /* ---- presentation: แต่ละวิชวล = 1 สไลด์เต็มจอ ---- */
+  .slide { min-height: 100vh; display: flex; flex-direction: column; justify-content: center;
+    max-width: 1160px; margin: 0 auto; padding: 48px 32px 72px; }
+  .slide + .slide { border-top: 1px solid var(--line); }
+  .eyebrow { font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 10px; font-family: var(--mono); }
+  h1 { font-size: clamp(1.9rem, 4vw, 3rem); line-height: 1.25; margin: 0 0 10px; text-wrap: balance; }
+  h2 { font-size: clamp(1.5rem, 3vw, 2.2rem); line-height: 1.3; margin: 0 0 8px; text-wrap: balance; }
+  .h2note { color: var(--ink-2); font-size: clamp(.95rem, 1.6vw, 1.1rem); margin: 0 0 28px; max-width: 62ch; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 24px; }
+  .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .src { color: var(--ink-3); font-size: .8rem; margin-top: 16px; font-family: var(--mono); }
+  .legend { display: flex; gap: 20px; flex-wrap: wrap; font-size: .9rem; color: var(--ink-2); }
+  .legend span::before { content: ""; display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 7px; vertical-align: -1px; background: var(--c); }
+
+  /* slide 1: playground layout */
+  .play-grid { display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: stretch; }
+  @media (max-width: 900px) { .play-grid { grid-template-columns: 1fr; } }
+  canvas { display: block; width: 100%; height: auto; touch-action: none; border-radius: 10px; cursor: grab; background: var(--surface); border: 1px solid var(--line); }
+  .presets { display: flex; gap: 10px; flex-wrap: wrap; margin: 0 0 16px; }
+  .presets button { font: inherit; font-size: .9rem; padding: 8px 16px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--card); color: var(--ink-2); cursor: pointer; }
+  .presets button.on { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .presets button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .side { display: flex; flex-direction: column; gap: 14px; }
+  .eq { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; }
+  .eq .t { font-size: .78rem; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px; font-family: var(--mono); }
+  .eq .f { font-family: var(--mono); font-size: .95rem; line-height: 2; color: var(--ink-2); overflow-x: auto; }
+  .eq .f b { color: var(--ink); font-weight: 700; }
+  .eq .nameA { color: var(--blue); font-weight: 700; } .eq .nameB { color: var(--aqua); font-weight: 700; }
+  .bigcos { text-align: center; padding: 22px 20px; }
+  .bigcos .v { font-size: 3.4rem; font-weight: 700; font-family: var(--mono); line-height: 1.1; }
+  .bigcos .a { font-size: 1.1rem; color: var(--ink-2); font-family: var(--mono); }
+  .bigcos .verdict { margin-top: 8px; font-size: .95rem; color: var(--ink-2); }
+
+  /* slide 2: dumbbell */
+  .db-row { display: grid; grid-template-columns: 230px 1fr 90px; gap: 16px; align-items: center; padding: 22px 0; border-bottom: 1px solid var(--line); }
+  .db-row:last-child { border-bottom: 0; }
+  @media (max-width: 760px) { .db-row { grid-template-columns: 1fr; gap: 26px; } }
+  .db-name { font-size: 1.05rem; font-weight: 600; }
+  .db-name small { display: block; color: var(--ink-3); font-family: var(--mono); font-size: .78rem; font-weight: 400; margin-top: 2px; }
+  .db-track { position: relative; height: 46px; }
+  .db-axis { position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: var(--line); }
+  .db-seg { position: absolute; top: 50%; height: 4px; transform: translateY(-50%); border-radius: 2px; }
+  .db-dot { position: absolute; top: 50%; width: 16px; height: 16px; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 3px var(--card); }
+  .db-dot i { position: absolute; top: -26px; left: 50%; transform: translateX(-50%); font-style: normal; font-size: .8rem; font-family: var(--mono); color: var(--ink-2); white-space: nowrap; }
+  .db-gap { font-family: var(--mono); font-size: 1.25rem; font-weight: 700; text-align: right; }
+  .pairs { width: 100%; border-collapse: collapse; font-size: .88rem; margin-top: 8px; }
+  .pairs th { text-align: left; color: var(--ink-3); font-weight: 500; font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; padding: 8px 10px; border-bottom: 1px solid var(--line); font-family: var(--mono); }
+  .pairs td { padding: 9px 10px; border-bottom: 1px solid var(--line); color: var(--ink-2); }
+  .pairs tr:last-child td { border-bottom: 0; }
+  .pairs .num { text-align: right; }
+  .tag { font-size: .72rem; padding: 2px 10px; border-radius: 999px; font-family: var(--mono); }
+  .tag.near { background: color-mix(in srgb, var(--aqua) 18%, transparent); color: var(--aqua); }
+  .tag.far { background: color-mix(in srgb, var(--red) 16%, transparent); color: var(--red); }
+  .note { background: var(--card); border-left: 4px solid var(--yellow); border-radius: 8px; padding: 16px 20px; font-size: .95rem; color: var(--ink-2); margin-top: 20px; max-width: 70ch; }
+
+  /* slide 3: before/after */
+  .q { margin: 26px 0 0; }
+  .q h3 { font-size: 1.1rem; margin: 0 0 12px; font-weight: 600; }
+  .ba { display: grid; grid-template-columns: 130px 1fr; gap: 12px 16px; align-items: center; font-size: .95rem; }
+  @media (max-width: 640px) { .ba { grid-template-columns: 1fr; gap: 4px; } }
+  .ba .who { color: var(--ink-3); font-family: var(--mono); font-size: .8rem; }
+  .hit { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .mark { flex: 0 0 auto; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: .8rem; color: #fff; }
+  .ok { background: var(--aqua); } .bad { background: var(--red); }
+  .hit .txt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink-2); }
+  .hit .sc { font-family: var(--mono); font-size: .85rem; color: var(--ink-3); flex: 0 0 auto; }
+  footer { max-width: 1160px; margin: 0 auto; color: var(--ink-3); font-size: .8rem; font-family: var(--mono); border-top: 1px solid var(--line); padding: 20px 32px 40px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<!-- ═══════════ SLIDE 0: title ═══════════ -->
+<div class="slide" style="text-align:center; align-items:center; min-height:52vh">
+  <div class="eyebrow">Visual · ประกอบหนังสือ Second Brain ด้วย Vector Search</div>
+  <h1>เห็น Vector Search ด้วยตา</h1>
+  <p class="h2note" style="margin:0 auto">วิชวล 4 สไลด์ — ตัวเลขทุกตัวมาจากการรันจริงบนเครื่อง (ChromaDB 1.5.9 + Ollama bge-m3) · เลื่อนลงทีละสไลด์</p>
+</div>
+
+<!-- ═══════════ SLIDE 1: semantic map ═══════════ -->
+<div class="slide">
+  <div class="eyebrow">สไลด์ 1 / 4 · ภาพที่อธิบายทุกอย่าง</div>
+  <h2>แผนที่ความหมาย — คำไหนอยู่ใกล้อะไร โมเดลจัดกลุ่มเอง</h2>
+  <p class="h2note">คำ 25 คำถูก embed ด้วย bge-m3 (1024 มิติ) แล้วฉายลงกระดาษ 2 มิติ — <strong>ไม่มีใครบอกโมเดลว่าคำไหนกลุ่มไหน</strong> มันกองกันเองเพราะความหมายใกล้กัน · <strong>แตะ/ชี้ที่คำ</strong> เพื่อดูเพื่อนบ้านใกล้สุด 3 อันดับพร้อมคะแนน cosine จริง</p>
+  <div class="card" style="padding:12px">
+    <svg id="semmap" viewBox="0 0 1200 760" style="width:100%;height:auto;display:block" role="img" aria-label="แผนที่การกระจายของคำ 25 คำตามความหมาย"></svg>
+  </div>
+  <div class="legend" id="semlegend" style="margin-top:14px"></div>
+  <div class="eq" style="margin-top:14px"><div class="t">เพื่อนบ้านใกล้สุด (cosine จริงบน 1024 มิติ)</div><div class="f" id="semnb">แตะคำใดก็ได้บนแผนที่…</div></div>
+  <div class="card" style="margin-top:14px;display:flex;gap:26px;flex-wrap:wrap;align-items:center">
+    <div class="eyebrow" style="margin:0">สเกลอ่านคะแนน cosine</div>
+    <span style="font-size:.9rem"><b style="color:var(--aqua)">≥ 0.70 ใกล้จริง</b> <span style="color:var(--ink-3)">(แมว↔ลูกแมว 0.888)</span></span>
+    <span style="font-size:.9rem"><b style="color:var(--yellow)">0.55–0.70 เกี่ยวอ่อนๆ</b> <span style="color:var(--ink-3)">(งานวิจัย↔ปัญญาประดิษฐ์ 0.611)</span></span>
+    <span style="font-size:.9rem"><b style="color:var(--red)">&lt; 0.55 แทบไม่เกี่ยว</b> <span style="color:var(--ink-3)">(ปัญญาประดิษฐ์↔เงินเฟ้อ 0.543)</span></span>
+  </div>
+  <div class="note">ทำไม "ปัญญาประดิษฐ์" ถึงโยงไป "เงินเฟ้อ" กับ "แมว" ได้? — เพราะระบบโชว์เพื่อนใกล้สุด 3 อันดับ<strong>เสมอ</strong> แม้คำนั้นจะโดดเดี่ยว (ไม่มีเพื่อนแท้ใน dataset) คะแนน 0.54 อยู่โซนแดง = "ใกล้สุดในบรรดาที่มี" ไม่ใช่ "เกี่ยวข้องจริง" · บทเรียนนี้สำคัญมากตอนทำระบบจริง: <strong>ต้องตั้ง threshold ตัด</strong> ไม่งั้นระบบจะตอบมั่วจากผลคะแนนต่ำ (หนังสือบทที่ 11 / deep-technical Ch81)</div>
+  <p class="src">ข้อมูลจริงจาก demo6_semantic_map.py · bge-m3 → PCA 2 มิติ (การฉาย 1024→2 มิติทำให้ "ตำแหน่งบนภาพ" เพี้ยนได้ — เชื่อตัวเลข cosine บนเส้น ไม่ใช่ระยะบนจอ) · ไฮไลต์: แมว↔ลูกแมว 0.888 · cat↔แมว 0.781 (ข้ามภาษา!)</p>
+</div>
+
+<!-- ═══════════ SLIDE 1: cosine playground ═══════════ -->
+<div class="slide">
+  <div class="eyebrow">สไลด์ 2 / 4 · ประกอบบทที่ 4</div>
+  <h2>สมการเดียวที่ต้องรู้ — ลากปลายลูกศรดูเอง</h2>
+  <p class="h2note">แต่ละลูกศรคือ "ความหมายของข้อความหนึ่งชิ้น" — เลือกคู่ตัวอย่างจริง แล้วลากปลายลูกศรเพื่อดูว่า cosine เปลี่ยนยังไงเมื่อทิศเปลี่ยน</p>
+
+  <div class="presets" id="presets" role="group" aria-label="เลือกคู่ตัวอย่าง"></div>
+
+  <div class="play-grid">
+    <canvas id="play" width="1400" height="960" aria-label="พื้นที่ลากเวกเตอร์สองเส้นเพื่อดูค่า cosine"></canvas>
+    <div class="side">
+      <div class="eq bigcos card" style="padding:22px">
+        <div class="v num" id="cosval">0.94</div>
+        <div class="a"><span id="anglabel">มุม</span> <span id="angval" class="num">20°</span></div>
+        <div class="verdict" id="verdict"></div>
+      </div>
+      <div class="eq">
+        <div class="t">สมการ — แทนค่าจริงสดๆ</div>
+        <div class="f" id="eqlive"></div>
+      </div>
+      <div class="eq">
+        <div class="t">พิกัดเวกเตอร์ (ลากแล้วเลขขยับ)</div>
+        <div class="f" id="coords"></div>
+      </div>
+    </div>
+  </div>
+  <p class="src">เทียบของจริง demo4 (bge-m3, 1024 มิติ): cos(แมวนอนโซฟา, ลูกแมวหลับเก้าอี้)=0.818 · cos(แมวนอนโซฟา, ราคาน้ำมันดีเซล)=0.307 — หลักการเดียวกัน แค่มิติเยอะกว่า</p>
+</div>
+
+<!-- ═══════════ SLIDE 2: shootout ═══════════ -->
+<div class="slide">
+  <div class="eyebrow">สไลด์ 3 / 4 · ประกอบบทที่ 5</div>
+  <h2>Embedder Shootout — GAP คือตัวตัดสิน ไม่ใช่คะแนนดิบ</h2>
+  <p class="h2note">ให้ 3 โมเดลเจอคู่ประโยคไทยชุดเดียวกัน: คู่ "ควรใกล้" ต้องคะแนนสูงกว่าคู่ "คนละเรื่อง" — ระยะห่างระหว่างจุดเขียวกับจุดแดง (GAP) ยิ่งกว้าง ยิ่งค้นแม่น</p>
+  <div class="card">
+    <div class="legend" style="margin:0 0 10px"><span style="--c:var(--aqua)">คู่ "ควรใกล้" (เฉลี่ย 3 คู่)</span><span style="--c:var(--red)">คู่ "คนละเรื่อง" (เฉลี่ย 2 คู่)</span></div>
+    <div id="shootout"></div>
+  </div>
+  <div class="note">⚠️ <strong>nomic-embed-text</strong> ให้คู่ไทย<strong>คนละเรื่อง</strong> cosine = 1.000 — มองประโยคไทยที่ไม่เกี่ยวกันเป็นเวกเตอร์เดียวกันเป๊ะ (อาการ "อ่านไทยไม่ออก" ขั้นสุด: ทุกประโยคไทยถูกบีบไปกองมุมเดียวของพื้นที่) → GAP ติดลบ = ของไม่เกี่ยวชนะของเกี่ยว = ค้นพัง แม้คะแนนคู่ใกล้จะสูงที่สุดในตารางก็ตาม</div>
+  <div class="card" style="margin-top:20px">
+    <div class="eyebrow" style="margin-bottom:4px">คู่ทดสอบทั้ง 5 คู่ (คะแนนของ bge-m3)</div>
+    <table class="pairs">
+      <thead><tr><th>ประโยค A</th><th>ประโยค B</th><th>ชนิดคู่</th><th class="num">cosine</th></tr></thead>
+      <tbody>
+        <tr><td>ประชุมกับอาจารย์เรื่องเวิร์กช็อป</td><td>นัดหมายคุยงานสัมมนากับผู้สอน</td><td><span class="tag near">ควรใกล้</span></td><td class="num">สูง ✓</td></tr>
+        <tr><td>วิธีลดน้ำหนักอย่างปลอดภัย</td><td>การควบคุมอาหารและออกกำลังกาย</td><td><span class="tag near">ควรใกล้</span></td><td class="num">สูง ✓</td></tr>
+        <tr><td>แมวนอนบนโซฟา</td><td>The cat is sleeping on the couch</td><td><span class="tag near">ไทย↔อังกฤษ</span></td><td class="num">สูง ✓</td></tr>
+        <tr><td>ประชุมกับอาจารย์เรื่องเวิร์กช็อป</td><td>สูตรต้มยำกุ้งน้ำข้น</td><td><span class="tag far">คนละเรื่อง</span></td><td class="num">ต่ำ ✓</td></tr>
+        <tr><td>วิธีลดน้ำหนักอย่างปลอดภัย</td><td>ราคาบิตคอยน์วันนี้ผันผวน</td><td><span class="tag far">คนละเรื่อง</span></td><td class="num">ต่ำ ✓</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="src">ข้อมูลจริงจาก book/demo/demo5_embedder_shootout.py · เฉลี่ยต่อกลุ่ม · GAP = เฉลี่ยคู่ใกล้ − เฉลี่ยคู่ไกล</p>
+</div>
+
+<!-- ═══════════ SLIDE 3: before/after ═══════════ -->
+<div class="slide">
+  <div class="eyebrow">สไลด์ 4 / 4 · ประกอบบทที่ 2</div>
+  <h2>เปลี่ยนแค่ embedding model — query ชุดเดิมเป๊ะ</h2>
+  <p class="h2note">ChromaDB ตัวเดิม โน้ตชุดเดิม query ชุดเดิม — เปลี่ยนอย่างเดียวคือ "คนแปะป้าย": all-MiniLM (ตัวแถม, เทรนอังกฤษ) → bge-m3 (multilingual)</p>
+  <div class="card" id="beforeafter"></div>
+  <p class="src">ข้อมูลจริงจาก demo1 (all-MiniLM-L6-v2, 384d) vs demo2 (bge-m3 ผ่าน Ollama, 1024d) · vault ทดลอง 5 โน้ต</p>
+</div>
+
+<footer>SOURCE book/demo/demo1,2,4,5 · รันจริง 2026-07-16 บนเครื่อง m5 · หนังสือ: book/00-OUTLINE.md (4 ภาค 12 บท) · ทฤษฎีลึก: deep-technical/ 86 บท</footer>
+
+<script>
+(() => {
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+  /* ---------- SLIDE 1: cosine playground ---------- */
+  const cv = document.getElementById('play'), ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  const O = { x: W * 0.5, y: H * 0.62 };           // จุดกำเนิด — เผื่อพื้นที่ล่างไม่ให้ crop
+  const PRESETS = [
+    { name: 'แมว · ลูกแมว',    A: { a: -1.22, r: 380, label: 'แมว' },     B: { a: -0.92, r: 350, label: 'ลูกแมว' } },
+    { name: 'แมว · รถยนต์',    A: { a: -1.35, r: 380, label: 'แมว' },     B: { a: -0.18, r: 360, label: 'รถยนต์' } },
+    { name: 'ประชุม · นัดหมาย', A: { a: -1.05, r: 370, label: 'ประชุมกับอาจารย์' }, B: { a: -0.80, r: 345, label: 'นัดหมายคุยงาน' } },
+    { name: 'ประชุม · ต้มยำกุ้ง', A: { a: -1.45, r: 370, label: 'ประชุมกับอาจารย์' }, B: { a: -0.05, r: 355, label: 'สูตรต้มยำกุ้ง' } },
+  ];
+  let labA = 'แมว', labB = 'ลูกแมว';
+  let A = {}, B = {}, drag = null;
+
+  function setPreset(i) {
+    const p = PRESETS[i];
+    A = { x: O.x + p.A.r * Math.cos(p.A.a), y: O.y + p.A.r * Math.sin(p.A.a) };
+    B = { x: O.x + p.B.r * Math.cos(p.B.a), y: O.y + p.B.r * Math.sin(p.B.a) };
+    labA = p.A.label; labB = p.B.label;
+    document.querySelectorAll('#presets button').forEach((b, j) => b.classList.toggle('on', j === i));
+    draw();
+  }
+  document.getElementById('presets').innerHTML =
+    PRESETS.map((p, i) => `<button type="button" data-i="${i}">${p.name}</button>`).join('');
+  document.getElementById('presets').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (b) setPreset(+b.dataset.i);
+  });
+
+  const vec = p => ({ x: (p.x - O.x) / 100, y: -(p.y - O.y) / 100 });   // พิกัดคณิต (y ขึ้น)
+  function dotnorm() {
+    const a = vec(A), b = vec(B);
+    const dot = a.x * b.x + a.y * b.y;
+    const na = Math.hypot(a.x, a.y), nb = Math.hypot(b.x, b.y);
+    return { a, b, dot, na, nb, cos: dot / (na * nb) };
+  }
+
+  function arrow(p, color, label) {
+    const dx = p.x - O.x, dy = p.y - O.y, L = Math.hypot(dx, dy);
+    const ux = dx / L, uy = dy / L;
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(O.x, O.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(p.x + 6 * ux, p.y + 6 * uy);
+    ctx.lineTo(p.x - 20 * ux + 9 * uy, p.y - 20 * uy - 9 * ux);
+    ctx.lineTo(p.x - 20 * ux - 9 * uy, p.y - 20 * uy + 9 * ux);
+    ctx.closePath(); ctx.fill();
+    // จุดจับ
+    ctx.beginPath(); ctx.arc(p.x, p.y, 17, 0, 7); ctx.lineWidth = 2.5;
+    ctx.globalAlpha = .4; ctx.stroke(); ctx.globalAlpha = 1;
+    // ⭐ ป้ายชื่อเวกเตอร์ ติดปลายลูกศร
+    ctx.font = '600 30px "Sukhumvit Set", "Thonburi", "Noto Sans Thai", sans-serif';
+    const tw = ctx.measureText(label).width;
+    let lx = p.x + 26 * ux, ly = p.y + 26 * uy;
+    lx = Math.max(14, Math.min(W - tw - 30, lx - (ux < 0 ? tw : 0)));
+    ly = Math.max(40, Math.min(H - 18, ly + (uy > 0 ? 30 : -12)));
+    const pad = 9;
+    ctx.fillStyle = css('--card'); ctx.globalAlpha = .92;
+    ctx.beginPath(); ctx.roundRect(lx - pad, ly - 30, tw + pad * 2, 42, 9); ctx.fill(); ctx.globalAlpha = 1;
+    ctx.strokeStyle = color; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect(lx - pad, ly - 30, tw + pad * 2, 42, 9); ctx.stroke();
+    ctx.fillStyle = color; ctx.fillText(label, lx, ly);
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    // grid + แกน
+    ctx.strokeStyle = css('--line'); ctx.lineWidth = 1;
+    for (let x = O.x % 80; x < W; x += 80) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = O.y % 80; y < H; y += 80) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    ctx.strokeStyle = css('--ink-3'); ctx.globalAlpha = .5; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, O.y); ctx.lineTo(W, O.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(O.x, 0); ctx.lineTo(O.x, H); ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.font = '400 22px ' + css('--mono');
+    ctx.fillStyle = css('--ink-3');
+    ctx.fillText('มิติความหมายที่ 1 →', W - 250, O.y + 34);
+    ctx.save(); ctx.translate(O.x - 14, 34); ctx.rotate(-Math.PI / 2);
+    ctx.fillText('← มิติความหมายที่ 2', -230, 0); ctx.restore();
+
+    const d = dotnorm();
+    // arc มุม
+    const a1 = Math.atan2(A.y - O.y, A.x - O.x), a2 = Math.atan2(B.y - O.y, B.x - O.x);
+    ctx.beginPath(); ctx.moveTo(O.x, O.y);
+    ctx.arc(O.x, O.y, 90, Math.min(a1, a2), Math.max(a1, a2));
+    ctx.closePath(); ctx.fillStyle = css('--yellow'); ctx.globalAlpha = .2; ctx.fill(); ctx.globalAlpha = 1;
+    const mid = (a1 + a2) / 2, deg = Math.round(Math.abs(a1 - a2) * 180 / Math.PI);
+    ctx.fillStyle = css('--yellow'); ctx.font = '700 26px ' + css('--mono');
+    ctx.fillText('θ=' + deg + '°', O.x + 108 * Math.cos(mid) - 20, O.y + 108 * Math.sin(mid) + 8);
+
+    arrow(A, css('--blue'), labA);
+    arrow(B, css('--aqua'), labB);
+    ctx.fillStyle = css('--ink-3'); ctx.beginPath(); ctx.arc(O.x, O.y, 7, 0, 7); ctx.fill();
+
+    // side panel: ค่าใหญ่ + สมการแทนค่า + พิกัด
+    document.getElementById('cosval').textContent = d.cos.toFixed(3);
+    document.getElementById('cosval').style.color =
+      d.cos > .8 ? css('--aqua') : d.cos < .3 ? css('--red') : css('--ink');
+    document.getElementById('angval').textContent = deg + '°';
+    document.getElementById('verdict').textContent =
+      d.cos > .8 ? 'ความหมายแทบเดียวกัน — ขึ้นเป็นผลอันดับต้นแน่นอน' :
+      d.cos > .45 ? 'เกี่ยวข้องกันพอสมควร' :
+      d.cos > .1 ? 'เกี่ยวกันน้อย' : 'คนละเรื่อง (ทิศเกือบตั้งฉาก/สวนทาง)';
+    document.getElementById('eqlive').innerHTML =
+      `cos(<span class="nameA">${labA}</span>, <span class="nameB">${labB}</span>)<br>` +
+      `= <span class="nameA">A</span>·<span class="nameB">B</span> / (|<span class="nameA">A</span>| × |<span class="nameB">B</span>|)<br>` +
+      `= ${d.dot.toFixed(2)} / (${d.na.toFixed(2)} × ${d.nb.toFixed(2)})<br>` +
+      `= <b>${d.cos.toFixed(3)}</b>`;
+    document.getElementById('coords').innerHTML =
+      `<span class="nameA">${labA}</span> = [${d.a.x.toFixed(2)}, ${d.a.y.toFixed(2)}]<br>` +
+      `<span class="nameB">${labB}</span> = [${d.b.x.toFixed(2)}, ${d.b.y.toFixed(2)}]`;
+  }
+
+  function pick(e) {
+    const r = cv.getBoundingClientRect();
+    const x = (e.clientX - r.left) * (W / r.width), y = (e.clientY - r.top) * (H / r.height);
+    return { x, y, dA: Math.hypot(x - A.x, y - A.y), dB: Math.hypot(x - B.x, y - B.y) };
+  }
+  cv.addEventListener('pointerdown', e => {
+    const p = pick(e); drag = p.dA < p.dB ? 'A' : 'B'; cv.setPointerCapture(e.pointerId);
+  });
+  cv.addEventListener('pointermove', e => {
+    if (!drag) return; const p = pick(e);
+    const t = drag === 'A' ? A : B;
+    t.x = Math.max(20, Math.min(W - 20, p.x));
+    t.y = Math.max(20, Math.min(H - 20, p.y));
+    draw();
+  });
+  cv.addEventListener('pointerup', () => drag = null);
+  setPreset(0);
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw);
+  new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+
+  /* ---------- SLIDE 1: semantic map (ข้อมูลจริงจาก demo6) ---------- */
+  const MAP = [{"w":"แมว","g":"สัตว์เลี้ยง","x":0.0419,"y":0.6231,"nb":[{"w":"ลูกแมว","s":0.888},{"w":"cat","s":0.781},{"w":"หมา","s":0.758}]},{"w":"ลูกแมว","g":"สัตว์เลี้ยง","x":0.0,"y":0.6044,"nb":[{"w":"แมว","s":0.888},{"w":"ลูกหมา","s":0.852},{"w":"cat","s":0.717}]},{"w":"หมา","g":"สัตว์เลี้ยง","x":0.0808,"y":0.5609,"nb":[{"w":"ลูกหมา","s":0.87},{"w":"puppy","s":0.773},{"w":"แมว","s":0.758}]},{"w":"ลูกหมา","g":"สัตว์เลี้ยง","x":0.0084,"y":0.5518,"nb":[{"w":"หมา","s":0.87},{"w":"ลูกแมว","s":0.852},{"w":"puppy","s":0.749}]},{"w":"กระต่าย","g":"สัตว์เลี้ยง","x":0.169,"y":0.5867,"nb":[{"w":"แมว","s":0.706},{"w":"หมา","s":0.702},{"w":"ลูกแมว","s":0.671}]},{"w":"cat","g":"สัตว์เลี้ยง","x":0.2722,"y":0.6351,"nb":[{"w":"แมว","s":0.781},{"w":"ลูกแมว","s":0.717},{"w":"กระต่าย","s":0.605}]},{"w":"puppy","g":"สัตว์เลี้ยง","x":0.1452,"y":0.6475,"nb":[{"w":"หมา","s":0.773},{"w":"ลูกหมา","s":0.749},{"w":"ลูกแมว","s":0.706}]},{"w":"ต้มยำกุ้ง","g":"อาหาร","x":0.6238,"y":0.5953,"nb":[{"w":"ผัดไทย","s":0.586},{"w":"ส้มตำ","s":0.543},{"w":"cat","s":0.487}]},{"w":"ผัดไทย","g":"อาหาร","x":0.6087,"y":0.7423,"nb":[{"w":"ต้มยำกุ้ง","s":0.586},{"w":"แมว","s":0.505},{"w":"ส้มตำ","s":0.5}]},{"w":"ส้มตำ","g":"อาหาร","x":0.5894,"y":0.8337,"nb":[{"w":"ต้มยำกุ้ง","s":0.543},{"w":"cat","s":0.514},{"w":"แมว","s":0.514}]},{"w":"กาแฟลาเต้","g":"อาหาร","x":0.5833,"y":0.7228,"nb":[{"w":"ชาเขียว","s":0.518},{"w":"กระต่าย","s":0.509},{"w":"แมว","s":0.501}]},{"w":"ชาเขียว","g":"อาหาร","x":0.7016,"y":0.7325,"nb":[{"w":"กาแฟลาเต้","s":0.518},{"w":"ต้มยำกุ้ง","s":0.486},{"w":"ปัญญาประดิษฐ์","s":0.479}]},{"w":"ประชุมกับอาจารย์","g":"การเรียนการสอน","x":0.9709,"y":0.9579,"nb":[{"w":"นัดหมายสัมมนา","s":0.757},{"w":"สอนนักศึกษา","s":0.673},{"w":"workshop","s":0.635}]},{"w":"นัดหมายสัมมนา","g":"การเรียนการสอน","x":1.0,"y":0.9585,"nb":[{"w":"ประชุมกับอาจารย์","s":0.757},{"w":"workshop","s":0.636},{"w":"สอนนักศึกษา","s":0.6}]},{"w":"workshop","g":"การเรียนการสอน","x":0.8205,"y":1.0,"nb":[{"w":"นัดหมายสัมมนา","s":0.636},{"w":"ประชุมกับอาจารย์","s":0.635},{"w":"งานวิจัย","s":0.555}]},{"w":"สอนนักศึกษา","g":"การเรียนการสอน","x":0.9073,"y":0.7868,"nb":[{"w":"ประชุมกับอาจารย์","s":0.673},{"w":"นัดหมายสัมมนา","s":0.6},{"w":"งานวิจัย","s":0.536}]},{"w":"งานวิจัย","g":"การเรียนการสอน","x":0.7387,"y":0.4507,"nb":[{"w":"ปัญญาประดิษฐ์","s":0.611},{"w":"ฐานข้อมูล","s":0.564},{"w":"workshop","s":0.555}]},{"w":"บิตคอยน์","g":"การเงิน","x":0.5882,"y":0.0161,"nb":[{"w":"เงินเฟ้อ","s":0.513},{"w":"ฐานข้อมูล","s":0.505},{"w":"ปัญญาประดิษฐ์","s":0.482}]},{"w":"ราคาหุ้น","g":"การเงิน","x":0.7639,"y":0.1549,"nb":[{"w":"อัตราดอกเบี้ย","s":0.66},{"w":"เงินเฟ้อ","s":0.59},{"w":"งานวิจัย","s":0.537}]},{"w":"อัตราดอกเบี้ย","g":"การเงิน","x":0.8407,"y":0.059,"nb":[{"w":"เงินเฟ้อ","s":0.697},{"w":"ราคาหุ้น","s":0.66},{"w":"ฐานข้อมูล","s":0.534}]},{"w":"เงินเฟ้อ","g":"การเงิน","x":0.7639,"y":0.0,"nb":[{"w":"อัตราดอกเบี้ย","s":0.697},{"w":"ราคาหุ้น","s":0.59},{"w":"ปัญญาประดิษฐ์","s":0.543}]},{"w":"vector search","g":"เทคโนโลยี","x":0.8314,"y":0.4489,"nb":[{"w":"embedding","s":0.534},{"w":"ฐานข้อมูล","s":0.523},{"w":"งานวิจัย","s":0.492}]},{"w":"embedding","g":"เทคโนโลยี","x":0.6804,"y":0.5541,"nb":[{"w":"ฐานข้อมูล","s":0.544},{"w":"vector search","s":0.534},{"w":"ปัญญาประดิษฐ์","s":0.531}]},{"w":"ปัญญาประดิษฐ์","g":"เทคโนโลยี","x":0.6505,"y":0.4121,"nb":[{"w":"งานวิจัย","s":0.611},{"w":"แมว","s":0.547},{"w":"เงินเฟ้อ","s":0.543}]},{"w":"ฐานข้อมูล","g":"เทคโนโลยี","x":0.7042,"y":0.272,"nb":[{"w":"งานวิจัย","s":0.564},{"w":"embedding","s":0.544},{"w":"ปัญญาประดิษฐ์","s":0.537}]}];
+  const GROUPS = [...new Set(MAP.map(d => d.g))];
+  const GC = ['var(--blue)', 'var(--yellow)', 'var(--aqua)', 'var(--red)', '#9085e9'];
+  const gcolor = g => GC[GROUPS.indexOf(g)];
+  const svg = document.getElementById('semmap');
+  const MW = 1200, MH = 760, PAD = 90;
+  const mx = d => PAD + d.x * (MW - PAD * 2);
+  const my = d => (MH - PAD) - d.y * (MH - PAD * 2);
+  const byW = Object.fromEntries(MAP.map(d => [d.w, d]));
+
+  function renderMap(sel) {
+    let lines = '', dots = '';
+    if (sel) {
+      const d = byW[sel];
+      lines = d.nb.map(n => {
+        const t = byW[n.w];
+        const midx = (mx(d) + mx(t)) / 2, midy = (my(d) + my(t)) / 2;
+        const band = n.s >= 0.7 ? 'var(--aqua)' : n.s >= 0.55 ? 'var(--yellow)' : 'var(--red)';
+        const bandTxt = n.s >= 0.7 ? 'ใกล้จริง' : n.s >= 0.55 ? 'เกี่ยวอ่อนๆ' : 'แทบไม่เกี่ยว';
+        const wLine = n.s >= 0.7 ? 4 : n.s >= 0.55 ? 2.5 : 1.5;
+        return `<line x1="${mx(d)}" y1="${my(d)}" x2="${mx(t)}" y2="${my(t)}" stroke="${band}" stroke-width="${wLine}" stroke-dasharray="${n.s >= 0.7 ? 'none' : '6 5'}" opacity=".85"/>` +
+          `<rect x="${midx - 62}" y="${midy - 17}" width="124" height="28" rx="8" fill="var(--card)" stroke="${band}" stroke-width="1.5"/>` +
+          `<text x="${midx}" y="${midy + 4}" text-anchor="middle" font-family="ui-monospace,monospace" font-size="15" fill="${band}" font-weight="700">${n.s.toFixed(3)} ${bandTxt}</text>`;
+      }).join('');
+    }
+    dots = MAP.map(d => {
+      const isSel = d.w === sel;
+      const isNb = sel && byW[sel].nb.some(n => n.w === d.w);
+      const dim = sel && !isSel && !isNb;
+      const r = isSel ? 13 : isNb ? 11 : 8;
+      return `<g class="mapdot" data-w="${d.w}" style="cursor:pointer" opacity="${dim ? .25 : 1}">` +
+        `<circle cx="${mx(d)}" cy="${my(d)}" r="${r + 12}" fill="transparent"/>` +
+        `<circle cx="${mx(d)}" cy="${my(d)}" r="${r}" fill="${gcolor(d.g)}" ${isSel ? 'stroke="var(--ink)" stroke-width="3"' : ''}/>` +
+        `<text x="${mx(d)}" y="${my(d) - r - 8}" text-anchor="middle" font-size="${isSel || isNb ? 21 : 18}" font-weight="${isSel ? 700 : 500}" fill="var(--ink)">${d.w}</text></g>`;
+    }).join('');
+    svg.innerHTML = lines + dots;
+  }
+  svg.addEventListener('click', e => {
+    const g = e.target.closest('.mapdot');
+    if (!g) { renderMap(null); document.getElementById('semnb').textContent = 'แตะคำใดก็ได้บนแผนที่…'; return; }
+    const w = g.dataset.w, d = byW[w];
+    renderMap(w);
+    const bandC = s => s >= 0.7 ? 'var(--aqua)' : s >= 0.55 ? 'var(--yellow)' : 'var(--red)';
+    document.getElementById('semnb').innerHTML =
+      `<b style="color:${gcolor(d.g)}">${w}</b> อยู่ใกล้: ` +
+      d.nb.map(n => `${n.w} <b style="color:${bandC(n.s)}">${n.s.toFixed(3)}</b>`).join(' · ') +
+      (d.nb[0].s < 0.65 ? `<br><span style="font-size:.85rem;color:var(--ink-3)">⚠️ คำนี้ "โดดเดี่ยว" — เพื่อนใกล้สุดยังไม่ถึง 0.65 = ระบบเลือกที่ใกล้สุด "ในบรรดาที่มี" ไม่ได้แปลว่าเกี่ยวจริง</span>` : '');
+  });
+  svg.addEventListener('pointerover', e => {
+    const g = e.target.closest('.mapdot');
+    if (g) g.querySelector('circle:last-of-type');
+  });
+  document.getElementById('semlegend').innerHTML =
+    GROUPS.map((g, i) => `<span style="--c:${GC[i]}">${g}</span>`).join('');
+  renderMap('แมว');
+  document.getElementById('semnb').innerHTML =
+    `<b style="color:${gcolor('สัตว์เลี้ยง')}">แมว</b> อยู่ใกล้: ` +
+    byW['แมว'].nb.map(n => `${n.w} <b>${n.s.toFixed(3)}</b>`).join(' · ');
+
+  /* ---------- SLIDE 2: dumbbell ---------- */
+  const MODELS = [
+    { name: 'bge-m3', dim: '1024 มิติ · multilingual 100+ ภาษา · ตัวที่ ARRA ใช้', near: .718, far: .325, gap: .393 },
+    { name: 'qwen3-embedding:0.6b', dim: '1024 มิติ · multilingual', near: .559, far: .264, gap: .296 },
+    { name: 'nomic-embed-text', dim: '768 มิติ · เทรนอังกฤษเป็นหลัก', near: .805, far: 1.0, gap: -.195 },
+  ];
+  const X = v => (v * 100).toFixed(1) + '%';
+  document.getElementById('shootout').innerHTML =
+    MODELS.map(m => {
+      const lo = Math.min(m.near, m.far), hi = Math.max(m.near, m.far);
+      return `<div class="db-row">
+        <div class="db-name">${m.name}<small>${m.dim}</small></div>
+        <div class="db-track">
+          <div class="db-axis"></div>
+          <div class="db-seg" style="left:${X(lo)};width:${X(hi - lo)};background:${m.gap > 0 ? 'var(--aqua)' : 'var(--red)'};opacity:.45"></div>
+          <div class="db-dot" style="left:${X(m.far)};background:var(--red)"><i>คนละเรื่อง ${m.far.toFixed(3)}</i></div>
+          <div class="db-dot" style="left:${X(m.near)};background:var(--aqua)"><i>ควรใกล้ ${m.near.toFixed(3)}</i></div>
+        </div>
+        <div class="db-gap num" style="color:${m.gap > 0 ? 'var(--aqua)' : 'var(--red)'}">GAP ${m.gap > 0 ? '+' : ''}${m.gap.toFixed(3)}</div>
+      </div>`;
+    }).join('') +
+    `<div style="display:flex;justify-content:space-between;color:var(--ink-3);font-size:.78rem;font-family:var(--mono);margin-top:10px"><span>cosine 0.0</span><span>0.5</span><span>1.0</span></div>`;
+
+  /* ---------- SLIDE 3: before/after ---------- */
+  const QA = [
+    { q: 'อยากสอนเรื่อง AI ค้นหา',
+      before: { ok: false, txt: 'ประชุมกับอาจารย์ฝน เรื่อง workshop…', sc: '0.531' },
+      after:  { ok: true,  txt: 'วิธีสอนนักศึกษาให้เข้าใจ vector search…', sc: '0.266' } },
+    { q: 'เครื่องดื่ม',
+      before: { ok: false, txt: 'รายการซื้อของ: นม ไข่ ขนมปัง กาแฟดริป', sc: '-0.130' },
+      after:  { ok: true,  txt: 'รายการซื้อของ + สูตรกาแฟ cold brew (อันดับ 1-2)', sc: '0.043' } },
+    { q: 'นัดหมายกับใครบ้าง',
+      before: { ok: false, txt: 'รายการซื้อของ: นม ไข่ ขนมปัง กาแฟดริป', sc: '-0.130' },
+      after:  { ok: true,  txt: 'ประชุมกับอาจารย์ฝน เรื่อง workshop 26 ก.ค.', sc: '0.028' } },
+  ];
+  document.getElementById('beforeafter').innerHTML = QA.map(x => `
+    <div class="q"><h3>Q: "${x.q}"</h3>
+      <div class="ba">
+        <div class="who">all-MiniLM (แถม)</div>
+        <div class="hit"><span class="mark ${x.before.ok ? 'ok' : 'bad'}">${x.before.ok ? '✓' : '✗'}</span><span class="txt">${x.before.txt}</span><span class="sc">cos ${x.before.sc}</span></div>
+        <div class="who">bge-m3</div>
+        <div class="hit"><span class="mark ${x.after.ok ? 'ok' : 'bad'}">${x.after.ok ? '✓' : '✗'}</span><span class="txt">${x.after.txt}</span><span class="sc">cos ${x.after.sc}</span></div>
+      </div>
+    </div>`).join('') +
+    `<div style="margin-top:22px;font-size:1.05rem;color:var(--ink-2)">ผลรวม: <strong style="color:var(--red)">ผิด 2/3 + คะแนนติดลบ</strong> → <strong style="color:var(--aqua)">ถูก 3/3</strong> — เปลี่ยนแค่ embedding model, database ตัวเดิม</div>`;
+})();
+</script>

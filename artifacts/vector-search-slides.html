@@ -1,0 +1,137 @@
+<title>Vector Search — สไลด์สอน (ARRA Oracle)</title>
+<style>
+  :root{--bg:#0a0b10;--panel:#12141c;--panel2:#171a24;--ink:#eef0f7;--ink-soft:#a2a8bd;--ink-faint:#5c6178;--line:#23273a;
+    --cyan:#7fd4ff;--green:#52d98a;--amber:#f8a860;--gold:#ffcf4a;--rose:#ff7bab;--violet:#b79dff;
+    --thai:"Noto Sans Thai","IBM Plex Sans Thai","Sarabun","Thonburi",system-ui,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,monospace;}
+  *{box-sizing:border-box;margin:0;} html,body{height:100%;}
+  body{background:radial-gradient(120% 90% at 50% -20%,#171d33 0%,#0a0b1000 55%),radial-gradient(70% 50% at 88% 6%,#241a33 0%,#0a0b1000 60%),var(--bg);color:var(--ink);font-family:var(--thai);-webkit-font-smoothing:antialiased;overflow:hidden;}
+  .deck{position:fixed;inset:0;}
+  .slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:clamp(32px,6vw,96px);opacity:0;visibility:hidden;transform:translateY(14px);transition:opacity .4s ease,transform .4s ease,visibility .4s;}
+  .slide.active{opacity:1;visibility:visible;transform:none;}
+  @media (prefers-reduced-motion:reduce){.slide{transition:opacity .01s;transform:none;}}
+  .inner{max-width:1000px;width:100%;margin:0 auto;}
+  .eyebrow{font-family:var(--mono);font-size:clamp(12px,1.4vw,15px);letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint);font-weight:700;margin-bottom:22px;display:flex;align-items:center;gap:12px;}
+  .eyebrow .n{color:var(--gold);}
+  h1{font-size:clamp(34px,6.2vw,68px);font-weight:800;letter-spacing:-.02em;line-height:1.08;text-wrap:balance;}
+  h2{font-size:clamp(26px,4.6vw,50px);font-weight:800;letter-spacing:-.015em;line-height:1.12;text-wrap:balance;}
+  .lead{font-size:clamp(18px,2.5vw,27px);color:var(--ink-soft);line-height:1.5;margin-top:22px;max-width:42ch;}
+  .accent-cyan{color:var(--cyan);}.accent-green{color:var(--green);}.accent-amber{color:var(--amber);}.accent-gold{color:var(--gold);}.accent-violet{color:var(--violet);}
+  b,strong{font-weight:800;}
+  .title-mark{font-size:clamp(40px,7vw,72px);line-height:1;filter:drop-shadow(0 4px 24px #ffcf4a44);margin-bottom:6px;}
+  ul.b{list-style:none;margin-top:28px;display:grid;gap:15px;}
+  ul.b li{position:relative;padding-left:34px;font-size:clamp(17px,2.2vw,25px);line-height:1.4;}
+  ul.b li::before{content:"";position:absolute;left:4px;top:.6em;width:11px;height:11px;border-radius:3px;background:var(--dot,var(--cyan));}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:30px;}
+  @media(max-width:680px){.two{grid-template-columns:1fr;}}
+  .box{border:1px solid var(--line);border-radius:16px;padding:22px;background:var(--panel);}
+  .box.warn{border-color:#4a3a24;background:linear-gradient(180deg,#1a140c,#12100b);} .box.good{border-color:#2f4a3a;background:linear-gradient(180deg,#101c16,#0d1310);}
+  .box .h{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;margin-bottom:8px;} .box.warn .h{color:var(--amber);} .box.good .h{color:var(--green);}
+  .box .t{font-size:clamp(16px,2vw,20px);color:var(--ink);}
+  .mono-big{font-family:var(--mono);font-size:clamp(16px,2.4vw,26px);color:var(--cyan);margin-top:20px;}
+  table{width:100%;border-collapse:collapse;font-size:clamp(15px,2vw,20px);margin-top:24px;}
+  th{text-align:left;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:700;padding:10px;border-bottom:1px solid var(--line);}
+  td{padding:12px 10px;border-bottom:1px solid var(--line);} .fts{color:var(--amber);} .vec{color:var(--violet);}
+  pre{font-family:var(--mono);font-size:clamp(13px,1.7vw,18px);line-height:1.6;color:var(--cyan);background:#0e1420;border:1px solid #223050;border-radius:14px;padding:20px 22px;overflow-x:auto;margin-top:24px;}
+  .progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--cyan),var(--gold));width:0;transition:width .35s;z-index:10;}
+  .counter{position:fixed;bottom:22px;right:26px;font-family:var(--mono);font-size:13px;color:var(--ink-faint);z-index:10;font-variant-numeric:tabular-nums;}
+  .brand{position:fixed;bottom:22px;left:26px;font-family:var(--mono);font-size:12px;color:var(--ink-faint);z-index:10;}
+  .nav-zone{position:fixed;top:0;bottom:0;width:22%;z-index:5;cursor:pointer;} .nav-zone.prev{left:0;} .nav-zone.next{right:0;}
+  :focus-visible{outline:2px solid var(--cyan);outline-offset:3px;}
+</style>
+<div class="progress" id="progress"></div>
+<div class="deck" id="deck">
+
+  <section class="slide active"><div class="inner">
+    <div class="title-mark">🧭</div>
+    <div class="eyebrow"><span class="n">ARRA ORACLE</span> · โมดูลเสริม</div>
+    <h1>Vector Search<br>ค้นด้วย<span class="accent-gold">ความหมาย</span> ไม่ใช่คำ</h1>
+    <p class="lead">ทำไม AI ถึงหา "โน้ตที่จำได้ลางๆ เมื่อ 3 เดือนก่อน" เจอ ทั้งที่จำคำไม่ได้</p>
+  </div></section>
+
+  <section class="slide"><div class="inner">
+    <div class="eyebrow">ปัญหาของการค้นแบบเดิม</div>
+    <h2>Ctrl+F เจอเฉพาะ<span class="accent-amber">คำที่ตรงเป๊ะ</span></h2>
+    <p class="lead">ค้น "tmux mouse paste" → เจอเฉพาะไฟล์ที่มีคำนั้น · ถ้าคุณจำคำไม่ได้ = หาไม่เจอ แม้ข้อมูลจะอยู่ตรงนั้น</p>
+  </div></section>
+
+  <section class="slide"><div class="inner">
+    <div class="eyebrow">จุด "อ๋อ!"</div>
+    <h2>ค้นเดียวกัน 2 เครื่องมือ — <span class="accent-green">ต่างกันคนละโลก</span></h2>
+    <div class="two">
+      <div class="box warn"><div class="h">rg (คำตรง)</div><div class="t">"tmux mouse paste" → เจอเฉพาะไฟล์ที่มีคำนี้</div></div>
+      <div class="box good"><div class="h">semantic search</div><div class="t">ค้นเดียวกัน → เจอเอกสารเรื่อง <b>clipboard</b> ทั้งที่ไม่มีคำ "tmux/paste" เลย</div></div>
+    </div>
+    <p class="lead">ตัวอย่างจริงจาก CLAUDE.md ของ fleet เราเอง — ผู้เรียนเก็ทใน 2 นาที</p>
+  </div></section>
+
+  <section class="slide"><div class="inner">
+    <div class="eyebrow">แนวคิด</div>
+    <h2>embedding = <span class="accent-cyan">พิกัดของความหมาย</span></h2>
+    <p class="lead">คอมเปลี่ยนข้อความเป็นชุดตัวเลข (vector) — ความหมายใกล้กัน พิกัดอยู่ใกล้กัน · ของจริง 1024 มิติ (bge-m3) แต่หลักการ = "ใกล้ = คล้าย"</p>
+    <div class="mono-big">"งานวิจัยเบาหวาน" → [0.02, 0.91, −0.13, … อีก 1021 ตัว]</div>
+  </div></section>
+
+  <section class="slide"><div class="inner">
+    <div class="eyebrow">คณิตแค่สูตรเดียว</div>
+    <h2>vector search = <span class="accent-cyan">cosine similarity</span></h2>
+    <pre>function cosine(a, b) {
+  let dot=0, na=0, nb=0;
+  for (let i=0; i&lt;a.length; i++){ dot+=a[i]*b[i]; na+=a[i]*a[i]; nb+=b[i]*b[i]; }
+  return dot / (Math.sqrt(na)*Math.sqrt(nb));   <span style="color:var(--ink-faint)">// 0..1 ใกล้ 1 = คล้าย</span>
+}</pre>
+    <p class="lead" style="font-size:18px">non-tech ไม่ต้องรู้สูตร — พอแค่ "วัดว่า 2 ความหมายใกล้กันแค่ไหน"</p>
+  </div></section>
+
+  <section class="slide"><div class="inner">
+    <div class="eyebrow">เทียบให้ชัด</div>
+    <h2>FTS vs Vector</h2>
+    <table>
+      <thead><tr><th></th><th class="fts">FTS (คำ)</th><th class="vec">Vector (ความหมาย)</th></tr></thead>
+      <tbody>
+        <tr><td>"เบาหวาน" เจอ "public health"?</td><td>❌</td><td>✅</td></tr>
+        <tr><td>ไทย/อังกฤษปนกัน</td><td>ต้องสะกดตรง</td><td>✅ ข้ามภาษา</td></tr>
+        <tr><td>ต้องใช้</td><td>เบา</td><td>embedder (เครื่องแรง/cloud)</td></tr>
+        <tr><td>ในระบบเราตอนนี้</td><td class="accent-green">✅ ใช้ได้</td><td class="accent-amber">⏳ กำลังกลับมา</td></tr>
+      </tbody>
+    </table>
+  </div></section>
+
+  <section class="slide"><div class="inner">
+    <div class="eyebrow">ของจริงใช้คู่กัน</div>
+    <h2>Hybrid = FTS + Vector <span class="accent-green">รวมคะแนน</span></h2>
+    <ul class="b" style="--dot:var(--violet)">
+      <li><b>FTS</b> จับคำเป๊ะ — ชื่อยา ชื่อคน ตัวเลข</li>
+      <li><b>Vector</b> จับความหมายกว้าง — ไอเดียลางๆ</li>
+      <li>รวมกัน = ได้ทั้ง "แม่นคำ" และ "เข้าใจความหมาย"</li>
+    </ul>
+  </div></section>
+
+  <section class="slide"><div class="inner">
+    <div class="eyebrow">พูดตรงๆ · สถานะจริง</div>
+    <h2>วันนี้ <span class="accent-amber">FTS ก่อน</span> · vector กำลังกลับมา</h2>
+    <p class="lead">embed ในเครื่อง (Ollama) กินทรัพยากร → ปิดไป · ทางกลับ = <b>Cloudflare Workers AI</b> (embed บน edge ไม่ต้องมี GPU) + Vectorize</p>
+    <div class="box good" style="margin-top:22px"><div class="h">engineering จริง ไม่ vaporware</div><div class="t" style="font-family:var(--mono);font-size:15px">cosine unified #2717 · drift benchmark #2740/#2784 · FTS5 degrade #2747 · observability #2759</div></div>
+  </div></section>
+
+  <section class="slide"><div class="inner">
+    <div class="eyebrow">สำหรับผู้สอน</div>
+    <h2>เดโมที่เก็ท + gotchas</h2>
+    <ul class="b" style="--dot:var(--gold)">
+      <li>เดโมเด็ด: <b>rg vs muninn_search</b> คำค้นเดียว + <span style="font-family:var(--mono);color:var(--cyan)">muninn_stats</span> โชว์ 20k docs จริง</li>
+      <li>use-case ที่ resonate: <b>"20,000 docs หาเจอในวินาที"</b> ไม่ใช่ RAG ทฤษฎี</li>
+      <li>อย่าลงคณิตลึก · embedding ≠ เวทมนตร์ (โมเดลเรียนจากข้อมูล)</li>
+      <li>⚠️ อย่าเปิด Playground ที่ vector column ว่างบนเวที (Ollama retired)</li>
+    </ul>
+  </div></section>
+
+</div>
+<div class="nav-zone prev" id="p"></div><div class="nav-zone next" id="x"></div>
+<div class="counter" id="c">1 / 9</div><div class="brand">ARRA Oracle · Vector Search</div>
+<script>
+(function(){const s=[...document.querySelectorAll('.slide')],pr=document.getElementById('progress'),c=document.getElementById('c');let i=0;
+function show(n){i=Math.max(0,Math.min(s.length-1,n));s.forEach((x,k)=>x.classList.toggle('active',k===i));pr.style.width=((i+1)/s.length*100)+'%';c.textContent=(i+1)+' / '+s.length;}
+document.addEventListener('keydown',e=>{if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();show(i+1);}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();show(i-1);}else if(e.key==='Home')show(0);else if(e.key==='End')show(s.length-1);});
+document.getElementById('x').onclick=()=>show(i+1);document.getElementById('p').onclick=()=>show(i-1);
+let sx=null;document.addEventListener('touchstart',e=>sx=e.touches[0].clientX,{passive:true});document.addEventListener('touchend',e=>{if(sx===null)return;const d=e.changedTouches[0].clientX-sx;if(Math.abs(d)>45)show(d<0?i+1:i-1);sx=null;},{passive:true});
+show(0);})();
+</script>

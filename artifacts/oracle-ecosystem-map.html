@@ -1,0 +1,201 @@
+<title>Oracle Ecosystem — สถานะจริง (verified 9 ก.ค. 2026)</title>
+<style>
+  :root {
+    --bg:#0a0b10; --panel:#12141c; --panel2:#171a24; --chip:#0e1420;
+    --ink:#eef0f7; --ink-soft:#a2a8bd; --ink-faint:#5c6178; --line:#23273a;
+    --cyan:#7fd4ff; --green:#52d98a; --amber:#f8a860; --gold:#ffcf4a; --rose:#ff7bab; --blue:#5b9dff; --red:#ff6b6b;
+    --thai:"Noto Sans Thai","IBM Plex Sans Thai","Sarabun","Thonburi",system-ui,-apple-system,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace;
+  }
+  * { box-sizing:border-box; margin:0; }
+  * { scrollbar-width:thin; scrollbar-color:#2c3350 transparent; }
+  *::-webkit-scrollbar { height:7px; width:7px; }
+  *::-webkit-scrollbar-thumb { background:#2c3350; border-radius:4px; }
+  body { background:radial-gradient(120% 70% at 50% -10%, #171d33 0%, #0a0b1000 55%), var(--bg); color:var(--ink); font-family:var(--thai); line-height:1.6; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:900px; margin:0 auto; padding:52px 22px 80px; }
+
+  header { margin-bottom:12px; }
+  .mark { font-size:32px; }
+  .eyebrow { font-family:var(--mono); font-size:12px; letter-spacing:0.16em; text-transform:uppercase; color:var(--ink-faint); font-weight:700; margin:12px 0 8px; }
+  h1 { font-size:clamp(26px,4.6vw,40px); font-weight:800; letter-spacing:-0.02em; line-height:1.12; text-wrap:balance; }
+  .meta { font-family:var(--mono); font-size:12px; color:var(--ink-faint); margin-top:12px; border-top:1px solid var(--line); padding-top:12px; overflow-wrap:anywhere; }
+
+  section { margin-top:42px; }
+  .sh { display:flex; align-items:baseline; gap:11px; margin-bottom:18px; }
+  .sh .n { font-family:var(--mono); color:var(--gold); font-weight:700; }
+  .sh h2 { font-size:clamp(19px,3vw,25px); font-weight:800; letter-spacing:-0.01em; }
+
+  /* map diagram */
+  .map { display:grid; gap:12px; }
+  .layer { border:1px solid var(--line); border-radius:14px; background:var(--panel); padding:16px 18px; position:relative; }
+  .layer .lh { font-family:var(--mono); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-faint); font-weight:700; margin-bottom:10px; }
+  .nodes { display:flex; flex-wrap:wrap; gap:9px; }
+  .node { font-size:13.5px; padding:7px 12px; border-radius:9px; background:var(--chip); border:1px solid var(--line); display:flex; align-items:center; gap:7px; }
+  .node .dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .node .sub { color:var(--ink-faint); font-size:0.86em; }
+  .d-green{background:var(--green);} .d-amber{background:var(--amber);} .d-blue{background:var(--blue);} .d-red{background:var(--red);}
+  .flow { text-align:center; color:var(--gold); font-size:18px; line-height:0.6; }
+  .layer.core { border-color:#2c3350; background:linear-gradient(180deg,#13182a,#0e1119); }
+  .note { font-size:13px; color:var(--ink-soft); margin-top:10px; line-height:1.55; }
+  .note b { color:var(--ink); }
+
+  /* legend */
+  .legend { display:flex; flex-wrap:wrap; gap:14px; margin-top:14px; font-size:12.5px; color:var(--ink-soft); }
+  .legend span { display:flex; align-items:center; gap:6px; }
+  .legend .dot { width:9px; height:9px; border-radius:50%; }
+
+  /* status table */
+  .tbl { width:100%; border-collapse:collapse; font-size:14px; }
+  .tbl th { text-align:left; font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-faint); font-weight:700; padding:8px 10px; border-bottom:1px solid var(--line); }
+  .tbl td { padding:10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  .tbl td .st { font-weight:700; font-size:13px; white-space:nowrap; }
+  .s-done{color:var(--green);} .s-work{color:var(--amber);} .s-prog{color:var(--blue);} .s-stale{color:var(--red);}
+  .tbl td .ev { color:var(--ink-faint); font-family:var(--mono); font-size:11.5px; }
+
+  ul.b { list-style:none; display:grid; gap:11px; }
+  ul.b li { position:relative; padding-left:26px; font-size:14.5px; line-height:1.5; }
+  ul.b li::before { content:""; position:absolute; left:3px; top:0.55em; width:9px; height:9px; border-radius:2px; background:var(--dot,var(--amber)); }
+
+  /* cloud options */
+  .opts { display:grid; gap:11px; }
+  .opt { border:1px solid var(--line); border-radius:12px; background:var(--panel); padding:15px 17px; display:grid; grid-template-columns:auto 1fr; gap:14px; align-items:start; }
+  .opt .badge { font-size:20px; }
+  .opt .t { font-weight:800; font-size:15.5px; }
+  .opt .d { color:var(--ink-soft); font-size:13.5px; margin-top:3px; line-height:1.5; }
+  .opt.rec { border-color:#2f4a3a; background:linear-gradient(180deg,#101c16,#0d1310); }
+  .opt.risk { border-color:#4a3a24; }
+
+  .callout { border:1px solid #4a2424; border-radius:14px; background:linear-gradient(180deg,#1c1010,#120c0c); padding:18px 20px; }
+  .callout .t { font-weight:800; color:var(--red); font-size:16px; margin-bottom:8px; }
+  .callout .d { font-size:14px; color:var(--ink-soft); line-height:1.6; }
+
+  .pending { border:1px dashed var(--line); border-radius:12px; padding:16px 18px; }
+  .pending .pl { font-family:var(--mono); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--amber); font-weight:700; margin-bottom:10px; }
+  .pending .q { font-size:14px; color:var(--ink-soft); margin-bottom:8px; }
+  .pending .q b { color:var(--cyan); }
+
+  footer { margin-top:44px; border-top:1px solid var(--line); padding-top:16px; font-family:var(--mono); font-size:11.5px; color:var(--ink-faint); line-height:1.9; overflow-wrap:anywhere; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="mark">🗺️</div>
+    <div class="eyebrow">Ecosystem Map · verified from code + live backend</div>
+    <h1>Oracle — ตอนนี้อะไรถึงตรงไหนแล้ว</h1>
+    <div class="meta">verified 9 ก.ค. 2026 07:45 · 6 Sonnet agents (repo) + arra-oracle-v3 (live :47778) · ทุกสถานะมีหลักฐาน commit/file</div>
+  </header>
+
+  <!-- MAP -->
+  <section>
+    <div class="sh"><span class="n">01</span><h2>แผนที่ — เชื่อมกันยังไง</h2></div>
+    <div class="map">
+      <div class="layer">
+        <div class="lh">Claude Code (ที่ผู้เรียนใช้)</div>
+        <div class="nodes"><span class="node"><span class="dot d-green"></span>skills /trace /dig /seek /awaken …</span><span class="node"><span class="dot d-green"></span>ติดตั้งผ่าน arra-oracle-skills-cli</span></div>
+      </div>
+      <div class="flow">▼</div>
+      <div class="layer">
+        <div class="lh">MCP layer — กระจาย 4 กลไก (ไม่ unified)</div>
+        <div class="nodes">
+          <span class="node"><span class="dot d-red"></span>~/.claude.json global <span class="sub">ไม่มี arra-oracle!</span></span>
+          <span class="node"><span class="dot d-amber"></span>project .mcp.json <span class="sub">ใช้ได้แค่ใน repo</span></span>
+          <span class="node"><span class="dot d-green"></span>plugin marketplace <span class="sub">context7, sanity…</span></span>
+          <span class="node"><span class="dot d-blue"></span>chrome toggle</span>
+        </div>
+      </div>
+      <div class="flow">▼ <span style="font-size:12px;color:var(--ink-faint)">muninn_search → embedded mode (อ่านไฟล์ตรง)</span></div>
+      <div class="layer core">
+        <div class="lh">backend :47778 — Bun/Elysia · 1 process ทำ 3 งานพร้อมกัน</div>
+        <div class="nodes">
+          <span class="node"><span class="dot d-green"></span>SQLite + FTS5 <span class="sub">ground truth · 35,164 docs</span></span>
+          <span class="node"><span class="dot d-amber"></span>Vector (LanceDB) <span class="sub">Ollama เลิกถาวร → FTS5-only จน CF token</span></span>
+          <span class="node"><span class="dot d-green"></span>/simple → Studio UI</span>
+        </div>
+        <div class="note"><b>Data flow:</b> write → SQLite (เสมอ) · search = <b>FTS5-only ตอนนี้</b> (Ollama retired) → semantic กลับมาเมื่อใส่ CF token · graceful degradation ทำงานจริง (verify แล้ว)</div>
+      </div>
+      <div class="flow">▼</div>
+      <div class="layer">
+        <div class="lh">หน้าบ้าน + fleet</div>
+        <div class="nodes"><span class="node"><span class="dot d-green"></span>Studio UI <span class="sub">studio.buildwithoracle.com · ต่อ localhost เอง 100%</span></span><span class="node"><span class="dot d-green"></span>fleet/maw <span class="sub">orchestration ชั้นนอก</span></span></div>
+      </div>
+    </div>
+    <div class="legend">
+      <span><span class="dot d-green"></span>done/working</span>
+      <span><span class="dot d-amber"></span>degraded ตอนนี้</span>
+      <span><span class="dot d-blue"></span>in-progress</span>
+      <span><span class="dot d-red"></span>stale/ผิดจาก doc</span>
+    </div>
+  </section>
+
+  <!-- STATUS -->
+  <section>
+    <div class="sh"><span class="n">02</span><h2>สถานะแต่ละส่วน</h2></div>
+    <div style="overflow-x:auto">
+    <table class="tbl">
+      <thead><tr><th>Component</th><th>สถานะ</th><th>หมายเหตุ + หลักฐาน</th></tr></thead>
+      <tbody>
+        <tr><td>Backend core + SQLite/FTS5</td><td><span class="st s-done">done · restarted</span></td><td>รัน alpha tip v26.7.5 ใต้ pm2 (id 31) · FTS ปกติ · <span class="ev">35,164 docs</span></td></tr>
+        <tr><td>Vector / semantic</td><td><span class="st s-work">FTS5-only ชั่วคราว</span></td><td>Ollama เลิกถาวร (กินทรัพยากร) · semantic กลับเมื่อ CF token #2680</td></tr>
+        <tr><td>FTS5 fallback logic</td><td><span class="st s-done">done</span></td><td>พิสูจน์แล้วว่า fire จริง · <span class="ev">commit 45b8df85</span></td></tr>
+        <tr><td>CF Workers (studio/mcp/federation)</td><td><span class="st s-done">live</span></td><td>thin proxy ไม่มี data plane · <span class="ev">arra-oracle-studio.laris.workers.dev</span></td></tr>
+        <tr><td>CF edge embedding (Workers AI+Vectorize+D1)</td><td><span class="st s-prog">coded, ไม่เคย deploy</span></td><td>แก้ปัญหา "เครื่องแรง" ตรงจุด · <span class="ev">0 wrangler binding จริง · #2680</span></td></tr>
+        <tr><td>skills-cli install</td><td><span class="st s-done">working</span></td><td>bunx#alpha เทสผ่าน · <span class="ev">PR #455/#456</span></td></tr>
+        <tr><td>MCP registration (global)</td><td><span class="st s-stale">stale</span></td><td>~/.claude.json ไม่มี arra-oracle · CLAUDE.md เขียนผิดกับของจริง</td></tr>
+        <tr><td>Docker self-host</td><td><span class="st s-done">published</span></td><td>prod default = FTS5-only · <span class="ev">ghcr.io/…:http</span></td></tr>
+        <tr><td>Python reranker sidecar</td><td><span class="st s-work">แยก process</span></td><td>2.3GB model · ไม่ผูก Docker</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- HARD -->
+  <section>
+    <div class="sh"><span class="n">03</span><h2>อะไรยังยาก (friction)</h2></div>
+    <ul class="b" style="--dot:var(--amber)">
+      <li><b>MCP config กระจาย 4 กลไก</b> — คนละที่ตอบคนละคำถามว่า "เปิดอยู่ไหม"</li>
+      <li><b>embedded vs HTTP-proxy มองไม่เห็นจาก caller</b> — muninn_search หน้าตาเหมือนกัน ผิด env แล้วไม่รู้ตัว</li>
+      <li><b>Ollama = จุดพังบ่อยสุด</b> — ต้องรันตลอด, ไม่มี auto-restart, ไม่มี alert ว่า vector หาย</li>
+      <li><b>CLAUDE.md เขียนสถาปัตยกรรมผิด</b> — บอก global แต่จริงเป็น project-local</li>
+      <li><b>3 deploy shape ของ vector</b> (embedded/proxy/edge) ไม่มีสวิตช์ "pick one" ให้คนไม่ใช่ dev</li>
+    </ul>
+  </section>
+
+  <!-- CLOUD -->
+  <section>
+    <div class="sh"><span class="n">04</span><h2>Cloud deploy — คอขวด = Ollama ไม่ใช่ DB</h2></div>
+    <div class="callout" style="margin-bottom:16px; border-color:#2c3350; background:linear-gradient(180deg,#13182a,#0e1119)">
+      <div class="t" style="color:var(--cyan)">📌 ตัดสินใจแล้ว: Ollama เลิกถาวร → CF Workers AI = THE path</div>
+      <div class="d">Nat สั่งปิด Ollama (กินทรัพยากร, homekeeper ปิดให้) · ตอนนี้ semantic = FTS5-only ชั่วคราว · CF embedding เลื่อนจาก "ทางเลือก" เป็น <b style="color:var(--ink)">เส้นทางหลัก</b> ของ semantic — bottleneck (embed local ต้องใช้เครื่องแรง) หายไปเพราะ embed ย้ายขึ้น edge</div>
+    </div>
+    <div class="opts">
+      <div class="opt" style="border-color:#2c3350"><span class="badge">🟢</span><div><div class="t">ตอนนี้ · FTS5-only (Ollama เลิกแล้ว)</div><div class="d">keyword search ใช้งานปกติ · ไม่มี semantic ชั่วคราว · เบา/ปลอดภัย</div></div></div>
+      <div class="opt rec"><span class="badge">⭐</span><div><div class="t">THE path · CF Workers AI embedding (#2680)</div><div class="d">semantic กลับมาโดยไม่ต้องมี GPU local · <b style="color:var(--amber)">ยังไม่เคย deploy → dry-run: token → drift benchmark ~100 docs → เทียบ parity → สลับ (~1 team-session)</b></div></div></div>
+    </div>
+  </section>
+
+  <!-- LIVE ISSUE -->
+  <section>
+    <div class="sh"><span class="n">05</span><h2>เจอของสด — actionable</h2></div>
+    <div class="callout" style="border-color:#2f4a3a; background:linear-gradient(180deg,#101c16,#0d1310)">
+      <div class="t" style="color:var(--green)">✅ RESOLVED — backend restarted, FTS ใช้งานปกติ</div>
+      <div class="d">Nat สั่งปิด Ollama ถาวร (homekeeper ปิดให้) · backend restart แล้ว: รัน <b style="color:var(--ink)">alpha tip v26.7.5-alpha.1608</b> ใต้ pm2 (id 31 'arra-oracle') + <code style="font-family:var(--mono)">ORACLE_EMBEDDER=none</code> → graceful degradation ทำงาน, FTS search verify แล้วว่าใช้ได้ · observability bug (stats/health ขัดกัน) → เปิด <b style="color:var(--cyan)">#2759</b> backend coder กำลังทำ</div>
+    </div>
+  </section>
+
+  <!-- PENDING FEED -->
+  <section>
+    <div class="sh"><span class="n">06</span><h2>Feed ตอบแล้ว — ปิด unknown 3/4</h2></div>
+    <div class="pending">
+      <div class="pl">verified จาก Feed</div>
+      <div class="q">✅ <b>v3</b> — stats vs health = observability bug จริง + ollama ตาย (ดู §05)</div>
+      <div class="q">✅ <b>v3</b> — CF path <b>ไม่เคยรัน end-to-end จริงสักครั้ง</b> · token = เปิดประตู ไม่ใช่พร้อมใช้ · ต้อง dry-run: token → drift benchmark ~100 docs (#2736/2740) → เทียบ search parity → ค่อยสลับ · <b>~1 team-session validation</b></div>
+      <div class="q">✅ <b>maw-rs</b> — REPORT.md = sprint เก่าทั้ง 2 ฝั่ง → ลบทิ้ง (git commit 7122410f)</div>
+      <div class="q">⏳ <b>skills-cli</b> — automate MCP registration global? (ยังรอตอบ)</div>
+    </div>
+  </section>
+
+  <footer>
+    SOURCE: workflow wf_08d4eef8-a51 (6 Sonnet agents, repo-verified) + arra-oracle-v3 live :47778 · arra-oracle-v3 · arra-oracle-skills-cli · maw-rs<br>
+    RENDERED: ecosystem map · verified 9 ก.ค. 2026 · จุดที่รอ Feed จะอัปเดตเมื่อคำตอบมา
+  </footer>
+</div>

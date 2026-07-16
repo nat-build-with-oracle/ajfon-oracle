@@ -1,0 +1,150 @@
+<title>ARRA Oracle Second Brain for Research — ลงทะเบียน Workshop 26 ก.ค.</title>
+<style>
+  :root {
+    --bg:#0a0b10; --panel:#12141c; --panel2:#171a24; --chip:#0e1420;
+    --ink:#eef0f7; --ink-soft:#a2a8bd; --ink-faint:#5c6178; --line:#23273a;
+    --cyan:#7fd4ff; --green:#52d98a; --amber:#f8a860; --gold:#ffcf4a; --rose:#ff7bab; --blue:#5b9dff;
+    --thai:"Noto Sans Thai","IBM Plex Sans Thai","Sarabun","Thonburi",system-ui,-apple-system,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace;
+  }
+  * { box-sizing:border-box; margin:0; }
+  * { scrollbar-width:thin; scrollbar-color:#2c3350 transparent; }
+  *::-webkit-scrollbar { width:7px; }
+  *::-webkit-scrollbar-thumb { background:#2c3350; border-radius:4px; }
+  body {
+    background:
+      radial-gradient(120% 60% at 50% -8%, #1c2340 0%, #0a0b1000 55%),
+      radial-gradient(80% 40% at 88% 4%, #241a33 0%, #0a0b1000 60%),
+      var(--bg);
+    color:var(--ink); font-family:var(--thai); line-height:1.6; -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:620px; margin:0 auto; padding:44px 20px 64px; }
+
+  /* hero */
+  .hero { text-align:center; }
+  .spark { font-size:clamp(34px,10vw,52px); line-height:1; filter:drop-shadow(0 3px 20px #ffcf4a55); }
+  .kicker { font-family:var(--mono); font-size:12px; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); font-weight:700; margin-top:16px; }
+  h1 { font-size:clamp(28px,7.5vw,42px); font-weight:800; letter-spacing:-0.02em; line-height:1.1; margin-top:12px; text-wrap:balance; }
+  .tagline { font-size:clamp(16px,4vw,20px); color:var(--cyan); font-weight:600; margin-top:12px; }
+  .subtag { font-size:14.5px; color:var(--ink-soft); margin-top:8px; }
+
+  /* when/where */
+  .facts { display:grid; gap:10px; margin:28px 0; }
+  .fact { display:flex; align-items:center; gap:13px; border:1px solid var(--line); border-radius:13px; background:var(--panel); padding:14px 16px; }
+  .fact .ic { font-size:20px; flex-shrink:0; width:26px; text-align:center; }
+  .fact .v { font-size:15.5px; }
+  .fact .v b { color:var(--ink); }
+  .fact .v .s { color:var(--ink-faint); font-size:0.88em; }
+
+  .by { text-align:center; font-size:14.5px; color:var(--ink-soft); margin:22px 0; }
+  .by b { color:var(--ink); }
+
+  section { margin-top:32px; }
+  .sh { font-family:var(--mono); font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-faint); font-weight:700; margin-bottom:14px; display:flex; align-items:center; gap:9px; }
+
+  .chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .chips span { font-size:14px; padding:6px 13px; border-radius:999px; background:var(--panel2); border:1px solid var(--line); color:var(--ink-soft); }
+
+  .note-card { border:1px solid var(--line); border-radius:14px; background:linear-gradient(180deg,#141824,#0f1119); padding:18px 20px; font-size:15px; line-height:1.6; color:var(--ink-soft); }
+  .note-card b { color:var(--ink); }
+
+  .demos { display:grid; gap:10px; }
+  .demo { display:flex; gap:12px; align-items:flex-start; font-size:15px; }
+  .demo .ar { color:var(--gold); font-family:var(--mono); flex-shrink:0; }
+  .demo b { color:var(--ink); }
+
+  /* donation */
+  .donate { border:1px solid #2f4a3a; border-radius:16px; background:linear-gradient(180deg,#101c16,#0d1310); padding:20px 22px; text-align:center; }
+  .donate .big { font-size:clamp(19px,5vw,24px); font-weight:800; }
+  .donate .big .free { color:var(--green); }
+  .donate .d { font-size:14.5px; color:var(--ink-soft); margin-top:8px; }
+
+  /* CTA */
+  .cta { display:block; text-align:center; text-decoration:none; margin-top:14px;
+         background:linear-gradient(180deg,#6db6ff,#3d7fdd); color:#06111f; font-weight:800;
+         font-size:18px; padding:17px 20px; border-radius:14px; box-shadow:0 12px 34px -12px #3d7fdd88;
+         transition:transform .12s, box-shadow .12s; }
+  .cta:hover { transform:translateY(-1px); box-shadow:0 16px 40px -12px #3d7fddaa; }
+  .cta:focus-visible { outline:3px solid var(--cyan); outline-offset:3px; }
+  .cta .u { display:block; font-family:var(--mono); font-size:12px; font-weight:600; opacity:0.7; margin-top:4px; word-break:break-all; }
+  .step2 { border:1px solid #2c3350; border-radius:14px; background:var(--panel); padding:16px 18px; margin-top:12px; font-size:14.5px; line-height:1.6; }
+  .step2 b { color:var(--ink); }
+  .step2 a, .links a { color:var(--cyan); text-decoration:none; word-break:break-all; }
+  .step2 a:hover, .links a:hover { text-decoration:underline; }
+  .step2 .say { font-family:var(--mono); color:var(--green); }
+
+  .links { display:grid; gap:9px; }
+  .links a { display:flex; align-items:center; gap:9px; border:1px solid var(--line); border-radius:12px; background:var(--panel); padding:13px 16px; font-size:14.5px; color:var(--ink); }
+  .links a .ic { font-size:16px; }
+  .links a .u { color:var(--ink-faint); font-family:var(--mono); font-size:12px; margin-left:auto; }
+
+  footer { margin-top:38px; border-top:1px solid var(--line); padding-top:16px; text-align:center; }
+  footer .thanks { color:var(--rose); font-size:15px; }
+  footer .prov { font-family:var(--mono); font-size:10.5px; color:var(--ink-faint); margin-top:12px; line-height:1.8; overflow-wrap:anywhere; }
+</style>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="spark">✨</div>
+    <div class="kicker">Online Workshop · ฟรี</div>
+    <h1>ARRA Oracle<br>Second Brain for Research</h1>
+    <div class="tagline">สร้างระบบความรู้ส่วนตัวด้วย AI Agent</div>
+    <div class="subtag">สำหรับงานวิจัย การเรียนการสอน และงานวิชาการ</div>
+  </div>
+
+  <div class="facts">
+    <div class="fact"><span class="ic">📅</span><span class="v"><b>อาทิตย์ 26 กรกฎาคม</b></span></div>
+    <div class="fact"><span class="ic">⏰</span><span class="v"><b>09.00–12.00 น.</b></span></div>
+    <div class="fact"><span class="ic">💻</span><span class="v"><b>Online Zoom</b> <span class="s">· เรียนย้อนหลังทาง FB กลุ่มปิด</span></span></div>
+  </div>
+
+  <div class="by">สอนโดย <b>อ.นัท — Nat Weerawan</b> + ทีม<br><span class="s" style="color:var(--ink-faint); font-size:13.5px">ผู้สร้างแนวคิด Oracle / ARRA Oracle Community</span></div>
+
+  <section>
+    <div class="sh">👥 เหมาะสำหรับ</div>
+    <div class="chips"><span>อาจารย์</span><span>นักวิจัย</span><span>นักศึกษา</span><span>แพทย์ / บุคลากรสุขภาพ</span></div>
+    <div class="note-card" style="margin-top:14px"><b>ไม่ต้องเป็นสาย dev ก็เรียนได้</b> — คลาสนี้เน้น <b>"ดู workflow จริง"</b> ว่า AI Agent ช่วยอ่าน สรุป จัดหมวดหมู่ จดจำ และดึงข้อมูลเดิมกลับมาใช้ต่อ ได้อย่างไร</div>
+  </section>
+
+  <section>
+    <div class="sh">🎬 ตัวอย่างที่จะได้เห็น</div>
+    <div class="demos">
+      <div class="demo"><span class="ar">→</span><span><b>paper</b> → agent สรุป + tag → เก็บเข้า memory</span></div>
+      <div class="demo"><span class="ar">→</span><span><b>session ถัดไป</b> → agent ดึง context กลับมาต่องานวิจัย</span></div>
+      <div class="demo"><span class="ar">→</span><span><b>Research Agent → Writing Agent → Review Agent</b></span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="donate">
+      <div class="big"><span class="free">ไม่มีค่าเรียน</span></div>
+      <div class="d">ขอเชิญร่วมบริจาค <b style="color:var(--ink)">แนะนำ 999 บาท หรือตามกำลัง</b><br>เลือกบริจาคให้โรงพยาบาลใดก็ได้ 🤍</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sh">📝 ลงทะเบียน</div>
+    <a class="cta" href="https://forms.gle/Mpb7f1ymVPuum8qK7" target="_blank" rel="noopener">
+      กรอกแบบฟอร์มลงทะเบียน
+      <span class="u">forms.gle/Mpb7f1ymVPuum8qK7</span>
+    </a>
+    <div class="step2">
+      <b>สมัครแล้ว รบกวนทัก LINE เพื่อดูแลทุกท่าน:</b><br>
+      LINE <b>Gradpassion</b> → <a href="https://lin.ee/xSXARyYD" target="_blank" rel="noopener">lin.ee/xSXARyYD</a><br>
+      พิมพ์ <span class="say">"ลงเรียน Oracle"</span> พร้อมแจ้ง ชื่อ–นามสกุล
+    </div>
+  </section>
+
+  <section>
+    <div class="sh">📖 อ่านพื้นฐานก่อนได้ที่</div>
+    <div class="links">
+      <a href="https://oracle101.vercel.app/index.html" target="_blank" rel="noopener"><span class="ic">📘</span> Oracle 101 <span class="u">oracle101.vercel.app</span></a>
+      <a href="https://ai-library-th.pages.dev/" target="_blank" rel="noopener"><span class="ic">📗</span> Oracle คืออะไร <span class="u">ai-library-th.pages.dev</span></a>
+    </div>
+  </section>
+
+  <footer>
+    <div class="thanks">ขอบพระคุณมากค่ะ 🤍</div>
+    <div class="prov">ARRA Oracle Community · Second Brain for Research · 26 ก.ค. 2026<br>2026-07-13 · ajfon@m5 · session 20cf7c44 · claude-opus-4-8 · laris-co/ajfon-oracle</div>
+  </footer>
+</div>

@@ -1,0 +1,198 @@
+<title>คู่มือผู้เรียน — Oracle Second Brain for Research</title>
+<style>
+  :root {
+    --bg:#0a0b10; --panel:#12141c; --panel2:#171a24; --chip:#0e1420;
+    --ink:#eef0f7; --ink-soft:#a2a8bd; --ink-faint:#5c6178; --line:#23273a;
+    --cyan:#7fd4ff; --green:#52d98a; --amber:#f8a860; --gold:#ffcf4a; --rose:#ff7bab;
+    --thai:"Noto Sans Thai","IBM Plex Sans Thai","Sarabun","Thonburi",system-ui,-apple-system,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace;
+  }
+  * { box-sizing:border-box; margin:0; }
+  * { scrollbar-width:thin; scrollbar-color:#2c3350 transparent; }
+  *::-webkit-scrollbar { height:7px; width:7px; }
+  *::-webkit-scrollbar-thumb { background:#2c3350; border-radius:4px; }
+  body {
+    background:
+      radial-gradient(120% 70% at 50% -10%, #171d33 0%, #0a0b1000 55%),
+      var(--bg);
+    color:var(--ink); font-family:var(--thai); line-height:1.6; -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:840px; margin:0 auto; padding:52px 22px 80px; }
+
+  header { margin-bottom:14px; }
+  .mark { font-size:34px; }
+  .eyebrow { font-family:var(--mono); font-size:12.5px; letter-spacing:0.16em; text-transform:uppercase; color:var(--ink-faint); font-weight:700; margin:14px 0 8px; }
+  h1 { font-size:clamp(28px,5vw,42px); font-weight:800; letter-spacing:-0.02em; line-height:1.12; text-wrap:balance; }
+  .sub { color:var(--cyan); font-size:clamp(15px,2.2vw,19px); font-weight:600; margin-top:8px; }
+  .meta { font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); margin-top:14px; border-top:1px solid var(--line); padding-top:14px; overflow-wrap:anywhere; }
+
+  section { margin-top:44px; }
+  .sec-h { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+  .sec-h .ic { font-size:22px; }
+  .sec-h h2 { font-size:clamp(20px,3vw,27px); font-weight:800; letter-spacing:-0.01em; }
+  .sec-h .tag { margin-left:auto; font-family:var(--mono); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-faint); }
+
+  .track { border:1px solid var(--line); border-radius:16px; background:linear-gradient(180deg,#141824,#0f1119); padding:22px 24px; margin-bottom:16px; }
+  .track .th { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+  .track .th .name { font-size:18px; font-weight:800; }
+  .track .th .badge { font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.08em; padding:3px 9px; border-radius:6px; }
+  .badge.rec { background:var(--green); color:#0d1310; }
+  .badge.beta { background:#3a2f12; color:var(--amber); border:1px solid #4a3a24; }
+  .track .desc { color:var(--ink-soft); font-size:14.5px; margin-bottom:14px; }
+  .track .pre { font-size:13.5px; color:var(--ink-faint); margin-bottom:10px; }
+  .track .pre b { color:var(--ink-soft); }
+
+  .cmd { position:relative; display:block; width:100%; text-align:left; font-family:var(--mono); font-size:13.5px; line-height:1.6;
+         color:var(--cyan); background:var(--chip); border:1px solid #223050; border-radius:10px;
+         padding:13px 44px 13px 15px; margin:8px 0; cursor:pointer; overflow-wrap:anywhere; transition:border-color .15s, background .15s; }
+  .cmd:hover { border-color:#3a5580; background:#0f1626; }
+  .cmd:focus-visible { outline:2px solid var(--cyan); outline-offset:2px; }
+  .cmd .copy { position:absolute; right:11px; top:11px; font-size:11px; color:var(--ink-faint); font-family:var(--mono); }
+  .cmd.copied .copy { color:var(--green); }
+  .cmd .step { color:var(--ink-faint); }
+  .note { font-size:13px; color:var(--ink-faint); margin-top:8px; }
+
+  /* cheatsheet rows */
+  .topic { margin-bottom:22px; }
+  .topic .tt { font-family:var(--mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--amber); font-weight:700; margin-bottom:10px; }
+  .rows { display:grid; gap:8px; }
+  .cr { display:grid; grid-template-columns:minmax(150px,220px) 1fr; gap:14px; align-items:baseline; padding:9px 0; border-top:1px solid var(--line); }
+  @media (max-width:560px){ .cr { grid-template-columns:1fr; gap:2px; } }
+  .cr .k { font-family:var(--mono); font-size:14px; color:var(--cyan); font-weight:600; cursor:pointer; }
+  .cr .k:hover { color:#a9e4ff; }
+  .cr .k.copied { color:var(--green); }
+  .cr .v { font-size:14.5px; color:var(--ink-soft); }
+
+  .studio { border:1px solid #2f4a3a; border-radius:16px; background:linear-gradient(180deg,#101c16,#0d1310); padding:22px 24px; }
+  .studio .u { font-family:var(--mono); font-size:16px; color:var(--green); font-weight:700; word-break:break-all; }
+  .studio ul { margin:14px 0 0; padding-left:20px; display:grid; gap:7px; color:var(--ink-soft); font-size:14.5px; }
+  .studio ul b { color:var(--ink); }
+
+  footer { margin-top:46px; border-top:1px solid var(--line); padding-top:18px; font-family:var(--mono); font-size:12px; color:var(--ink-faint); line-height:1.9; overflow-wrap:anywhere; }
+  footer .free { color:var(--green); }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="mark">🎓</div>
+    <div class="eyebrow">คู่มือผู้เรียน · Handout</div>
+    <h1>Oracle Second Brain for Research</h1>
+    <div class="sub">สร้างระบบความรู้ส่วนตัวด้วย AI Agent</div>
+    <div class="meta">อาทิตย์ 26 ก.ค. 2026 · 09:00–12:00 · Online Zoom · AI for Research Community · โดย อ.นัท · <b>แตะคำสั่งเพื่อคัดลอก</b></div>
+  </header>
+
+  <!-- INSTALL -->
+  <section>
+    <div class="sec-h"><span class="ic">⚙️</span><h2>ติดตั้ง — เลือกทางที่ใช่คุณ</h2><span class="tag">2 ทาง</span></div>
+
+    <div class="track">
+      <div class="th"><span class="name">1 · Studio UI</span><span class="badge rec">แนะนำเริ่มที่นี่</span></div>
+      <div class="desc">หน้าเว็บ ค้น · ถาม · อ่าน ความรู้ตัวเอง — ไม่ต้องแตะ terminal เหมาะกับทุกคน</div>
+      <div class="pre"><b>ต้องมี:</b> Docker Desktop (ทางที่ง่ายสุด)</div>
+      <button class="cmd" data-copy="docker">docker <span class="step"># คัดลอก block จาก README ของ arra-oracle-v3 (สร้าง volume + run) → mine ~/notes ให้อัตโนมัติ</span><span class="copy">คัดลอก</span></button>
+      <div class="pre" style="margin-top:12px"><b>หรือสาย terminal:</b> ติดตั้ง bun ก่อน (bun.sh) แล้ว</div>
+      <button class="cmd" data-copy="bun add -g github:Soul-Brews-Studio/arra-oracle-v3#alpha">bun add -g github:Soul-Brews-Studio/arra-oracle-v3#alpha<span class="copy">คัดลอก</span></button>
+      <button class="cmd" data-copy="arra-oracle serve">arra-oracle serve <span class="step"># แล้วเปิด studio.buildwithoracle.com</span><span class="copy">คัดลอก</span></button>
+      <div class="note">พอร์ตเดียวที่ต้องรู้: <b style="color:var(--ink-soft)">47778</b> · อยากค้นไทย/อังกฤษด้วยความหมาย → <span style="color:var(--cyan)">ollama pull bge-m3</span> ทีหลังได้ (ไม่มีก็ค้นแบบ keyword ไปก่อน)</div>
+    </div>
+
+    <div class="track">
+      <div class="th"><span class="name">2 · AI Agent Skills</span><span class="badge beta">สาย workflow</span></div>
+      <div class="desc">คำสั่ง /oracle-prism, /recap, /rrr, /forward ฯลฯ — ทำงานใน Claude Code (ต่อยอดจากการค้น)</div>
+      <div class="pre"><b>ต้องมี:</b> Claude Code + bun · คำสั่ง official (standard 12 ตัว + 3 ตัวเดโม):</div>
+      <button class="cmd" data-copy="bunx --bun github:Soul-Brews-Studio/arra-oracle-skills-cli#alpha install -g -y -p standard -s oracle-prism oracle-cheatsheet kien-thai --agent claude-code">bunx --bun github:Soul-Brews-Studio/arra-oracle-skills-cli#alpha install -g -y -p standard -s oracle-prism oracle-cheatsheet kien-thai --agent claude-code<span class="copy">คัดลอก</span></button>
+      <div class="note" style="margin-top:12px">📌 marketplace (<span style="font-family:var(--mono)">/plugin marketplace add …</span>) จะเปิดใช้หลัง cut stable release — ระหว่างนี้ใช้คำสั่ง <b style="color:var(--cyan)">bunx</b> ด้านบน (เทสผ่านแล้วบนเครื่องสะอาด ใช้ได้ชัวร์)</div>
+    </div>
+  </section>
+
+  <!-- CHEATSHEET -->
+  <section>
+    <div class="sec-h"><span class="ic">📋</span><h2>Cheatsheet — คำสั่งใน workshop</h2><span class="tag">เรียงตาม 5 หัวข้อ</span></div>
+
+    <div class="topic">
+      <div class="tt">1 · แนวคิด</div>
+      <div class="rows">
+        <div class="cr"><span class="k" data-copy="/about-oracle">/about-oracle</span><span class="v">ให้ AI เล่าว่า Oracle คืออะไร — เริ่มที่นี่</span></div>
+        <div class="cr"><span class="k" data-copy="/who-are-you">/who-are-you</span><span class="v">ดู identity ของ oracle คุณ</span></div>
+      </div>
+    </div>
+
+    <div class="topic">
+      <div class="tt">2 · นำความรู้เข้า memory</div>
+      <div class="rows">
+        <div class="cr"><span class="k" data-copy="/awaken --fast">/awaken --fast</span><span class="v">สร้าง oracle ของตัวเองใน repo เปล่า (~15 นาที)</span></div>
+        <div class="cr"><span class="k" data-copy="/learn">/learn &lt;repo&gt;</span><span class="v">ให้ agent อ่าน + สรุปโฟลเดอร์/โค้ดให้</span></div>
+      </div>
+    </div>
+
+    <div class="topic">
+      <div class="tt">3 · ค้นคืน</div>
+      <div class="rows">
+        <div class="cr"><span class="k" data-copy="/trace">/trace</span><span class="v">ค้นข้าม git + docs + memory</span></div>
+        <div class="cr"><span class="k" data-copy="/seek">/seek</span><span class="v">สืบลึกเรื่องเดียวจากทุกแหล่ง</span></div>
+        <div class="cr"><span class="k">Studio UI</span><span class="v">พิมพ์ค้นด้วยความหมาย · ถามภาษาไทย → คำตอบมี citation</span></div>
+      </div>
+    </div>
+
+    <div class="topic">
+      <div class="tt">4 · paper → insight → RQ → writing</div>
+      <div class="rows">
+        <div class="cr"><span class="k" data-copy="/oracle-prism">/oracle-prism</span><span class="v">มอง paper/ปัญหาเดียวจาก 5 มุม — ปั่น research question</span></div>
+        <div class="cr"><span class="k" data-copy="/oracle-deep-research">/oracle-deep-research</span><span class="v">ค้นเว็บหลายแหล่ง + สังเคราะห์ พร้อม citation</span></div>
+        <div class="cr"><span class="k" data-copy="/kien-thai">/kien-thai</span><span class="v">เขียนไทยวิชาการที่ไม่เป็นโทน AI</span></div>
+      </div>
+    </div>
+
+    <div class="topic">
+      <div class="tt">5 · AI Agent Workflow (จำข้ามวัน)</div>
+      <div class="rows">
+        <div class="cr"><span class="k" data-copy="/recap">/recap</span><span class="v">เปิด session — รู้ว่าค้างอะไร ทำถึงไหน</span></div>
+        <div class="cr"><span class="k" data-copy="/rrr">/rrr</span><span class="v">retro — สรุปสิ่งที่ทำ + บทเรียน</span></div>
+        <div class="cr"><span class="k" data-copy="/forward">/forward</span><span class="v">handoff — ให้ session พรุ่งนี้จำได้</span></div>
+        <div class="cr"><span class="k" data-copy="/oracle-cheatsheet">/oracle-cheatsheet</span><span class="v">gen สรุปคำสั่งจาก session ที่ผ่านมา</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STUDIO QUICK REF -->
+  <section>
+    <div class="sec-h"><span class="ic">🌐</span><h2>Studio UI — ref เร็ว</h2></div>
+    <div class="studio">
+      <div class="u">studio.buildwithoracle.com</div>
+      <ul>
+        <li>ต่อ <b>localhost:47778</b> ของเครื่องคุณเอง — <b>ข้อมูลอยู่ในเครื่อง 100%</b> ไม่ขึ้น cloud</li>
+        <li>ทุกคนเปิด URL เดียวกัน แต่เห็น brain ของตัวเอง (Private Network Access)</li>
+        <li>ค้นด้วยความหมาย · ถามภาษาไทย → คำตอบพร้อมลิงก์ไฟล์จริง คลิกเปิดได้</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <span class="free">เรียนฟรี</span> · ขอเชิญร่วมบริจาคท่านละ 999 บาท ให้โรงพยาบาลในภาคใต้ (น้ำท่วมปีที่แล้ว)<br>
+    SOURCE: github.com/Soul-Brews-Studio · arra-oracle-v3 (backend/Studio) · arra-oracle-skills-cli (skills) · คำสั่ง verify 9 ก.ค. 2026
+  </footer>
+</div>
+
+<script>
+  (function () {
+    function flash(el, orig) {
+      el.classList.add('copied');
+      const badge = el.querySelector('.copy');
+      if (badge) badge.textContent = 'คัดลอกแล้ว ✓';
+      setTimeout(() => {
+        el.classList.remove('copied');
+        if (badge) badge.textContent = 'คัดลอก';
+      }, 1400);
+    }
+    document.querySelectorAll('[data-copy]').forEach((el) => {
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      const doCopy = () => {
+        const text = el.getAttribute('data-copy');
+        navigator.clipboard && navigator.clipboard.writeText(text).then(() => flash(el)).catch(() => {});
+      };
+      el.addEventListener('click', doCopy);
+      el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doCopy(); } });
+    });
+  })();
+</script>

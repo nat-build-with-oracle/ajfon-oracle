@@ -1,0 +1,376 @@
+<title>Oracle Second Brain for Research — Workshop Slides</title>
+<style>
+  :root {
+    --bg:#0a0b10; --panel:#12141c; --panel2:#171a24;
+    --ink:#eef0f7; --ink-soft:#a2a8bd; --ink-faint:#5c6178; --line:#23273a;
+    --cyan:#7fd4ff; --green:#52d98a; --amber:#f8a860; --gold:#ffcf4a;
+    --rose:#ff7bab; --blue:#5b9dff;
+    --thai:"Noto Sans Thai","IBM Plex Sans Thai","Sarabun","Thonburi",system-ui,-apple-system,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace;
+  }
+  * { box-sizing:border-box; margin:0; }
+  html,body { height:100%; }
+  body {
+    background:
+      radial-gradient(120% 90% at 50% -20%, #171d33 0%, #0a0b1000 55%),
+      radial-gradient(70% 50% at 88% 6%, #241a33 0%, #0a0b1000 60%),
+      var(--bg);
+    color:var(--ink); font-family:var(--thai); -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+  }
+
+  /* deck */
+  .deck { position:fixed; inset:0; }
+  .slide {
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; justify-content:center;
+    padding:clamp(32px,6vw,96px);
+    opacity:0; visibility:hidden; transform:translateY(14px);
+    transition:opacity .4s ease, transform .4s ease, visibility .4s;
+  }
+  .slide.active { opacity:1; visibility:visible; transform:none; }
+  @media (prefers-reduced-motion:reduce) { .slide { transition:opacity .01s; transform:none; } }
+  .inner { max-width:1000px; width:100%; margin:0 auto; }
+
+  .eyebrow { font-family:var(--mono); font-size:clamp(12px,1.4vw,15px); letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-faint); font-weight:700; margin-bottom:22px; display:flex; align-items:center; gap:12px; }
+  .eyebrow .n { color:var(--gold); }
+  h1 { font-size:clamp(34px,6.4vw,72px); font-weight:800; letter-spacing:-0.02em; line-height:1.08; text-wrap:balance; }
+  h2 { font-size:clamp(28px,5vw,54px); font-weight:800; letter-spacing:-0.015em; line-height:1.12; text-wrap:balance; }
+  .lead { font-size:clamp(18px,2.5vw,27px); color:var(--ink-soft); line-height:1.55; margin-top:22px; max-width:40ch; }
+  .big { font-size:clamp(20px,3vw,32px); }
+
+  .accent-cyan { color:var(--cyan); } .accent-green { color:var(--green); }
+  .accent-amber { color:var(--amber); } .accent-gold { color:var(--gold); }
+  .accent-rose { color:var(--rose); } .accent-blue { color:var(--blue); }
+  b, strong { font-weight:800; }
+
+  /* title slide */
+  .title-slide .inner { text-align:left; }
+  .title-mark { font-size:clamp(44px,8vw,84px); line-height:1; filter:drop-shadow(0 4px 24px #ffcf4a44); margin-bottom:8px; }
+  .title-sub { font-size:clamp(18px,2.8vw,28px); color:var(--cyan); font-weight:600; margin-top:14px; }
+  .title-meta { margin-top:38px; display:flex; flex-wrap:wrap; gap:10px 20px; font-family:var(--mono); font-size:clamp(13px,1.6vw,16px); color:var(--ink-soft); }
+  .title-meta .pill { border:1px solid var(--line); border-radius:999px; padding:7px 15px; background:#12141c88; }
+
+  /* bullets */
+  ul.b { list-style:none; margin-top:30px; display:grid; gap:16px; }
+  ul.b li { position:relative; padding-left:34px; font-size:clamp(17px,2.3vw,25px); line-height:1.45; color:var(--ink); }
+  ul.b li::before { content:""; position:absolute; left:4px; top:0.62em; width:11px; height:11px; border-radius:3px; background:var(--dot,var(--cyan)); }
+  ul.b li .muted { color:var(--ink-soft); font-size:0.86em; }
+
+  /* cards row */
+  .cards { margin-top:34px; display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:16px; }
+  .card { border:1px solid var(--line); border-radius:16px; background:linear-gradient(180deg,#141824,#0f1119); padding:22px 22px 24px; }
+  .card .h { font-family:var(--mono); font-size:12.5px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-faint); font-weight:700; margin-bottom:8px; }
+  .card .t { font-size:clamp(17px,2vw,21px); font-weight:800; letter-spacing:-0.01em; }
+  .card .d { font-size:15px; color:var(--ink-soft); margin-top:8px; line-height:1.5; }
+  .card .cmd { font-family:var(--mono); font-size:13.5px; color:var(--cyan); margin-top:12px; }
+
+  /* live demo badge */
+  .live { display:inline-flex; align-items:center; gap:9px; font-family:var(--mono); font-size:clamp(12px,1.5vw,15px); font-weight:700; letter-spacing:0.12em; color:#0d1310; background:var(--green); padding:7px 14px; border-radius:8px; margin-bottom:24px; }
+  .live .dot { width:9px; height:9px; border-radius:50%; background:#0d1310; animation:pulse 1.6s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.35;} }
+  @media (prefers-reduced-motion:reduce){ .live .dot{ animation:none; } }
+
+  /* semantic-search demo visual */
+  .demo-flow { margin-top:30px; display:grid; grid-template-columns:1fr auto 1fr; gap:clamp(12px,2.5vw,34px); align-items:center; }
+  @media (max-width:720px){ .demo-flow { grid-template-columns:1fr; } .demo-flow .arrow{ transform:rotate(90deg); justify-self:center; } }
+  .qbox { border:1px solid #2a3550; border-radius:14px; background:#0e1420; padding:20px 22px; }
+  .qbox .lbl { font-family:var(--mono); font-size:12px; color:var(--ink-faint); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:10px; }
+  .qbox .q { font-size:clamp(18px,2.2vw,24px); font-weight:700; color:var(--ink); }
+  .rbox { border:1px solid #2f4a3a; border-radius:14px; background:linear-gradient(180deg,#101c16,#0d1310); padding:20px 22px; }
+  .rbox .q { color:var(--green); }
+  .arrow { font-size:clamp(24px,3vw,40px); color:var(--gold); text-align:center; }
+  .demo-note { margin-top:24px; font-size:clamp(16px,2vw,22px); color:var(--ink-soft); }
+  .demo-note b { color:var(--gold); }
+
+  /* quote / stat */
+  .stat-row { margin-top:34px; display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:18px; }
+  .stat { border:1px solid var(--line); border-radius:16px; background:var(--panel); padding:24px; }
+  .stat .num { font-size:clamp(30px,4.5vw,48px); font-weight:800; letter-spacing:-0.02em; font-variant-numeric:tabular-nums; }
+  .stat .cap { font-size:14.5px; color:var(--ink-soft); margin-top:6px; line-height:1.45; }
+
+  /* agenda timeline */
+  .agenda { margin-top:30px; display:grid; gap:11px; }
+  .ag { display:grid; grid-template-columns:64px 1fr; gap:16px; align-items:baseline; padding:11px 0; border-top:1px solid var(--line); }
+  .ag .tm { font-family:var(--mono); font-size:14px; color:var(--amber); font-weight:700; font-variant-numeric:tabular-nums; }
+  .ag .what { font-size:clamp(15px,1.9vw,20px); }
+  .ag .what .s { color:var(--ink-faint); font-size:0.85em; }
+
+  /* loop diagram */
+  .loop { margin-top:30px; display:flex; flex-wrap:wrap; align-items:center; gap:12px; font-family:var(--mono); font-size:clamp(14px,1.8vw,19px); }
+  .loop .step { border:1px solid var(--line); border-radius:10px; padding:10px 15px; background:var(--panel2); color:var(--ink); }
+  .loop .step.hot { border-color:#2f4a3a; color:var(--green); }
+  .loop .sep { color:var(--gold); }
+
+  /* closing */
+  .terms { margin-top:30px; display:grid; gap:14px; }
+  .term { display:flex; gap:14px; align-items:flex-start; font-size:clamp(16px,2.1vw,23px); }
+  .term .k { font-size:1.15em; }
+
+  /* chrome */
+  .progress { position:fixed; top:0; left:0; height:3px; background:linear-gradient(90deg,var(--cyan),var(--gold)); width:0; transition:width .35s ease; z-index:10; }
+  .counter { position:fixed; bottom:22px; right:26px; font-family:var(--mono); font-size:13px; color:var(--ink-faint); z-index:10; font-variant-numeric:tabular-nums; }
+  .brand { position:fixed; bottom:22px; left:26px; font-family:var(--mono); font-size:12px; color:var(--ink-faint); z-index:10; }
+  .hint { position:fixed; bottom:22px; left:50%; transform:translateX(-50%); font-family:var(--mono); font-size:12px; color:var(--ink-faint); z-index:10; opacity:.7; }
+  .nav-zone { position:fixed; top:0; bottom:0; width:22%; z-index:5; cursor:pointer; }
+  .nav-zone.prev { left:0; } .nav-zone.next { right:0; }
+  :focus-visible { outline:2px solid var(--cyan); outline-offset:3px; }
+</style>
+
+<div class="progress" id="progress"></div>
+<div class="deck" id="deck">
+
+  <!-- 1 · Title -->
+  <section class="slide title-slide active">
+    <div class="inner">
+      <div class="title-mark">⭐</div>
+      <div class="eyebrow"><span class="n">WORKSHOP</span> · AI for Research Community</div>
+      <h1>Oracle Second Brain<br>for Research</h1>
+      <div class="title-sub">สร้างระบบความรู้ส่วนตัวด้วย AI Agent</div>
+      <div class="title-meta">
+        <span class="pill">โดย อ.นัท · Nat Weerawan</span>
+        <span class="pill">อาทิตย์ 26 ก.ค. 2026</span>
+        <span class="pill">09:00–12:00 · Online Zoom</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · Pain -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow">ปัญหาที่เราทุกคนเจอ</div>
+      <h2>เรา<span class="accent-gold">จำได้</span> ว่าเคยรู้ —<br>แต่<span class="accent-rose">ค้นไม่เจอ</span></h2>
+      <ul class="b" style="--dot:var(--rose)">
+        <li>โน้ตกระจัดกระจาย — Word, Notion, กระดาษ, แชท, มือถือ</li>
+        <li>"เคยจดไว้เมื่อ 3 เดือนก่อน... อยู่ไหนนะ" <span class="muted">— หาไม่เจอ</span></li>
+        <li>อ่าน paper วันนี้ → อีกเดือนลืมหมด</li>
+        <li>เขียน literature review ทีไร เริ่มจากศูนย์ทุกที</li>
+      </ul>
+      <p class="lead">สมองเราไม่ได้พัง — ระบบ<b>ค้นคืน</b>ความรู้ของเราต่างหากที่ยังไม่มี</p>
+    </div>
+  </section>
+
+  <!-- 3 · What is Second Brain -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow">แนวคิดหลัก</div>
+      <h2>Second Brain =<br>สมองที่สอง ที่ AI ดูแลให้</h2>
+      <div class="cards">
+        <div class="card"><div class="h">เก็บ</div><div class="t">ทุกอย่างเข้าที่เดียว</div><div class="d">paper · notes · บทสนทนา · ไอเดีย → เป็นไฟล์</div></div>
+        <div class="card"><div class="h">ค้น</div><div class="t">ด้วยความหมาย</div><div class="d">ไม่ต้องจำคำเป๊ะ — พิมพ์สิ่งที่ยังจำได้ลางๆ ก็เจอ</div></div>
+        <div class="card"><div class="h">คิดต่อ</div><div class="t">AI อ่าน/เขียนเองได้</div><div class="d">agent สรุป · tag · เชื่อมโยง · เขียนงานต่อให้</div></div>
+      </div>
+      <p class="lead"><b class="accent-cyan">Oracle</b> = second brain ที่เป็น<b>ไฟล์ธรรมดา</b> + <b>AI agent</b> ทำงานบนไฟล์นั้น</p>
+    </div>
+  </section>
+
+  <!-- 4 · Agenda -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow">แผน 3 ชั่วโมง</div>
+      <h2>วันนี้เราจะ<span class="accent-green">สร้างของจริง</span> ไปด้วยกัน</h2>
+      <div class="agenda">
+        <div class="ag"><span class="tm">10 น.</span><span class="what">แนวคิด + <span class="s">โชว์ "ค้นด้วยความหมาย"</span></span></div>
+        <div class="ag"><span class="tm">30 น.</span><span class="what">ทุกคน <b>สร้าง Oracle ของตัวเอง</b> <span class="s">(awaken --fast)</span></span></div>
+        <div class="ag"><span class="tm">30 น.</span><span class="what">ใส่ paper/notes เข้า memory → ค้นเจอทันที</span></div>
+        <div class="ag"><span class="tm">20 น.</span><span class="what">ค้นคืน + คำตอบพร้อม <span class="s">citation</span> — ☕ พัก</span></div>
+        <div class="ag"><span class="tm">30 น.</span><span class="what">paper จริง → <b>insight → research gap → RQ</b></span></div>
+        <div class="ag"><span class="tm">25 น.</span><span class="what">Workflow ที่จำข้ามวัน <span class="s">(recap → rrr → forward)</span></span></div>
+        <div class="ag"><span class="tm">15 น.</span><span class="what">แจก cheatsheet สรุปทุกคำสั่งกลับบ้าน</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · Section 1 divider -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow"><span class="n">หัวข้อ 1 / 5</span></div>
+      <h1>แนวคิด Oracle<br>+ AI Agent</h1>
+      <p class="lead">เริ่มจากช่วงเวลา "อ๋อ!" ที่ทำให้เห็นว่ามันต่างจาก Google / ค้นหาคำ ยังไง</p>
+    </div>
+  </section>
+
+  <!-- 6 · Aha demo: semantic search -->
+  <section class="slide">
+    <div class="inner">
+      <span class="live"><span class="dot"></span>LIVE · STUDIO UI</span>
+      <h2>ค้นด้วย<span class="accent-gold">ความหมาย</span> ไม่ใช่คำ</h2>
+      <div style="font-family:var(--mono);font-size:clamp(13px,1.7vw,17px);color:var(--cyan);margin-top:16px">🌐 studio.buildwithoracle.com — ค้น · คลิก · อ่าน ในหน้าเว็บ (ไม่ต้องแตะ terminal)</div>
+      <div class="demo-flow">
+        <div class="qbox">
+          <div class="lbl">พิมพ์ค้น</div>
+          <div class="q">"clipboard วางแล้วเพี้ยน"</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="rbox">
+          <div class="lbl">เจอเอกสาร</div>
+          <div class="q">เรื่อง tmux mouse paste</div>
+        </div>
+      </div>
+      <p class="demo-note">ทั้งสองฝั่ง <b>ไม่มีคำร่วมกันสักคำ</b> — แต่เจอ เพราะเข้าใจ<i>ความหมาย</i><br>ไทย/อังกฤษปนกันได้ (bge-m3 multilingual)</p>
+      <p class="lead">= "โน้ตที่จำได้ลางๆ ว่าเคยจดเมื่อ 3 เดือนก่อน" หาเจอ — pain จริงของนักวิจัย</p>
+    </div>
+  </section>
+
+  <!-- 7 · Section 2: ingest + loop -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow"><span class="n">หัวข้อ 2 / 5</span> · นำความรู้เข้า memory</div>
+      <h2>เขียน → index → <span class="accent-green">ค้นเจอ</span> ครบใน 5 นาที</h2>
+      <div class="loop">
+        <span class="step hot">paper / notes เข้า vault</span><span class="sep">→</span>
+        <span class="step">arra mine (index)</span><span class="sep">→</span>
+        <span class="step">ค้นได้ทันที</span><span class="sep">→</span>
+        <span class="step hot">จด insight ใหม่</span><span class="sep">→</span>
+        <span class="step">ค้นเจอใน 30 วิ</span>
+      </div>
+      <p class="lead"><span class="live" style="margin-top:6px"><span class="dot"></span>LIVE · STUDIO UI</span><br>ลาก paper/notes ลงโฟลเดอร์ → กด mine → ค้นเจอในหน้าเว็บทันที เห็นว่า second brain <b>โต</b> ยังไง</p>
+    </div>
+  </section>
+
+  <!-- 8 · Section 3: retrieval + provenance -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow"><span class="n">หัวข้อ 3 / 5</span> · ค้นคืน + ความน่าเชื่อถือ</div>
+      <h2>ถามภาษาไทย → ตอบ<br>พร้อม<span class="accent-cyan">อ้างอิงกลับไปโน้ตตัวเอง</span></h2>
+      <ul class="b" style="--dot:var(--cyan)">
+        <li>ทุกคำตอบมี <b>citation</b> — path + วันที่ ของไฟล์จริง คลิกเปิดดูได้</li>
+        <li>ไม่ใช่ "AI มั่ว" — ตรวจสอบได้ว่ามาจากโน้ตไหนของเราเอง</li>
+      </ul>
+      <div style="font-family:var(--mono);font-size:clamp(13px,1.7vw,17px);color:var(--cyan);margin-top:20px">🌐 ในหน้า Studio UI: พิมพ์คำถามภาษาไทย → คำตอบโผล่พร้อมลิงก์ไฟล์ คลิกเปิดดูได้</div>
+      <p class="lead"><b class="accent-gold">"นักวิชาการเชื่อ provenance ไม่เชื่อ magic"</b></p>
+    </div>
+  </section>
+
+  <!-- 9 · Section 4: paper -> RQ -> writing -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow"><span class="n">หัวข้อ 4 / 5</span> · หัวใจของงานวิจัย</div>
+      <h2>paper → insight → <span class="accent-gold">research gap → RQ</span> → เขียน</h2>
+      <div class="cards">
+        <div class="card"><div class="h">เพชรของ workshop</div><div class="t">5 มุมมองต่อ 1 paper</div><div class="d">Skeptic / Auditor lens ปั่น research question ต่อหน้า</div><div class="cmd">/oracle-prism</div></div>
+        <div class="card"><div class="h">ความรู้ตามเวลา</div><div class="t">Time-travel (asOf)</div><div class="d">"พ.ค. ฉันเข้าใจ X แค่ไหน vs ตอนนี้" = lit-review ของตัวเอง</div></div>
+        <div class="card"><div class="h">gap = โจทย์ถัดไป</div><div class="t">สิ่งที่ระบบยังไม่รู้</div><div class="d">คือ research gap → RQ ตัวต่อไปโดยตรง</div></div>
+      </div>
+      <p class="lead"><span class="live"><span class="dot"></span>ผมโชว์บนจอ</span> &nbsp;กับ paper จริง — ชั้นต่อยอดจาก search พื้นฐาน (สาย AI agent)</p>
+    </div>
+  </section>
+
+  <!-- 10 · Section 5: agent workflow / memory loop -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow"><span class="n">หัวข้อ 5 / 5</span> · AI Agent Workflow</div>
+      <h2>Second brain ที่<span class="accent-green">จำข้ามวัน</span>ได้จริง</h2>
+      <div class="loop">
+        <span class="step hot">/recap <span style="color:var(--ink-faint)">เปิดงาน</span></span><span class="sep">→</span>
+        <span class="step">ทำงาน</span><span class="sep">→</span>
+        <span class="step hot">/rrr <span style="color:var(--ink-faint)">retro</span></span><span class="sep">→</span>
+        <span class="step hot">/forward <span style="color:var(--ink-faint)">handoff</span></span>
+      </div>
+      <ul class="b" style="--dot:var(--green); margin-top:26px">
+        <li>วันพรุ่งนี้เปิดมา — agent จำได้ว่าเมื่อวานทำถึงไหน</li>
+        <li>Research Agent → Writing Agent → Review Agent ส่งงานต่อกัน</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 11 · Credibility -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow">ทำไมเชื่อได้ — สำหรับสายวิชาการ</div>
+      <h2>ไฟล์ธรรมดา <span class="accent-green">ชนะ</span> ทั้ง performance และ<br>อายุการใช้งาน</h2>
+      <div class="stat-row">
+        <div class="stat"><div class="num accent-green">74%</div><div class="cap">Letta <b>filesystem</b> memory บน LoCoMo benchmark</div></div>
+        <div class="stat"><div class="num" style="color:var(--ink-soft)">68.5%</div><div class="cap">mem0 graph memory — ไฟล์ชนะ graph</div></div>
+        <div class="stat"><div class="num accent-cyan">OKF</div><div class="cap">export มาตรฐานเปิด (มิ.ย. 2026) — markdown อ่านใน Obsidian ใดๆ ก็ได้</div></div>
+      </div>
+      <p class="lead" style="margin-bottom:2px"><b class="accent-green">ข้อมูลอยู่ในเครื่องคุณ 100%</b> — Studio UI ต่อ localhost ของคุณเอง งานวิจัยไม่ขึ้น cloud ไม่ผ่านใคร</p>
+      <p class="lead"><b>งานวิจัยอยู่ยาวกว่าทุก tool</b> — second brain ที่เป็นไฟล์ = ไม่มีวันโดนขังใน platform</p>
+    </div>
+  </section>
+
+  <!-- 12 · Takeaway -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow">กลับบ้านได้อะไร</div>
+      <h2>จบ 3 ชม. คุณมี<span class="accent-gold">ของจริง</span>ในมือ</h2>
+      <ul class="b" style="--dot:var(--gold)">
+        <li><b>Oracle ของตัวเอง</b> ที่ birth ไปแล้ววันนี้ — พร้อมใส่ paper ต่อ</li>
+        <li><b>Cheatsheet</b> สรุปทุกคำสั่งใน workshop</li>
+        <li><b>Workflow จริง</b> ใช้ต่อได้กับ อ่าน paper · lit review · ตั้ง RQ · เขียนงานวิชาการ</li>
+        <li>ความรู้ 3 ชม. นี้ <span class="accent-cyan">กลายเป็น memory</span> ในระบบคุณแล้ว</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 13 · Install / start yourself -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow">เริ่มใช้เอง — หลัง workshop</div>
+      <h2>วันนี้แค่<span class="accent-cyan">ดูจอผม</span> · กลับบ้านลองเองได้</h2>
+      <div class="cards">
+        <div class="card"><div class="h">วันงาน</div><div class="t">0 ติดตั้ง</div><div class="d">เปิด studio.buildwithoracle.com บนเครื่องผม → ดูค้น/ถาม/อ่าน ผ่าน Zoom</div></div>
+        <div class="card"><div class="h">Studio UI ของตัวเอง</div><div class="t">Docker Desktop</div><div class="d">copy-paste 1 block → mine <span style="font-family:var(--mono)">~/notes</span> + ค้นในเว็บได้เลย</div><div class="cmd">พอร์ต 47778</div></div>
+        <div class="card"><div class="h">สาย AI agent</div><div class="t">Claude Code + skills</div><div class="d">1 คำสั่ง ได้ standard 12 ตัว + prism · cheatsheet · kien-thai</div><div class="cmd">bunx …skills-cli install -p standard</div></div>
+      </div>
+      <p class="lead">อยากค้นไทย/อังกฤษด้วย<b>ความหมาย</b> → ลง ollama + bge-m3 ทีหลังได้ ระบบสลับให้เอง (ไม่มีก็ค้นแบบ keyword ไปก่อน)</p>
+    </div>
+  </section>
+
+  <!-- 14 · Closing / terms -->
+  <section class="slide">
+    <div class="inner">
+      <div class="title-mark">🙏</div>
+      <h2>ขอบคุณครับ</h2>
+      <div class="terms">
+        <div class="term"><span class="k">🎥</span><span><b class="accent-green">เรียนฟรี</b> · Online Zoom</span></div>
+        <div class="term"><span class="k">💛</span><span>ขอเชิญร่วมบริจาค <b class="accent-green">ท่านละ 999 บาท</b> ให้โรงพยาบาลในภาคใต้ (น้ำท่วมปีที่แล้ว)</span></div>
+        <div class="term"><span class="k">💬</span><span>คำถาม — ถามได้เลยครับ</span></div>
+      </div>
+      <p class="lead" style="font-family:var(--mono); font-size:15px; color:var(--ink-faint)">Oracle Second Brain for Research · AI for Research Community</p>
+    </div>
+  </section>
+
+</div>
+
+<div class="nav-zone prev" id="navPrev" aria-label="previous slide"></div>
+<div class="nav-zone next" id="navNext" aria-label="next slide"></div>
+<div class="counter" id="counter">1 / 14</div>
+<div class="brand">Oracle · buildwithoracle.com</div>
+<div class="hint" id="hint">← → เลื่อนสไลด์</div>
+
+<script>
+  (function () {
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const progress = document.getElementById('progress');
+    const counter = document.getElementById('counter');
+    const hint = document.getElementById('hint');
+    let i = 0;
+    function show(n) {
+      i = Math.max(0, Math.min(slides.length - 1, n));
+      slides.forEach((s, k) => s.classList.toggle('active', k === i));
+      progress.style.width = ((i + 1) / slides.length * 100) + '%';
+      counter.textContent = (i + 1) + ' / ' + slides.length;
+      if (i > 0 && hint) { hint.style.display = 'none'; }
+    }
+    function next() { show(i + 1); }
+    function prev() { show(i - 1); }
+    document.addEventListener('keydown', (e) => {
+      if (['ArrowRight', 'ArrowDown', ' ', 'PageDown'].includes(e.key)) { e.preventDefault(); next(); }
+      else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); prev(); }
+      else if (e.key === 'Home') { show(0); }
+      else if (e.key === 'End') { show(slides.length - 1); }
+    });
+    document.getElementById('navNext').addEventListener('click', next);
+    document.getElementById('navPrev').addEventListener('click', prev);
+    let sx = null;
+    document.addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; }, { passive: true });
+    document.addEventListener('touchend', (e) => {
+      if (sx === null) return;
+      const dx = e.changedTouches[0].clientX - sx;
+      if (Math.abs(dx) > 45) { dx < 0 ? next() : prev(); }
+      sx = null;
+    }, { passive: true });
+    show(0);
+  })();
+</script>

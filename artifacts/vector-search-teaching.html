@@ -1,0 +1,248 @@
+<title>Vector Search — ค้นด้วยความหมาย (สื่อสอน ARRA Oracle)</title>
+<style>
+  :root {
+    --bg:#0a0b10; --panel:#12141c; --panel2:#171a24; --ink:#eef0f7; --ink-soft:#a2a8bd; --ink-faint:#5c6178; --line:#23273a;
+    --cyan:#7fd4ff; --green:#52d98a; --amber:#f8a860; --gold:#ffcf4a; --rose:#ff7bab; --blue:#5b9dff; --violet:#b79dff;
+    --thai:"Noto Sans Thai","IBM Plex Sans Thai","Sarabun","Thonburi",system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,monospace;
+  }
+  * { box-sizing:border-box; margin:0; }
+  * { scrollbar-width:thin; scrollbar-color:#2c3350 transparent; }
+  *::-webkit-scrollbar{width:7px;height:7px;} *::-webkit-scrollbar-thumb{background:#2c3350;border-radius:4px;}
+  body { background:radial-gradient(120% 70% at 50% -10%, #171d33 0%, #0a0b1000 55%), var(--bg); color:var(--ink); font-family:var(--thai); line-height:1.6; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:900px; margin:0 auto; padding:48px 20px 72px; }
+  .eyebrow { font-family:var(--mono); font-size:12px; letter-spacing:0.16em; text-transform:uppercase; color:var(--ink-faint); font-weight:700; margin-bottom:8px; }
+  h1 { font-size:clamp(26px,5vw,40px); font-weight:800; letter-spacing:-0.02em; line-height:1.12; text-wrap:balance; }
+  .sub { color:var(--cyan); font-size:clamp(15px,2.2vw,19px); font-weight:600; margin-top:8px; }
+  .meta { font-family:var(--mono); font-size:11.5px; color:var(--ink-faint); margin-top:12px; border-top:1px solid var(--line); padding-top:12px; }
+
+  section { margin-top:36px; }
+  .sh { display:flex; align-items:baseline; gap:10px; margin-bottom:14px; }
+  .sh .n { font-family:var(--mono); color:var(--gold); font-weight:700; }
+  .sh h2 { font-size:clamp(19px,3vw,26px); font-weight:800; letter-spacing:-0.01em; }
+
+  .idea { border:1px solid var(--line); border-radius:14px; background:linear-gradient(180deg,#141824,#0f1119); padding:18px 20px; font-size:15.5px; line-height:1.65; color:var(--ink-soft); }
+  .idea b { color:var(--ink); }
+
+  /* interactive map */
+  .demo { border:1px solid var(--line); border-radius:16px; background:var(--panel); padding:18px; }
+  .queries { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+  .q { font-family:var(--thai); font-size:14.5px; padding:9px 15px; border-radius:999px; background:var(--chip,#0e1420); border:1px solid #223050; color:var(--cyan); cursor:pointer; transition:border-color .15s, background .15s; }
+  .q:hover { border-color:#3a5580; background:#0f1626; }
+  .q.on { background:var(--cyan); color:#06111f; border-color:var(--cyan); font-weight:700; }
+  .q:focus-visible { outline:2px solid var(--cyan); outline-offset:2px; }
+  svg { width:100%; height:auto; display:block; border-radius:12px; background:radial-gradient(60% 60% at 50% 45%, #0f1626 0%, #0b0d14 100%); }
+  .pt-label { font-family:var(--thai); font-size:13px; fill:var(--ink-soft); }
+  .pt-label.hot { fill:var(--gold); font-weight:700; }
+  .caption { font-size:13.5px; color:var(--ink-faint); margin-top:12px; text-align:center; line-height:1.5; }
+  .caption b { color:var(--gold); }
+
+  table.cmp { width:100%; border-collapse:collapse; font-size:14.5px; }
+  table.cmp th { text-align:left; font-family:var(--mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--ink-faint); font-weight:700; padding:9px 10px; border-bottom:1px solid var(--line); }
+  table.cmp td { padding:11px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  .fts { color:var(--amber); font-weight:700; } .vec { color:var(--violet); font-weight:700; }
+
+  .status { border:1px solid #4a3a24; border-radius:12px; background:#1a140c; padding:14px 16px; font-size:14.5px; color:var(--amber); line-height:1.55; margin-top:14px; }
+  .status b { color:var(--ink); }
+
+  ul.b { list-style:none; display:grid; gap:9px; margin-top:6px; }
+  ul.b li { position:relative; padding-left:24px; font-size:15px; color:var(--ink-soft); }
+  ul.b li::before { content:""; position:absolute; left:3px; top:0.55em; width:8px; height:8px; border-radius:2px; background:var(--violet); }
+  ul.b li b { color:var(--ink); }
+
+  footer { margin-top:44px; border-top:1px solid var(--line); padding-top:16px; font-family:var(--mono); font-size:11px; color:var(--ink-faint); line-height:1.8; }
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">สื่อสอน · ARRA Oracle Second Brain for Research</div>
+  <h1>Vector Search — ค้นด้วย<span style="color:var(--gold)">ความหมาย</span> ไม่ใช่คำ</h1>
+  <div class="sub">embedding คือ "พิกัดของความหมาย" · ค้น = หาจุดที่อยู่ใกล้กัน</div>
+  <div class="meta">iteration 1 · loop vector-teaching · 2026-07-13 · ต่อยอดเรื่อยๆ ทุกรอบ</div>
+
+  <section>
+    <div class="sh"><span class="n">แนวคิด</span><h2>ทำไม "ค้นด้วยความหมาย" ถึงต่างจาก Ctrl+F</h2></div>
+    <div class="idea">
+      คอมพิวเตอร์เปลี่ยน "ข้อความ" เป็น <b>ชุดตัวเลข (vector)</b> — เหมือนให้<b>พิกัด</b>กับความหมาย ประโยคที่ความหมายใกล้กัน จะมีพิกัดอยู่ใกล้กัน แม้ <b>ไม่มีคำร่วมกันสักคำ</b><br><br>
+      → ค้น "เบาหวาน" แล้วเจอเอกสารเรื่อง "public health" ได้ เพราะมันอยู่ใน<b>ย่านความหมายเดียวกัน</b> — นี่คือสิ่งที่ keyword search (FTS) ทำไม่ได้
+    </div>
+  </section>
+
+  <section>
+    <div class="sh"><span class="n">ลองเล่น</span><h2>แผนที่ความหมาย (แตะคำค้น ดูว่าอะไรอยู่ใกล้)</h2></div>
+    <div class="demo">
+      <div class="queries" id="queries"></div>
+      <svg id="map" viewBox="0 0 800 440" role="img" aria-label="semantic map"></svg>
+      <div class="caption" id="cap">แตะปุ่มคำค้นด้านบน — จุดที่<b>ใกล้ที่สุด</b>ตามความหมายจะสว่างขึ้น (ไม่ได้ดูจากตัวสะกด)</div>
+    </div>
+    <div class="caption" style="margin-top:8px; text-align:left; color:var(--ink-faint)">* นี่คือแบบจำลอง 2 มิติเพื่อการสอน — ของจริง embedding มี <b style="color:var(--ink-soft)">1024 มิติ</b> (bge-m3) แต่หลักการ "ใกล้ = ความหมายคล้าย" เหมือนกัน</div>
+  </section>
+
+  <section>
+    <div class="sh"><span class="n">เทียบ</span><h2>FTS vs Vector — ต่างกันยังไง</h2></div>
+    <div style="overflow-x:auto">
+    <table class="cmp">
+      <thead><tr><th></th><th class="fts">Full-Text Search (FTS)</th><th class="vec">Vector Search</th></tr></thead>
+      <tbody>
+        <tr><td>หลักการ</td><td>จับคู่ "คำ" ตรงตัว</td><td>จับคู่ "ความหมาย" (พิกัด)</td></tr>
+        <tr><td>"เบาหวาน" เจอ "public health"?</td><td>❌ ไม่เจอ (ไม่มีคำร่วม)</td><td>✅ เจอ (ย่านความหมายเดียวกัน)</td></tr>
+        <tr><td>ไทย/อังกฤษปนกัน</td><td>ต้องสะกดตรง</td><td>✅ ข้ามภาษาได้ (bge-m3 multilingual)</td></tr>
+        <tr><td>ต้องใช้</td><td>เบา — ทำงานได้เลย</td><td>ต้องมี embedder (เครื่องแรง/บริการ)</td></tr>
+        <tr><td>ในระบบเราตอนนี้</td><td><b class="fts">✅ ใช้งานได้</b></td><td>⏳ กำลังจะกลับมา (ผ่าน cloud)</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="idea" style="margin-top:14px">💡 <b>ของจริงใช้ทั้งคู่ (hybrid)</b> — FTS จับคำเป๊ะ + vector จับความหมาย รวมกันได้ผลดีที่สุด · workshop 26 ก.ค. <b>เริ่มที่ FTS ก่อน</b> (เสถียร) แล้ว vector ตามมา</div>
+  </section>
+
+  <section>
+    <div class="sh"><span class="n">เดโมแนะนำ</span><h2>เก็ทใน 2 นาที — คำค้นเดียว 2 เครื่องมือ</h2></div>
+    <div class="idea">
+      โชว์ <b>query เดียวกัน</b> ยิง 2 ทาง (ตัวอย่างจริงจาก CLAUDE.md ของ fleet เราเอง):
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px">
+        <div style="border:1px solid #4a3a24;border-radius:10px;background:#1a140c;padding:13px 15px">
+          <div style="font-family:var(--mono);font-size:12px;color:var(--amber);font-weight:700;margin-bottom:6px">rg (substring)</div>
+          <div style="font-size:14px;color:var(--ink-soft)">ค้น "tmux mouse paste" → เจอเฉพาะไฟล์ที่<b style="color:var(--ink)">มีคำนั้นตรงตัว</b></div>
+        </div>
+        <div style="border:1px solid #2f4a3a;border-radius:10px;background:#101c16;padding:13px 15px">
+          <div style="font-family:var(--mono);font-size:12px;color:var(--green);font-weight:700;margin-bottom:6px">muninn_search (semantic)</div>
+          <div style="font-size:14px;color:var(--ink-soft)">ค้นเดียวกัน → เจอเอกสารเรื่อง <b style="color:var(--ink)">clipboard</b> ทั้งที่<b style="color:var(--ink)">ไม่มีคำ "tmux/paste" เลย</b></div>
+        </div>
+      </div>
+      <div style="margin-top:14px">💬 <b>use-case ที่ resonate สุด</b> (จาก skills-cli): <b>"ความจำ oracle 20,000 docs หาเจอในวินาที"</b> — ไม่ใช่ RAG ทฤษฎี · เดโมสดด้วย <span style="font-family:var(--mono);color:var(--cyan)">muninn_stats</span> ให้เห็นว่า index จริงมีอะไร</div>
+      <div style="margin-top:12px">🧰 skills ที่โชว์ semantic ได้ดี: <span style="font-family:var(--mono);color:var(--cyan)">/trace</span> (hybrid semantic+FTS) · <span style="font-family:var(--mono);color:var(--cyan)">/seek</span> (trace+dig+prove) · <span style="font-family:var(--mono);color:var(--cyan)">/ralph-dig</span> — backend เดียวกัน :47778 (bge-m3/nomic/qwen3 + FTS5)</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sh"><span class="n">เบื้องหลัง</span><h2>embedding model ที่ ARRA Oracle ใช้</h2></div>
+    <ul class="b">
+      <li><b>bge-m3</b> — 1024 มิติ · multilingual (ไทย/อังกฤษ) · ตัวหลักของเรา</li>
+      <li><b>nomic-embed-text</b> — 768 มิติ · เบา/เร็ว</li>
+      <li><b>qwen3-embedding</b> — 1024 / 2560 / 4096 มิติ (เลือกได้ตามความละเอียด)</li>
+      <li>เก็บ vector ใน <b>LanceDB</b> (local) หรือ <b>Cloudflare Vectorize</b> (cloud) — สลับได้</li>
+    </ul>
+    <div class="status">
+      ⏳ <b>สถานะจริง (honest):</b> ตอนนี้ vector search <b>ปิดชั่วคราว</b> (embedder local ถูกปลดเพราะกินเครื่อง) → workshop เดโมด้วย <b>FTS + แผนที่ความหมายนี้</b> · vector ตัวเต็มกลับมาเมื่อย้าย embedding ขึ้น Cloudflare Workers AI (ไม่ต้องมี GPU ในเครื่อง)
+    </div>
+  </section>
+
+  <section>
+    <div class="sh"><span class="n">embedding มาจากไหน</span><h2>ข้อความ → โมเดล → ตัวเลข</h2></div>
+    <div class="idea">
+      <span style="font-family:var(--mono);color:var(--cyan)">"งานวิจัยเบาหวาน"</span> → <b>embedder (bge-m3)</b> → <span style="font-family:var(--mono);color:var(--green)">[0.02, 0.91, -0.13, … อีก 1021 ตัว]</span><br><br>
+      โมเดลถูก<b>ฝึก</b>จากข้อความมหาศาลจนเรียนรู้ว่าคำ/ประโยคไหน "ความหมายใกล้กัน" → แปลงเป็นพิกัด 1024 มิติที่สะท้อนความหมาย · ไม่ใช่เวทมนตร์ — คือ pattern ที่เรียนจากข้อมูล
+    </div>
+  </section>
+
+  <section>
+    <div class="sh"><span class="n">ของจริงใช้คู่กัน</span><h2>Hybrid = FTS + Vector รวมคะแนน</h2></div>
+    <div class="idea">
+      <b>FTS</b> จับคำเป๊ะ (เช่น ชื่อยา ชื่อคน ตัวเลข) · <b>Vector</b> จับความหมายกว้าง → ระบบ<b>รวมคะแนนทั้งสอง</b> แล้วเรียงผลลัพธ์<br><br>
+      = ได้ทั้ง "แม่นคำ" และ "เข้าใจความหมาย" · ตอบโจทย์นักวิจัยที่บางทีจำได้แค่ชื่อยา (FTS) บางทีจำได้แค่ไอเดียลางๆ (vector)
+    </div>
+  </section>
+
+  <section>
+    <div class="sh"><span class="n">vector กลับมายังไง</span><h2>ย้าย embedding ขึ้น Cloudflare — ไม่ต้องมี GPU</h2></div>
+    <div class="idea">
+      ปัญหาเดิม: embed ในเครื่อง (Ollama) กินทรัพยากร → ปิดไป · <b>ทางกลับ</b>: ใช้ <b>Cloudflare Workers AI</b> (@cf/baai/bge-m3) — embed บน edge ไม่ต้องมีเครื่องแรง · เก็บ vector ใน <b>Cloudflare Vectorize</b><br><br>
+      <span style="color:var(--amber)">สถานะ: โค้ดพร้อม (CloudflareAIEmbeddings + Vectorize adapter) รอ token #2680 + dry-run (drift benchmark) ~1 team-session</span>
+      <div style="margin-top:10px;font-family:var(--mono);font-size:12px;color:var(--ink-faint)">engineering จริง (ไม่ใช่ vaporware): cosine unified #2717 · drift benchmark harness #2740/#2784 · FTS5 graceful degrade #2747 · runtime observability #2759</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sh"><span class="n">โค้ดจริง</span><h2>vector search = cosine similarity (แค่นี้เอง)</h2></div>
+    <div class="idea" style="margin-bottom:12px">หัวใจของ vector search คือสูตรเดียว — วัด "มุม" ระหว่าง 2 vector · มุมแคบ (cosine เข้าใกล้ 1) = ความหมายใกล้กัน · เดโมด้านบน<b>คำนวณสูตรนี้สดในเบราว์เซอร์</b></div>
+    <pre style="font-family:var(--mono);font-size:13px;line-height:1.6;color:var(--cyan);background:#0e1420;border:1px solid #223050;border-radius:12px;padding:16px 18px;overflow-x:auto;margin:0"><span style="color:var(--ink-faint)">// ความหมายใกล้กันแค่ไหน — คืนค่า 0..1</span>
+<span style="color:var(--violet)">function</span> cosine(a, b) {
+  <span style="color:var(--violet)">let</span> dot=0, na=0, nb=0;
+  <span style="color:var(--violet)">for</span> (<span style="color:var(--violet)">let</span> i=0; i&lt;a.length; i++) {
+    dot += a[i]*b[i];      <span style="color:var(--ink-faint)">// จุดตรงกันแค่ไหน</span>
+    na  += a[i]*a[i];
+    nb  += b[i]*b[i];
+  }
+  <span style="color:var(--violet)">return</span> dot / (Math.sqrt(na)*Math.sqrt(nb));
+}
+<span style="color:var(--ink-faint)">// ค้น = เรียง doc ตาม cosine(queryVec, docVec) มาก→น้อย</span></pre>
+    <div class="idea" style="margin-top:12px">▶️ <b>รันเองได้จริง</b> — <span style="font-family:var(--mono);color:var(--cyan);font-size:0.9em">node data/vector-cosine-demo.mjs "สอนนักศึกษา"</span><br>
+    <span style="font-family:var(--mono);font-size:12.5px;color:var(--ink-faint)">→ 1. pedagogy 99.7% · 2. การสอนออนไลน์ 99.4% · 3. machine learning 41.2%</span> — <b>ไม่มีคำตรงกับคำค้นเลย</b></div>
+  </section>
+
+  <section>
+    <div class="sh"><span class="n">สำหรับผู้สอน</span><h2>gotchas — จุดที่คนมักงงตอนสอน vector</h2></div>
+    <ul class="b">
+      <li><b>อย่าลงคณิตลึก</b> — non-tech ไม่ต้องรู้ dot product/norm · พอแค่ "พิกัดของความหมาย + หาจุดใกล้กัน"</li>
+      <li><b>ย้ำว่า embedding ไม่ใช่เวทมนตร์</b> — โมเดลถูก "ฝึก" จากข้อความมหาศาลจนรู้ว่าคำไหนความหมายใกล้กัน</li>
+      <li><b>vector ≠ แม่นเสมอ</b> — บางทีจับความหมายผิด (เช่น คำกำกวม) → ทำไม hybrid (FTS+vector) ถึงดีกว่าตัวเดียว</li>
+      <li><b>เดโมวันจริง: ใช้เดโมนี้ + FTS จริง</b> — vector layer เต็มยังปิด (Ollama retired) อย่าเปิด Playground ที่ vector column ว่างบนเวที</li>
+      <li><b>ข้ามภาษาคือจุดขาย</b> — ค้นไทย เจอ doc อังกฤษ (bge-m3 multilingual) → researcher ไทยที่อ่าน paper อังกฤษจะอิน</li>
+    </ul>
+  </section>
+
+  <footer>
+    SOURCE: arra-oracle-v3/src/vector/* (embeddings.ts, adapters/) + data/ecosystem-data-pack.md<br>
+    RENDERED: /loop vector-teaching · iteration 9 · ARRA Oracle · + community-ask (skills-cli): rg-vs-semantic 2-min demo, 20k-docs use-case, /trace /seek /ralph-dig · complete
+  </footer>
+</div>
+
+<script>
+  (function () {
+    // teaching model: each phrase = a small vector [health, ai, edu, climate].
+    // The map computes REAL cosine similarity live — same math as production (just 4 dims, not 1024).
+    const P = [
+      {t:"โรคเบาหวาน",            x:180, y:120, c:"health",  v:[0.90,0.10,0.05,0.05]},
+      {t:"รักษามะเร็ง",            x:120, y:200, c:"health",  v:[0.95,0.05,0.00,0.05]},
+      {t:"วัคซีน",                x:230, y:210, c:"health",  v:[0.85,0.10,0.10,0.00]},
+      {t:"สาธารณสุข public health", x:180, y:300, c:"health",  v:[0.80,0.10,0.20,0.10]},
+      {t:"machine learning",     x:600, y:130, c:"ai",      v:[0.05,0.95,0.20,0.00]},
+      {t:"AI agent",             x:660, y:210, c:"ai",      v:[0.00,0.98,0.10,0.00]},
+      {t:"vector database",      x:560, y:250, c:"ai",      v:[0.05,0.90,0.10,0.00]},
+      {t:"การสอนออนไลน์",         x:400, y:360, c:"edu",     v:[0.10,0.30,0.90,0.00]},
+      {t:"pedagogy การศึกษา",     x:300, y:390, c:"edu",     v:[0.15,0.15,0.92,0.00]},
+      {t:"น้ำท่วม",               x:520, y:390, c:"climate", v:[0.20,0.05,0.05,0.90]},
+      {t:"climate change",       x:640, y:350, c:"climate", v:[0.05,0.15,0.05,0.95]},
+    ];
+    const CL = { health:"#52d98a", ai:"#b79dff", edu:"#7fd4ff", climate:"#f8a860" };
+    const QUERIES = [
+      {label:"เบาหวาน",         v:[0.88,0.10,0.05,0.05]},
+      {label:"AI ช่วยงานวิจัย",  v:[0.10,0.90,0.25,0.00]},
+      {label:"สอนนักศึกษา",     v:[0.10,0.20,0.92,0.00]},
+      {label:"โลกร้อน",         v:[0.10,0.10,0.05,0.93]},
+    ];
+    function cosine(a,b){ let d=0,na=0,nb=0; for(let i=0;i<a.length;i++){ d+=a[i]*b[i]; na+=a[i]*a[i]; nb+=b[i]*b[i]; } return d/(Math.sqrt(na)*Math.sqrt(nb)); }
+    const svg = document.getElementById('map'), NS="http://www.w3.org/2000/svg";
+    function el(n,a){ const e=document.createElementNS(NS,n); for(const k in a) e.setAttribute(k,a[k]); return e; }
+    function draw(q) {
+      svg.innerHTML="";
+      let ranked=null;
+      if (q) {
+        ranked = P.map(p=>({p, s:cosine(q.v,p.v)})).sort((a,b)=>b.s-a.s);
+        const top = new Set(ranked.slice(0,3).map(r=>r.p));
+        // query marker = weighted centroid of top-3
+        const t3=ranked.slice(0,3); const cx=t3.reduce((s,r)=>s+r.p.x,0)/3, cy=t3.reduce((s,r)=>s+r.p.y,0)/3;
+        t3.forEach(r=>svg.appendChild(el("line",{x1:cx,y1:cy,x2:r.p.x,y2:r.p.y,stroke:"#ffcf4a","stroke-width":1.5,"stroke-opacity":0.55})));
+        svg.appendChild(el("circle",{cx,cy,r:7,fill:"#ffcf4a"}));
+        const ql=el("text",{x:cx,y:cy-13,"text-anchor":"middle",class:"pt-label hot"}); ql.textContent='"'+q.label+'"'; svg.appendChild(ql);
+        P.forEach(p=>{ const on=top.has(p); svg.appendChild(el("circle",{cx:p.x,cy:p.y,r:on?10:5,fill:CL[p.c],"fill-opacity":on?1:0.35,stroke:on?"#fff":"none","stroke-width":on?1.5:0}));
+          const tx=el("text",{x:p.x+13,y:p.y+4,class:"pt-label"+(on?" hot":"")}); tx.textContent=p.t; svg.appendChild(tx); });
+      } else {
+        P.forEach(p=>{ svg.appendChild(el("circle",{cx:p.x,cy:p.y,r:6,fill:CL[p.c],"fill-opacity":0.5}));
+          const tx=el("text",{x:p.x+13,y:p.y+4,class:"pt-label"}); tx.textContent=p.t; svg.appendChild(tx); });
+      }
+      return ranked;
+    }
+    const qwrap=document.getElementById('queries'), cap=document.getElementById('cap');
+    QUERIES.forEach(q=>{
+      const b=document.createElement('button'); b.className="q"; b.textContent='ค้น: "'+q.label+'"';
+      b.addEventListener('click',()=>{
+        document.querySelectorAll('.q').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+        const r=draw(q);
+        const list=r.slice(0,3).map((x,i)=>(i+1)+'. '+x.p.t.split(' ')[0]+' <span style="color:var(--ink-faint)">('+(x.s*100).toFixed(0)+'%)</span>').join('  ·  ');
+        cap.innerHTML='ค้น <b>"'+q.label+'"</b> → cosine similarity สูงสุด: '+list;
+      });
+      qwrap.appendChild(b);
+    });
+    draw(null);
+  })();
+</script>

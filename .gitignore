@@ -1,0 +1,26 @@
+# --- Python envs & caches (regenerable, ใหญ่) ---
+**/.venv/
+**/__pycache__/
+*.pyc
+
+# --- Vector DBs & benchmark scratch (binary, regenerable) ---
+**/chroma_db/
+**/chroma_bench/
+**/bench_chroma/
+**/bench_lance/
+**/my_vault/
+
+# --- Snapshot images (43M, regenerable ด้วย snapshot_audit.py) ---
+book/shots/
+
+# --- ⚠️ PII / private (ทำเครื่องหมาย "ห้ามขึ้นสาธารณะ" โดย session ก่อน) ---
+data/ajfon-timeline.md
+artifacts/ajfon-deal.html
+artifacts/chatchai-esp32-order.html
+
+# --- chroma binary stores (ทุก variant: bench, test, ฯลฯ) ---
+**/chroma_bench*/
+**/chroma.sqlite3
+**/*.bin
+**/data_level0.bin
+**/semantic_map.json
