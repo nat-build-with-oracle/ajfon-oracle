@@ -7825,8 +7825,10 @@ body { font-family: var(--jp-content-font-family) !important; }
 .jp-RenderedHTMLCommon h2 { font-size: 1.65rem !important; margin-top: 2.4em !important;
   padding-bottom: 8px; }
 .jp-RenderedHTMLCommon h3 { font-size: 1.3rem !important; }
-.jp-InputArea-editor, .highlight, div.highlight { border-radius: 12px !important; overflow-x: auto !important; }
-.highlight pre, .jp-OutputArea-output pre { white-space: pre !important; }
+.jp-InputArea-editor, .highlight, div.highlight { border-radius: 12px !important; overflow-x: hidden !important; }
+/* ⭐ wrap โค้ด: แสดงครบทุกบรรทัด copy ได้ ไม่มี scrollbar (คงย่อหน้าด้วย pre-wrap) */
+.highlight pre, .jp-OutputArea-output pre, .jp-RenderedText pre {
+  white-space: pre-wrap !important; word-break: break-word !important; overflow-wrap: anywhere !important; }
 .jp-Cell-inputWrapper, .jp-InputArea, .jp-CodeMirrorEditor { min-width: 0 !important; }
 .jp-OutputArea-output pre { border-radius: 10px; padding: 12px 16px !important; }
 /* ซ่อน ¶ anchor (contrast ต่ำ + ไม่จำเป็นสำหรับหนังสือ) */
