@@ -24,3 +24,10 @@ artifacts/chatchai-esp32-order.html
 **/*.bin
 **/data_level0.bin
 **/semantic_map.json
+
+# --- LanceDB data stores (binary, regenerable โดยรัน notebook) ---
+**/*.lance/
+**/lance_brain/
+**/lance_hybrid/
+**/lance_tt/
+**/lance_bench/

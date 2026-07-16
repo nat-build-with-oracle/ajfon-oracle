@@ -412,3 +412,11 @@ Cron: 0362a587 (every 15m) · goal: dig vector DB → slide + code → ~50 itera
 - ⭐ root cause แท้: nbconvert เดินทุกสีผ่าน **CSS var --jp-*** (ผม override รายคลาสเลยชนกัน) → วิธีถูก=flip token ทั้งชุด (impeccable token-level)
 - **apply_theme.py**: คุม --jp-mirror-editor-* (syntax), --jp-layout-color*, --jp-content-font-color*, --jp-rendermime-table-*, --jp-cell-editor-bg, links, prompts — light+dark ครบ · เอา side-stripe ออก (impeccable ban) · ซ่อน ¶ anchor · overflow-x:auto กันโค้ดยาวถูกตัด
 - 🏆 **ผล: 1056 → 0 contrast fail** (verify ด้วย re-audit จริง ไม่ใช่เดา) · dark mode code/table/inline อ่านออกครบทุก token · idempotent re-apply ได้
+
+## iter 114 — 2026-07-16 · 🎯 goal 2: หลัง ChromaDB สมบูรณ์ → LanceDB (production)
+- ยืนยัน LanceDB 0.34 API จริงก่อนเขียน: create/search/distance_type · native FTS (tantivy, create_index config=FTS()) · time-travel (list_versions/checkout/restore) · RRFReranker
+- **ch13 lancedb-second-brain**: port บท 1–3 → LanceDB (.search().where() SQL) · self-check ✅ (ประชุม + filter no-leak)
+- **ch14 lancedb-hybrid-native**: ⭐ FTS+vector+RRF ในตัว (แทน BM25 20 บรรทัดบท 7) · self-check ✅ (FTS จับ 2740, hybrid ชนะทั้งรหัส+ความหมาย)
+- **ch15 lancedb-time-travel**: ⭐ versioning — ลบ n1 ผิด→checkout+restore→n1 กลับมา · self-check ✅ (ฟีเจอร์ที่ Chroma ไม่มี)
+- book 13-15.md + render HTML + theme + index ภาค 5 · re-audit: **0 contrast fail (32 snapshot)**
+- สถานะ: **15 บท + 15 notebooks execute ✅ + 16 HTML big-print** (ChromaDB 1-12 + LanceDB production 13-15)
