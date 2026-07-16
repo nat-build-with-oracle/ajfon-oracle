@@ -8287,6 +8287,97 @@ triple-RRF     : Recall@5=0.929  nDCG@10=0.791
 </div>
 </div>
 </div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=f86c1d5f">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="6)-%E2%AD%90-%E0%B8%AA%E0%B8%A3%E0%B9%89%E0%B8%B2%E0%B8%87-golden-set-%E0%B9%81%E0%B8%9A%E0%B8%9A-semi-automated-(pool-%E2%86%92-LLM-pre-screen-%E2%86%92-%E0%B8%84%E0%B8%99-confirm)">6) ⭐ สร้าง golden set แบบ semi-automated (pool → LLM pre-screen → คน confirm)<a class="anchor-link" href="#6)-%E2%AD%90-%E0%B8%AA%E0%B8%A3%E0%B9%89%E0%B8%B2%E0%B8%87-golden-set-%E0%B9%81%E0%B8%9A%E0%B8%9A-semi-automated-(pool-%E2%86%92-LLM-pre-screen-%E2%86%92-%E0%B8%84%E0%B8%99-confirm)">¶</a></h2><p>คำถาม arra-v3: LLM ช่วย pre-screen ก่อนคนตัดสินได้ไหม โดยยัง honest? <strong>ได้ ถ้าคุม bias</strong>:</p>
+<ol>
+<li><strong>pool (auto)</strong>: union(ทุก engine top-k) + random → กลไกล้วน</li>
+<li><strong>LLM label blind (auto)</strong>: ให้ LLM ดู (query, doc) เดี่ยวๆ ห้ามรู้ว่า engine ไหนหา/อันดับ (กัน retriever bias)</li>
+<li><strong>คน confirm positive 100%</strong> + sample negative → แกน honest</li>
+</ol>
+<p>เซลล์นี้ demonstrate จริง (LLM = gemma3) แล้ว <strong>validate กับ hand-label</strong> (GOLDEN) = trust check</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=5539a51b">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">build_pool</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">pool</span><span class="o">=</span><span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">MODELS</span><span class="p">:</span> <span class="n">pool</span><span class="o">|=</span><span class="nb">set</span><span class="p">(</span><span class="n">rank</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">q</span><span class="p">)[:</span><span class="n">k</span><span class="p">])</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">random</span><span class="p">;</span> <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="n">pool</span><span class="o">|=</span><span class="nb">set</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>   <span class="c1"># random guard</span>
+    <span class="k">return</span> <span class="n">pool</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_ollama_gen</span><span class="p">(</span><span class="n">prompt</span><span class="p">):</span>
+    <span class="n">req</span><span class="o">=</span><span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span><span class="s1">'http://localhost:11434/api/generate'</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s1">'model'</span><span class="p">:</span><span class="s1">'gemma3:4b'</span><span class="p">,</span><span class="s1">'prompt'</span><span class="p">:</span><span class="n">prompt</span><span class="p">,</span><span class="s1">'stream'</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span><span class="s1">'options'</span><span class="p">:{</span><span class="s1">'temperature'</span><span class="p">:</span><span class="mi">0</span><span class="p">}})</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span>
+        <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s1">'Content-Type'</span><span class="p">:</span><span class="s1">'application/json'</span><span class="p">})</span>
+    <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">req</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="mi">120</span><span class="p">)</span> <span class="k">as</span> <span class="n">r</span><span class="p">:</span> <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">r</span><span class="p">)[</span><span class="s1">'response'</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">llm_judge</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">doc</span><span class="p">):</span>   <span class="c1"># blind: เห็นแค่ query+doc ไม่รู้ engine/อันดับ</span>
+    <span class="n">p</span><span class="o">=</span><span class="sa">f</span><span class="s1">'คำถาม: </span><span class="si">{</span><span class="n">q</span><span class="si">}</span><span class="se">\n</span><span class="s1">เอกสาร: </span><span class="si">{</span><span class="n">doc</span><span class="si">}</span><span class="se">\n</span><span class="s1">เอกสารนี้ตอบคำถามได้ไหม? ตอบแค่ YES หรือ NO'</span>
+    <span class="k">return</span> <span class="s1">'YES'</span> <span class="ow">in</span> <span class="n">_ollama_gen</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()[:</span><span class="mi">6</span><span class="p">]</span>
+
+<span class="c1"># รัน semi-auto บน golden set → เทียบ LLM vs hand-label (คน)</span>
+<span class="n">tp</span><span class="o">=</span><span class="n">fp</span><span class="o">=</span><span class="n">fn</span><span class="o">=</span><span class="n">tn</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">need_human</span><span class="o">=</span><span class="mi">0</span>
+<span class="k">for</span> <span class="n">q</span><span class="p">,</span><span class="n">rel</span> <span class="ow">in</span> <span class="n">GOLDEN</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">build_pool</span><span class="p">(</span><span class="n">q</span><span class="p">):</span>
+        <span class="n">llm</span><span class="o">=</span><span class="n">llm_judge</span><span class="p">(</span><span class="n">q</span><span class="p">,</span><span class="n">CORPUS</span><span class="p">[</span><span class="n">d</span><span class="p">]);</span> <span class="n">human</span><span class="o">=</span><span class="p">(</span><span class="n">d</span> <span class="ow">in</span> <span class="n">rel</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">llm</span> <span class="ow">and</span> <span class="n">human</span><span class="p">:</span> <span class="n">tp</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">llm</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">human</span><span class="p">:</span> <span class="n">fp</span><span class="o">+=</span><span class="mi">1</span><span class="p">;</span> <span class="n">need_human</span><span class="o">+=</span><span class="mi">1</span>   <span class="c1"># LLM+ ต้องคน confirm</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">llm</span> <span class="ow">and</span> <span class="n">human</span><span class="p">:</span> <span class="n">fn</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span> <span class="n">tn</span><span class="o">+=</span><span class="mi">1</span>
+<span class="n">agree</span><span class="o">=</span><span class="p">(</span><span class="n">tp</span><span class="o">+</span><span class="n">tn</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">tp</span><span class="o">+</span><span class="n">fp</span><span class="o">+</span><span class="n">fn</span><span class="o">+</span><span class="n">tn</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'LLM pre-screen vs hand-label: agree </span><span class="si">{</span><span class="n">agree</span><span class="si">:</span><span class="s1">.0%</span><span class="si">}</span><span class="s1">  (tp=</span><span class="si">{</span><span class="n">tp</span><span class="si">}</span><span class="s1"> fp=</span><span class="si">{</span><span class="n">fp</span><span class="si">}</span><span class="s1"> fn=</span><span class="si">{</span><span class="n">fn</span><span class="si">}</span><span class="s1"> tn=</span><span class="si">{</span><span class="n">tn</span><span class="si">}</span><span class="s1">)'</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'LLM บอก positive </span><span class="si">{</span><span class="n">tp</span><span class="o">+</span><span class="n">fp</span><span class="si">}</span><span class="s1"> คู่ → คน confirm แค่นี้ (แทนที่จะดูทั้ง pool)'</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'→ workflow: pool auto → LLM ตัด → คน confirm positive + sample negative = honest + ประหยัดแรงคน'</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>LLM pre-screen vs hand-label: agree 65%  (tp=13 fp=24 fn=2 tn=35)
+LLM บอก positive 37 คู่ → คน confirm แค่นี้ (แทนที่จะดูทั้ง pool)
+→ workflow: pool auto → LLM ตัด → คน confirm positive + sample negative = honest + ประหยัดแรงคน
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e905de45">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="%E0%B8%A7%E0%B8%B4%E0%B8%98%E0%B8%B5%E0%B9%83%E0%B8%8A%E0%B9%89%E0%B8%81%E0%B8%B1%E0%B8%9A-25-Thai-query-%E0%B8%88%E0%B8%A3%E0%B8%B4%E0%B8%87-(arra-v3)">วิธีใช้กับ 25 Thai query จริง (arra-v3)<a class="anchor-link" href="#%E0%B8%A7%E0%B8%B4%E0%B8%98%E0%B8%B5%E0%B9%83%E0%B8%8A%E0%B9%89%E0%B8%81%E0%B8%B1%E0%B8%9A-25-Thai-query-%E0%B8%88%E0%B8%A3%E0%B8%B4%E0%B8%87-(arra-v3)">¶</a></h3><pre><code>for q in thai_queries_from_log:
+    pool = build_pool(q)              # auto: union engines + random
+    for d in pool:
+        label = llm_judge(q, corpus[d])   # auto: LLM blind label
+    # คน: confirm ทุก label=YES + sample label=NO → expectedIds
+</code></pre>
+<p>⚠️ positive ต้องคน confirm 100% (false-positive ทำ ground truth เน่า) · อย่าใช้ LLM ตัวเดียวกับที่ generate ใน RAG</p>
+</div>
+</div>
+</div>
+</div>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=8914219e">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
@@ -8302,7 +8393,7 @@ triple-RRF     : Recall@5=0.929  nDCG@10=0.791
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -8350,7 +8441,7 @@ triple-RRF     : Recall@5=0.929  nDCG@10=0.791
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># metric ต้อง valid: nDCG ∈ [0,1], recall ∈ [0,1]</span>
