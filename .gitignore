@@ -31,3 +31,7 @@ artifacts/chatchai-esp32-order.html
 **/lance_hybrid/
 **/lance_tt/
 **/lance_bench/
+
+# --- OS/editor noise ---
+**/.DS_Store
+**/.ipynb_checkpoints/
