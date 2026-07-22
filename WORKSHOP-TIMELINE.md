@@ -47,9 +47,19 @@ Announced via Grad Passion's Facebook page, hashtags `#Gradpassion #ARRAOracle #
 
 ## How this workshop came to be
 
-Source: Nat's own Facebook DM thread with กมลทิพย์ เลิศชัยสถาพร (อาจารย์ฝน) — friends
-since 2026-05-04, 61 messages total, retrieved via facebook-timeline-oracle's
+Two independent sources, cross-checked rather than merged blindly — they mostly
+agree, and where they don't, that's noted rather than smoothed over.
+
+**Source 1**: Nat's own Facebook DM archive with กมลทิพย์ เลิศชัยสถาพร (อาจารย์ฝน) —
+friends since 2026-05-04, 61 messages total, retrieved via facebook-timeline-oracle's
 `contact_personas` / `friends_combined` archive.
+
+**Source 2**: a Discord thread called **"training aj Fon"** (guild "nat's ARRA
+Oracles," thread ID `1521898760903458896`, 6 messages) where Nat pasted a
+screenshot of that same FB conversation for Hermes Oracle to help draft a reply
+and plan the workshop curriculum. More primary/verbatim than Source 1 on the
+date-option specifics (a direct screenshot vs. a summarized DM-archive read),
+so treated as the more precise source where the two differ.
 
 **She reached out first — not Nat.** อาจารย์ฝน is a doctor and founder of the
 Facebook community "AI for Research." A member of her own community recommended
@@ -62,17 +72,37 @@ her, and that she sees an opportunity in it. Four minutes later (07:56:42) she
 adds that she'd just joined the Discord and YouTube communities, but that she'd
 much rather learn directly from Nat.
 
-**How the date got locked**:
+**How the date actually got locked (corrected via Source 2)**:
 - 2026-06-04 — she proposes organizing "Oracle & Second Brain for Research," an
-  online 3-hour workshop, on a Saturday
-- 2026-06-06 — she offers three date options: Sat 11 Jul evening, Sat 25 Jul
-  evening, or Sun 26 Jul morning/evening
-- 2026-06-09 23:22:43 — **Nat replies "น่าจะช่วง 25/26 ก็ดีค้าบ"** — the date is set
+  online 3-hour workshop
+- 2026-06-06 — she offers **three specific slots**: Sat 25 Jul 15:00–18:00, Sun
+  26 Jul 09:00–12:00, or Sun 26 Jul 13:00–16:00 (corrects the earlier "11/25/26
+  Jul" draft of this doc, which was a slightly-off paraphrase of Source 1 — the
+  Discord screenshot is the more literal record)
+- Hermes Oracle drafted a recommended reply for Nat picking **Sat 25 Jul
+  15:00–18:00**, reasoning that Sunday would be harder for people to attend
+  (family day) — plus a full block-by-block 3-hour curriculum outline
+- 2026-06-09 23:22:43 — **what Nat actually sent was vaguer than Hermes's
+  draft**: *"น่าจะช่วง 25/26 ก็ดีค้าบ"* ("probably sometime 25/26 sounds good") —
+  not a commitment to Hermes's specific Saturday recommendation
+- **The real outcome went a third way**: the publicly-announced event is
+  **Sunday 26 July, 09:00–12:00** — one of her three original options, but
+  specifically *not* the one Hermes had drafted and recommended. Worth
+  preserving honestly rather than implying the draft became the plan — it didn't.
 
 Worth noting: Nat kicked off the fleet-wide literature-review exercise (the
 first row of the timeline below) exactly **one day** after locking this date —
 the workshop-prep work and the workshop commitment are directly connected, not
 a coincidence of timing.
+
+**On live-demo content**: Hermes's draft curriculum suggested "2-3 medical or
+education-field papers" as demo material, reasoning the audience includes
+doctors. **Overruled by Nat** — the workshop demos use Nat's own real PhD-domain
+corpus instead (the same PM2.5 / satellite-AOD / DustBoy-sensor literature
+already verified this session — bongbaeng's 12 papers + Orz's 17 papers, both
+code-backed, see the provenance timeline). Reasoning, in Nat's own words: using
+unfamiliar material to match the audience would make him "a person who's
+bullshitting" (`คนมั่ว`) — real expertise, not audience-pandering, is the bar.
 
 ## Unified timeline
 
@@ -81,8 +111,9 @@ a coincidence of timing.
 | 2026-05-04 | 🎓 event | อาจารย์ฝน (กมลทิพย์ เลิศชัยสถาพร) becomes Facebook friends with Nat |
 | 2026-05-25 07:52 | 🎓 event | อาจารย์ฝน sends the first message — introduces herself, a doctor and founder of "AI for Research," recommended by a community member, interested in Oracle |
 | 2026-06-04 | 🎓 event | She proposes organizing an "Oracle & Second Brain for Research" online workshop |
-| 2026-06-06 | 🎓 event | She offers three date options (11 Jul / 25 Jul / 26 Jul) |
-| **2026-06-09 23:22** | 🎓 event | **Nat locks the date**: "น่าจะช่วง 25/26 ก็ดีค้าบ" |
+| 2026-06-06 | 🎓 event | She offers three specific slots: Sat 25 Jul 15:00–18:00 / Sun 26 Jul 09:00–12:00 / Sun 26 Jul 13:00–16:00 |
+| 2026-06-06 | 🔬 technical | Nat pastes the FB conversation into Discord ("training aj Fon" thread); Hermes Oracle drafts a reply picking Sat 25 Jul + a full 3-hour curriculum outline |
+| **2026-06-09 23:22** | 🎓 event | **Nat's actual reply is vaguer than the draft**: "น่าจะช่วง 25/26 ก็ดีค้าบ" — not a commitment to Hermes's Saturday pick |
 | 2026-06-10 | 🔬 technical | Nat kicks off a fleet-wide literature-review exercise on Discord — "ทุกคนครับ ลิสต์ literature review มาทางนี้" (one day after the date lock — directly connected) |
 | 2026-06-10 | 🔬 technical | Fleet builds independent paper vector-DBs as a workshop exercise: มาเฟีย (ChromaDB, claimed 61 papers — later found unverifiable), บ๊องแบ๊ง (sqlite + transformers.js, 12 papers, code-verified), Jizo (bge-m3, claimed 36 — unverifiable), Orz (17 papers, code-verified), SomBo, Vessel |
 | 2026-06-11 | 🔬 technical | DustBoy PhD Oracle finds บ๊องแบ๊ง's PCA-scatter + semantic-search images, reposts with credit ("Group A") |
@@ -97,10 +128,10 @@ a coincidence of timing.
 | **2026-07-26 09:00–12:00** | 🎓 event | **Workshop live on Zoom** — deck built from this exact provenance story is the teaching material |
 | after 2026-07-26 | 🎓 event | Replay available via closed Facebook group |
 
-## Where things stand (as of 2026-07-22)
+## Where things stand (as of 2026-07-23)
 
-- Deck: `artifacts/lit-review-vector-search.html` — 9 slides (8 visible + 1 hidden), audited, bug-fixed, pushed
+- Deck A — `artifacts/lit-review-vector-search.html` — 9 slides (8 visible + 1 hidden), audited, bug-fixed, pushed. The **proof layer**: real recovered images, provenance timeline, myth-vs-fact.
+- Deck B — `artifacts/workshop-deck.html` — 17 slides, "Second Brain ด้วย Vector Search," already reviewed via a 4-lens workflow, explicitly dated for this same 26 Jul event. The **core-concepts curriculum**: problem → live demo → Thai-embedding pitfall → bge-m3 fix → cosine similarity → measured benchmarking → hybrid search → RAG w/ citations → golden-set eval → portability → Colab → close.
+- **Resolved**: these are not duplicates competing for one slot — they're complementary and were simply never sequenced together. **Both are used.** See `WORKSHOP-RUNSHEET.md` for the full 3-hour block-by-block sequencing of Deck B (concepts) interleaved with Deck A (proof) and the hands-on exercises.
 - Provenance proof: `artifacts/timeline-embedding-space-provenance.html` — full cross-oracle verified trace
-- Reorder/present tool: `tools/deck-reorder/` (local, `python3 tools/deck-reorder/server.py`)
-- Older, separate 17-slide speaker deck also exists untouched: `artifacts/workshop-deck.html` — not yet reconciled with the new one; decide which (or both) gets presented
-- Open item: one live full run-through of all 9 slides before the 26th
+- Reorder/present tool: `tools/deck-reorder/` (local, `python3 tools/deck-reorder/server.py`) — serves Deck A only; Deck B is presented standalone (`open artifacts/workshop-deck.html`)
