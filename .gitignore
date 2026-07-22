@@ -35,3 +35,7 @@ artifacts/chatchai-esp32-order.html
 # --- OS/editor noise ---
 **/.DS_Store
 **/.ipynb_checkpoints/
+
+# deck audit output (regenerable)
+book/deck-shots/
+**/deck-shots/
