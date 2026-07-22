@@ -55,11 +55,12 @@ since 2026-05-04, 61 messages total, retrieved via facebook-timeline-oracle's
 Facebook community "AI for Research." A member of her own community recommended
 Nat's Oracle concept to her; she then contacted Nat directly, unprompted.
 
-**First message** (2026-05-25 07:52:44): *"สวัสดีค่ะ อ.นัท ฝน กมลทิพย์นะคะ (แพทย์
-และผู้ก่อตั้งกลุ่ม FB: AI for Research) เป็น FC อ.นัทค่ะ สมาชิก community ai for
-research ได้แนะนำว่า สนใจแนวคิด oracle ของอ.นัทมากค่ะ ฝนมองเห็นโอกาสใน..."*
-— followed four minutes later (07:56:42) by: *"...ฝนเพิ่งเข้าไปในกลุ่ม discord
-และ youtube ของ อ.นัทค่ะ แต่อยากเรียนกับอ.นัทมากค่ะ"*
+**First message** (2026-05-25 07:52:44, paraphrased — not quoted verbatim out of
+respect for a private DM): she introduces herself as a doctor and the founder of
+"AI for Research," says a community member recommended the Oracle concept to
+her, and that she sees an opportunity in it. Four minutes later (07:56:42) she
+adds that she'd just joined the Discord and YouTube communities, but that she'd
+much rather learn directly from Nat.
 
 **How the date got locked**:
 - 2026-06-04 — she proposes organizing "Oracle & Second Brain for Research," an
