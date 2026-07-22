@@ -1,0 +1,277 @@
+<title>Literature Embedding Space — Provenance Timeline (Corrected)</title>
+<style>
+  :root{
+    --bg:#f3efe6; --surface:#fbf8f1; --surface-2:#efe9dc; --ink:#22262c; --ink-soft:#5a5f66;
+    --line:#d8d0c0; --brass:#9c7333; --brass-soft:#b8894a;
+    --grpA:#3f6b7a; --grpA-bg:#e3ecef; --grpB:#4f7a3c; --grpB-bg:#e6eede;
+    --myth:#b34428; --myth-bg:#f3e2db; --proven:#3d7f56; --proven-bg:#e0ecdf;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#14171c; --surface:#1a1e24; --surface-2:#20252c; --ink:#e7e3d9; --ink-soft:#9aa0a8;
+      --line:#2c323a; --brass:#c79a54; --brass-soft:#b8894a;
+      --grpA:#6ea6ba; --grpA-bg:#1b2830; --grpB:#8bb96f; --grpB-bg:#1e2a1c;
+      --myth:#d9704f; --myth-bg:#2e211c; --proven:#6fb98a; --proven-bg:#1a2620;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f3efe6; --surface:#fbf8f1; --surface-2:#efe9dc; --ink:#22262c; --ink-soft:#5a5f66;
+    --line:#d8d0c0; --brass:#9c7333; --grpA:#3f6b7a; --grpA-bg:#e3ecef; --grpB:#4f7a3c; --grpB-bg:#e6eede;
+    --myth:#b34428; --myth-bg:#f3e2db; --proven:#3d7f56; --proven-bg:#e0ecdf;
+  }
+  :root[data-theme="dark"]{
+    --bg:#14171c; --surface:#1a1e24; --surface-2:#20252c; --ink:#e7e3d9; --ink-soft:#9aa0a8;
+    --line:#2c323a; --brass:#c79a54; --grpA:#6ea6ba; --grpA-bg:#1b2830; --grpB:#8bb96f; --grpB-bg:#1e2a1c;
+    --myth:#d9704f; --myth-bg:#2e211c; --proven:#6fb98a; --proven-bg:#1a2620;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+    line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:820px;margin:0 auto;padding:56px 24px 96px}
+  .tnum{font-variant-numeric:tabular-nums}
+
+  /* Masthead */
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--brass);margin:0 0 14px}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(30px,5.4vw,46px);line-height:1.08;
+    text-wrap:balance;margin:0 0 18px;letter-spacing:-.01em}
+  .lede{font-size:18px;color:var(--ink-soft);max-width:60ch;margin:0 0 8px}
+  .stamp{font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);margin-top:18px;
+    padding-top:14px;border-top:1px solid var(--line)}
+  .stamp b{color:var(--ink)}
+
+  /* Myth vs fact */
+  .correction{margin:44px 0;border:1px solid var(--line);border-radius:12px;overflow:hidden;
+    background:var(--surface)}
+  .correction h2{margin:0;padding:16px 20px;font-family:var(--mono);font-size:13px;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--myth);
+    background:var(--myth-bg);border-bottom:1px solid var(--line)}
+  .cbody{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
+  .cbody>div{background:var(--surface);padding:18px 20px}
+  .cbody h3{margin:0 0 10px;font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;
+    text-transform:uppercase}
+  .myth h3{color:var(--myth)} .fact h3{color:var(--proven)}
+  .cbody p{margin:0 0 8px;font-size:14.5px}
+  .cbody s{color:var(--ink-soft);text-decoration-color:var(--myth)}
+  .dbtable{width:100%;border-collapse:collapse;margin-top:4px;font-size:14px}
+  .dbtable td{padding:5px 0;border-bottom:1px dashed var(--line);vertical-align:top}
+  .dbtable td:first-child{font-family:var(--mono);color:var(--brass);padding-right:12px;white-space:nowrap}
+  .dbtable .num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink)}
+  .gone{color:var(--myth);font-family:var(--mono);font-size:13px;margin-top:10px;display:block}
+  @media(max-width:560px){.cbody{grid-template-columns:1fr}}
+
+  /* Legend */
+  .legend{display:flex;gap:20px;flex-wrap:wrap;margin:40px 0 8px;font-size:13.5px}
+  .legend span{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono)}
+  .dot{width:11px;height:11px;border-radius:3px;flex:none}
+  .dA{background:var(--grpA)} .dB{background:var(--grpB)}
+
+  /* Timeline */
+  .tl{position:relative;margin-top:28px;padding-left:34px}
+  .tl::before{content:"";position:absolute;left:9px;top:6px;bottom:6px;width:2px;
+    background:linear-gradient(var(--line),var(--line))}
+  .ev{position:relative;margin-bottom:22px}
+  .ev::before{content:"";position:absolute;left:-30px;top:6px;width:14px;height:14px;border-radius:50%;
+    background:var(--surface);border:2px solid var(--brass-soft);z-index:1}
+  .ev.gA::before{border-color:var(--grpA)} .ev.gB::before{border-color:var(--grpB)}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+  .ev.gA .card{border-left:3px solid var(--grpA)} .ev.gB .card{border-left:3px solid var(--grpB)}
+  .meta{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:7px}
+  .ts{font-family:var(--mono);font-size:12.5px;color:var(--brass);font-variant-numeric:tabular-nums;
+    font-weight:600}
+  .actor{font-size:12.5px;font-weight:600}
+  .chip{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+    padding:2px 7px;border-radius:5px;background:var(--surface-2);color:var(--ink-soft)}
+  .chip.A{background:var(--grpA-bg);color:var(--grpA)} .chip.B{background:var(--grpB-bg);color:var(--grpB)}
+  .chip.proven{background:var(--proven-bg);color:var(--proven)} .chip.assert{background:var(--myth-bg);color:var(--myth)}
+  .card p{margin:0;font-size:14.5px}
+  .card .say{font-family:var(--mono);font-size:13px;color:var(--ink-soft);
+    border-left:2px solid var(--line);padding-left:10px;margin-top:8px;line-height:1.5}
+  .src{font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin-top:8px;opacity:.85}
+
+  h2.sec{font-family:var(--mono);font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--brass);margin:8px 0 0}
+
+  .verdict{margin-top:44px;border:1px solid var(--line);border-radius:12px;background:var(--surface);
+    padding:22px 22px}
+  .verdict h2{margin:0 0 14px;font-family:var(--serif);font-size:22px}
+  .vrow{display:flex;gap:12px;padding:9px 0;border-top:1px dashed var(--line);font-size:14.5px}
+  .vrow:first-of-type{border-top:none}
+  .badge{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+    padding:3px 8px;border-radius:5px;height:fit-content;white-space:nowrap;flex:none}
+  .badge.ok{background:var(--proven-bg);color:var(--proven)}
+  .badge.fix{background:var(--myth-bg);color:var(--myth)}
+  footer{margin-top:40px;font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);
+    border-top:1px solid var(--line);padding-top:16px;line-height:1.7}
+  @media(prefers-reduced-motion:no-preference){
+    .ev{animation:rise .5s ease both} .ev:nth-child(2){animation-delay:.04s}
+    .ev:nth-child(3){animation-delay:.08s} .ev:nth-child(4){animation-delay:.12s}
+    @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  }
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">⏳ Time-Travel · Oracle Archaeology · verbatim proof</p>
+  <h1>The Embedding Space that was half someone else's</h1>
+  <p class="lede">Eight images were recovered on 21 July 2026. The story attached to them —
+    "DustBoy's paper-clustering viz, ChromaDB 61 / t-SNE ~40 / satellite 12" — turned out to be
+    half wrong. This is what the transcript actually proves.</p>
+  <p class="stamp tnum">SOURCE <b>session 6ca8fc71</b> (my own JSONL, 210 MB) · builds on digger proof
+    <b>ac06e85</b> · images at digger-oracle <b>8ac4f6b</b><br>RENDERED 2026-07-22 · DustBoy PhD Oracle No.210</p>
+
+  <div class="correction">
+    <h2>Myth → Fact: the 61 / 40 / 12 mix-up</h2>
+    <div class="cbody">
+      <div class="myth">
+        <h3>What the fleet believed</h3>
+        <p><s>One corpus, three nested scopes:</s></p>
+        <p><s>ChromaDB = 61 papers</s><br><s>t-SNE plot ≈ 40 topics</s><br><s>satellite PCA = 12 papers</s></p>
+        <p><s>…all DustBoy's work.</s></p>
+      </div>
+      <div class="fact">
+        <h3>What the transcript shows</h3>
+        <p>Three <b>separate</b> vector DBs by three people:</p>
+        <table class="dbtable">
+          <tr><td>ChromaDB</td><td>มาเฟีย · has a 12-paper Thai subset inside</td><td class="num">61</td></tr>
+          <tr><td>sqlite-TS</td><td>บ๊องแบ๊ง · feeds the Group-A scatter</td><td class="num">12</td></tr>
+          <tr><td>bge-m3</td><td>Jizo · multilingual</td><td class="num">36</td></tr>
+        </table>
+        <span class="gone">✗ "40" appears nowhere in the evidence — drop it.</span>
+      </div>
+    </div>
+  </div>
+
+  <p style="font-size:14.5px;color:var(--ink-soft);max-width:62ch">
+    And the images aren't one body of work. They split into two provenance groups made by two
+    different hands — my t-SNE charts plot <b>topics from thesis text</b> (sklearn TF-IDF), unrelated
+    to any of the three DBs above.</p>
+
+  <div class="legend">
+    <span><i class="dot dA"></i> Group A — บ๊องแบ๊ง made · I only reposted</span>
+    <span><i class="dot dB"></i> Group B — I generated (TF-IDF + t-SNE)</span>
+    <span><i class="dot" style="background:var(--proven)"></i> ajfon cross-check — independently proven</span>
+    <span><i class="dot" style="background:var(--myth)"></i> ajfon cross-check — asserted, unverified</span>
+  </div>
+
+  <div class="tl">
+    <h2 class="sec">9–10 June · the corpora get built</h2>
+    <div class="ev">
+      <div class="card">
+        <div class="meta"><span class="ts tnum">06-10 13:04Z</span><span class="actor">มาเฟีย</span><span class="chip">ChromaDB</span></div>
+        <p>Announces the vector DB is done — <b>61 papers indexed</b>, with a 12-paper Thai/N.Thailand subset counted inside it.</p>
+        <p class="say">"สร้างเสร็จแล้ว — 61 papers indexed … 🇹🇭 Thai/N.Thailand: 12 papers"</p>
+        <p class="src">Discord msg 1514253806421020903 · verbatim (fetched in-session)</p>
+      </div>
+    </div>
+
+    <h2 class="sec">11 June · Group A — a relay, not authorship</h2>
+    <div class="ev gA">
+      <div class="card">
+        <div class="meta"><span class="ts tnum">06-11 07:19:01Z</span><span class="actor">DustBoy → finds it</span><span class="chip A">Group A</span></div>
+        <p>I locate บ๊องแบ๊ง (ก้อง)'s embedding-space message — his PCA 2D of <b>12 papers</b>, 4 attachments.</p>
+        <p class="say">"เจอแล้ว! bongbaeng (ก้อง) ทำ embedding space visualization … PCA 2D ของ 12 papers"</p>
+        <p class="src">assistant text · msg id 1514396251142226100</p>
+      </div>
+    </div>
+    <div class="ev gA">
+      <div class="card">
+        <div class="meta"><span class="ts tnum">06-11 07:19:14Z</span><span class="actor">DustBoy → reposts</span><span class="chip A">Group A</span></div>
+        <p>I download his 4 files and repost them, <b>crediting him explicitly</b>. 01_embedding-space, 02_semantic-search, 03/04 satellite — all his.</p>
+        <p class="say">"ภาพ embedding space / similarity … ทำโดย bongbaeng (ก้อง)"</p>
+        <p class="src">download_attachment → reply · channel 1514247897032560771</p>
+      </div>
+    </div>
+
+    <h2 class="sec">12 June · Group B — my own charts, two takes</h2>
+    <div class="ev gB">
+      <div class="card">
+        <div class="meta"><span class="ts tnum">06-12 05:27:24Z</span><span class="actor">DustBoy · run 1</span><span class="chip B">superseded</span></div>
+        <p>First <code>/tmp/embedding_viz.py</code> run on fleet-mention topics → <b>56 topics / 6 clusters</b>. (Crashed on <code>TSNE(n_iter=)</code>, fixed to <code>max_iter</code>, reran.)</p>
+        <p class="src">sklearn TfidfVectorizer + TSNE · /tmp/topics.json "56 topics, 6 clusters"</p>
+      </div>
+    </div>
+    <div class="ev gB">
+      <div class="card">
+        <div class="meta"><span class="ts tnum">06-12 05:29:37Z</span><span class="actor">DustBoy · pivots</span><span class="chip B">Group B</span></div>
+        <p>I discard run 1 — it wasn't thesis-grounded — read <code>CONSOLIDATED_THESIS.md</code> and rebuild the topic list from the real thesis structure.</p>
+        <p class="say">"Focus on thesis literature. Let me find the actual PhD literature review references…"</p>
+        <p class="src">assistant text · then Write /tmp/thesis_topics.json (50 concepts)</p>
+      </div>
+    </div>
+    <div class="ev gB">
+      <div class="card">
+        <div class="meta"><span class="ts tnum">06-12 05:32:02Z</span><span class="actor">DustBoy · run 2 — final</span><span class="chip B">kept</span></div>
+        <p>The surviving charts. <b>50 topics / 8 clusters</b>, thesis-grounded: Sensor Hardware → Confidence Framework → Validation → Satellite → Fire → ML → Infrastructure → Literature. These 4 filenames are what digger recovered.</p>
+        <p class="say">"✅ embedding_tsne / similarity / network / pca — Done — 50 topics, 8 clusters"</p>
+        <p class="src">posted to 3 channels 05:32:14Z–05:33:22Z (local file attachments, not URLs)</p>
+      </div>
+    </div>
+
+    <h2 class="sec">21 July · recovery, 5+ weeks later</h2>
+    <div class="ev">
+      <div class="card">
+        <div class="meta"><span class="ts tnum">07-21</span><span class="actor">atlas-oracle → digger</span><span class="chip">recovery</span></div>
+        <p>The archived Discord message's signed <code>?ex=</code> CDN URLs had expired (404). atlas re-signed via <code>POST /attachments/refresh-urls</code> and downloaded the real bytes — 8 images committed permanently.</p>
+        <p class="src">digger-oracle commit 8ac4f6b · both true: posted as local files, later readable only via expiring signed URLs</p>
+      </div>
+    </div>
+
+    <h2 class="sec">22 July · ajfon-oracle's independent cross-check</h2>
+    <div class="ev">
+      <div class="card">
+        <div class="meta"><span class="ts tnum">07-22</span><span class="actor">ajfon-oracle · 4 parallel agents</span><span class="chip">cross-check</span></div>
+        <p>A separate oracle (ajfon), asked by Nat to prove this whole story as a timeline, ran its own git + session archaeology <b>before reading this file</b>. What follows is independent convergence, not a copy — plus one gap this trace didn't flag.</p>
+      </div>
+    </div>
+    <div class="ev">
+      <div class="card">
+        <div class="meta"><span class="ts tnum">06-10 12:41:42Z</span><span class="actor">Nat → Discord</span><span class="chip proven">corroborated</span></div>
+        <p>ajfon's session-mining agent found the same true origin point verbatim, in a <i>different</i> session file than the one this trace was built from — two unrelated digs, same root.</p>
+        <p class="say">"ทุกคนครับ ลิสต์ literature review มาทางนี้"</p>
+        <p class="src">channel 1514247897032560771 · matches this trace's own 06-10 13:04Z entry above</p>
+      </div>
+    </div>
+    <div class="ev">
+      <div class="card">
+        <div class="meta"><span class="ts tnum">07-21 23:10:13</span><span class="actor">digger-oracle → Nat</span><span class="chip assert">false start</span></div>
+        <p>Before the real images surfaced, digger built its own mock demo and Nat rejected it on sight — the same false start ajfon independently hit on its own side of this search.</p>
+        <p class="say">"ที่หาอยู่ไม่ใช่แบบนี้ครับ มันห่วยมาก"</p>
+        <p class="src">digger-oracle commit 5179ef5 · ψ/artifacts/.../2026-07-21_rag-space-paper-similarity-demo.html</p>
+      </div>
+    </div>
+    <div class="ev">
+      <div class="card">
+        <div class="meta"><span class="ts tnum">07-21 23:16:38</span><span class="actor">atlas-oracle · filesystem</span><span class="chip proven">proven</span></div>
+        <p>The 8 recovered files appear on disk inside atlas-oracle, untracked, <b>2 minutes before</b> the digger-oracle commit — every byte size matches exactly (e.g. <code>embedding_tsne.png</code> = 315,449 bytes in both places). Physical proof, independent of any oracle's account.</p>
+        <p class="src">atlas-oracle .maw/atlas-route/recovered-attachments/paper-embedding-viz/ (untracked)</p>
+      </div>
+    </div>
+    <div class="ev">
+      <div class="card">
+        <div class="meta"><span class="ts tnum">07-21</span><span class="actor">the recovery mechanism</span><span class="chip assert">unverified</span></div>
+        <p>What is <b>not</b> independently corroborated: the federation story itself. Zero commits and zero <code>ψ/inbox</code> messages on 07-21 in atlas-oracle's or transcriber-oracle's own repos; the string <code>refresh-urls</code> appears nowhere in atlas-oracle's tracked source, current tree or full history. Who was asked, in what order, which API actually ran — rests on digger-oracle's self-authored account alone.</p>
+        <p class="src">checked: digger-oracle + atlas-oracle + transcriber-oracle git logs &amp; ψ/inbox, 2026-07-21 → 22</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="verdict">
+    <h2>Verdict</h2>
+    <div class="vrow"><span class="badge ok">Proven</span><span>Group B (tsne / similarity / network / pca) is mine — self-generated, thesis-grounded, <b>50 topics / 8 clusters</b>, 2026-06-12 05:32Z. Verbatim in my own transcript.</span></div>
+    <div class="vrow"><span class="badge fix">Corrected</span><span>Group A (4 images) is <b>บ๊องแบ๊ง's</b>, not mine — I was the reposter.</span></div>
+    <div class="vrow"><span class="badge fix">Corrected</span><span>61 = มาเฟีย ChromaDB · 12 = บ๊องแบ๊ง sqlite-TS · 36 = Jizo bge-m3 · <b>40 does not exist</b>. My t-SNE plots thesis topics, not any of these DBs.</span></div>
+    <div class="vrow"><span class="badge ok">Open</span><span>บ๊องแบ๊ง's own script internals (Group A) live outside my transcript — not mined. Whether his 12 equals มาเฟีย's Thai-subset 12 is unproven; treat as distinct.</span></div>
+    <div class="vrow"><span class="badge ok">Cross-checked</span><span>A second, independent dig (ajfon-oracle, 4 agents, 2026-07-22) converged on the same 06-10 origin point and found hard physical proof for the artifact hand-off — byte-identical files staged in atlas-oracle 2 minutes pre-commit.</span></div>
+    <div class="vrow"><span class="badge fix">Still open</span><span>The federation "who-asked-whom" mechanism behind the 07-21 recovery is asserted by digger-oracle only — no corroborating commit or inbox message exists in atlas-oracle's or transcriber-oracle's own repos.</span></div>
+  </div>
+
+  <footer>
+    Evidence hierarchy: git &gt; own session JSONL &gt; Discord archive &gt; memory. Every timestamp above is
+    verbatim UTC from session 6ca8fc71. Full proof: ψ/memory/traces/2026-07-21/1650_time-travel_embedding-space-provenance-CORRECTED.md<br>
+    "The past is not what you remember — it's what you can prove." · DustBoy PhD Oracle No.210<br>
+    Cross-checked 2026-07-22 by ajfon-oracle (4 parallel agents, git + session archaeology, independent of this file) — 1 corroboration, 1 open gap, folded in above.
+  </footer>
+</div>

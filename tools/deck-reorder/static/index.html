@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Deck Reorder — Literature Review ด้วย Vector Semantic Search</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #0f1115;
+    --card-bg: #1a1d24;
+    --card-border: #2a2e38;
+    --text: #e8e9ec;
+    --muted: #9aa1ad;
+    --accent: #7c9eff;
+    --drop-line: #7c9eff;
+    --danger: #ff6b6b;
+    --ok: #4ade80;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: center; gap: 16px;
+    padding: 14px 20px;
+    background: rgba(15,17,21,0.92);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--card-border);
+  }
+  header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+  header .sub { color: var(--muted); font-size: 12.5px; }
+  header .spacer { flex: 1; }
+  button#save-btn {
+    background: var(--accent); color: #0b0d11; border: none;
+    font-weight: 700; font-size: 14px;
+    padding: 10px 20px; border-radius: 8px; cursor: pointer;
+  }
+  button#save-btn:disabled { opacity: 0.5; cursor: default; }
+  button#save-btn:hover:not(:disabled) { filter: brightness(1.08); }
+  .present-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--text); text-decoration: none;
+    border: 1px solid var(--card-border); border-radius: 8px;
+    padding: 9px 14px; font-size: 13px; font-weight: 600;
+  }
+  .present-link:hover { border-color: var(--accent); color: var(--accent); }
+  .present-link.prod { border-color: rgba(255,107,107,0.35); color: var(--danger); }
+  .present-link.prod:hover { border-color: var(--danger); }
+  #status {
+    font-size: 13px; padding: 6px 12px; border-radius: 6px;
+    display: none;
+    max-width: 46ch;
+  }
+  #status.show { display: inline-block; }
+  #status.ok { background: rgba(74,222,128,0.15); color: var(--ok); }
+  #status.err { background: rgba(255,107,107,0.15); color: var(--danger); white-space: pre-wrap; }
+
+  #grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 14px;
+    padding: 18px 20px 60px;
+  }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+    transition: border-color 0.12s, transform 0.08s;
+    position: relative;
+  }
+  .card:active { cursor: grabbing; }
+  .card.dragging { opacity: 0.35; }
+  .card.is-hidden .thumb-wrap img { filter: grayscale(1) brightness(0.55); }
+  .card.is-hidden { border-color: rgba(255,107,107,0.35); }
+  .badge-pos {
+    position: absolute; top: 8px; right: 8px; z-index: 2;
+    background: rgba(10,11,14,0.78); color: var(--accent);
+    font-weight: 700; font-size: 12.5px;
+    padding: 3px 9px; border-radius: 20px;
+    border: 1px solid rgba(124,158,255,0.45);
+    pointer-events: none;
+  }
+  .badge-pos.hidden-badge { color: var(--danger); border-color: rgba(255,107,107,0.5); }
+  .eye-btn {
+    position: absolute; top: 8px; left: 8px; z-index: 2;
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(10,11,14,0.78); border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.18);
+    cursor: pointer; color: var(--text);
+  }
+  .eye-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .eye-btn svg { width: 15px; height: 15px; display: block; }
+  .card.is-hidden .eye-btn { color: var(--danger); border-color: rgba(255,107,107,0.5); }
+  /* Drop indicator: a PURE VISUAL OVERLAY, positioned by pixel coordinates —
+     deliberately NOT a real grid child. Inserting it into the grid's actual
+     flow would reflow every card after it, which shifts cards out from under
+     the cursor, which re-fires dragover, which moves the indicator again —
+     an infinite feedback loop (visible as rapid blinking). Keeping it
+     position:fixed means moving it never affects layout, so nothing can
+     retrigger. */
+  .drop-indicator {
+    position: fixed;
+    width: 4px;
+    border-radius: 3px;
+    background: var(--drop-line);
+    box-shadow: 0 0 0 4px rgba(124,158,255,0.18), 0 0 14px rgba(124,158,255,0.65);
+    pointer-events: none;
+    display: none;
+    z-index: 20;
+  }
+  .drop-indicator.show { display: block; }
+  .thumb-wrap {
+    width: 100%; aspect-ratio: 16/9; background: #05060a;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+  .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; cursor: zoom-in; }
+  .thumb-wrap .no-thumb { color: var(--muted); font-size: 11px; padding: 8px; text-align: center; }
+
+  /* Lightbox — click a thumbnail for a live preview: an actual iframe of
+     /deck#<pos>, the real running slide (not just a flat screenshot), so it
+     scrolls/navigates/looks exactly like presenting would. Falls back to the
+     static full-res image for hidden slides (they have no position in the
+     live show, so there's nothing at /deck to point an iframe at). */
+  #lightbox {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(5,6,10,0.92);
+    align-items: center; justify-content: center;
+    flex-direction: column; gap: 10px;
+    padding: 24px;
+  }
+  #lightbox.show { display: flex; }
+  .lb-panel {
+    width: min(92vw, 128vh);   /* clamp to 16:9 so it never overflows either axis */
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    position: relative;
+  }
+  .lb-panel iframe, .lb-panel img {
+    width: 100%; height: 100%; border: 0; display: block; object-fit: contain;
+  }
+  .lb-toolbar {
+    display: flex; align-items: center; gap: 12px;
+    width: min(92vw, 128vh);
+    color: var(--text); font-size: 13.5px;
+  }
+  .lb-toolbar .lb-id { color: var(--accent); font-weight: 700; }
+  .lb-toolbar .lb-label { color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lb-toolbar a, .lb-toolbar button {
+    color: var(--text); text-decoration: none; cursor: pointer;
+    background: rgba(255,255,255,0.06); border: 1px solid var(--card-border);
+    border-radius: 6px; padding: 5px 11px; font-size: 12.5px; font-family: inherit;
+  }
+  .lb-toolbar a:hover, .lb-toolbar button:hover { border-color: var(--accent); color: var(--accent); }
+  #lightbox-prev, #lightbox-next {
+    font-size: 18px; font-weight: 700; padding: 3px 13px; line-height: 1.4;
+  }
+  #lightbox-prev:disabled, #lightbox-next:disabled {
+    opacity: 0.3; cursor: default;
+  }
+  #lightbox-prev:disabled:hover, #lightbox-next:disabled:hover {
+    border-color: var(--card-border); color: var(--text);
+  }
+  #lightbox .lb-hint { color: var(--muted); font-size: 11.5px; }
+  .caption { padding: 8px 10px 10px; }
+  .caption .id { font-size: 11px; color: var(--muted); }
+  .caption .label {
+    font-size: 12px; color: var(--text); margin-top: 3px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden; line-height: 1.35em; min-height: 1.35em;
+  }
+  footer {
+    padding: 10px 20px 30px; color: var(--muted); font-size: 12px;
+  }
+  code { background: #05060a; padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Deck Reorder</h1>
+  <span class="sub" id="count-sub">loading…</span>
+  <span class="spacer"></span>
+  <span id="status"></span>
+  <button id="save-btn" disabled>Save order</button>
+  <a id="present-local" class="present-link" href="/deck" target="_blank" rel="noopener"
+     title="Opens your CURRENT LOCAL file, read fresh every time — always matches your latest Save, no deploy needed.">▶ Present (local)</a>
+  <a id="present-prod" class="present-link prod" href="https://claude.ai/code/artifact/49c76711-89b1-4c9c-9eef-4871bace6e34" target="_blank" rel="noopener"
+     title="Opens the PUBLISHED Artifact — this tool only edits your local file. Re-publish after saving to make the Artifact match your new order.">▶ Present (published)</a>
+</header>
+<div id="grid"></div>
+<footer>
+  Drag cards to reorder. Click the eye icon to hide a slide from the live show without deleting
+  it — it stays right where it is, just grayed out (click again to unhide). Click a thumbnail to
+  zoom in. Click <strong>Save order</strong> when done — this writes the <code>ORDER</code> and
+  <code>HIDDEN</code> arrays in both deck HTML files. Nothing is written until you save.
+</footer>
+
+<div id="lightbox">
+  <div class="lb-toolbar">
+    <button type="button" id="lightbox-prev" title="Previous slide">‹</button>
+    <span class="lb-id" id="lightbox-id"></span>
+    <span class="lb-label" id="lightbox-label"></span>
+    <button type="button" id="lightbox-next" title="Next slide">›</button>
+    <a id="lightbox-open-tab" href="#" target="_blank" rel="noopener">↗ open in new tab</a>
+    <button type="button" id="lightbox-close">✕ close</button>
+  </div>
+  <div class="lb-panel">
+    <iframe id="lightbox-frame" title="live slide preview"></iframe>
+    <img id="lightbox-img" alt="" style="display:none">
+  </div>
+  <div class="lb-hint">← / → or the ‹ › buttons to step through slides · click the dark area outside, or Esc, to close</div>
+</div>
+
+<script>
+(function () {
+  const grid = document.getElementById("grid");
+  const saveBtn = document.getElementById("save-btn");
+  const statusEl = document.getElementById("status");
+  const countSub = document.getElementById("count-sub");
+
+  const lightbox = document.getElementById("lightbox");
+  const lightboxFrame = document.getElementById("lightbox-frame");
+  const lightboxImg = document.getElementById("lightbox-img");
+  const lightboxIdEl = document.getElementById("lightbox-id");
+  const lightboxLabelEl = document.getElementById("lightbox-label");
+  const lightboxOpenTab = document.getElementById("lightbox-open-tab");
+  const lightboxCloseBtn = document.getElementById("lightbox-close");
+  const lightboxPrevBtn = document.getElementById("lightbox-prev");
+  const lightboxNextBtn = document.getElementById("lightbox-next");
+  const presentLocalLink = document.getElementById("present-local");
+
+  // While the live iframe preview is open, ‹›/←→ step through THIS list —
+  // the visible slides in their current on-screen order, snapshotted at
+  // open time (the grid can't be dragged while the lightbox covers it, so
+  // it can't go stale mid-session). previewIdx is -1 for the hidden-slide
+  // static-image fallback, where "next slide" isn't a meaningful concept.
+  let previewOrder = [];
+  let previewIdx = -1;
+
+  // The OUTER page's own address bar — kept in sync with whatever's being
+  // previewed via replaceState (not pushState: every arrow-key tap would
+  // otherwise spam browser back-history with one entry per slide). This is
+  // what makes the URL bar actually reflect "you're looking at #6" instead
+  // of staying frozen at "/" the whole time, and lets a reload/copy-paste
+  // of the URL reopen the same preview (deep-link restore in load(), below).
+  function syncOuterUrl(hashPart) {
+    // #<pos>-<id> for a visible slide (e.g. #5-growthphase), #hidden-<id>
+    // for a hidden one, or clear entirely on close. Hash (not ?query) per
+    // Nat's request — also matches how /deck itself uses a plain #N hash.
+    // Always rebuild the FULL url from location.pathname — an earlier bug
+    // passed just "#hashPart" to replaceState, which resolves relative to
+    // the current URL and left a stale leftover ?preview=... query string
+    // (from before this was hash-based) sitting there untouched instead of
+    // being replaced.
+    const url = hashPart ? (location.pathname + "#" + hashPart) : location.pathname;
+    history.replaceState(null, "", url);
+  }
+
+  function buildPreviewOrder() {
+    return [...grid.querySelectorAll(".card:not(.is-hidden)")].map((c) => ({
+      id: c.dataset.id,
+      label: c.querySelector(".caption .label")?.textContent || "",
+    }));
+  }
+
+  function showPreviewAt(idx) {
+    if (idx < 0 || idx >= previewOrder.length) return;
+    previewIdx = idx;
+    const s = previewOrder[idx];
+    const pos = idx + 1;
+    const deckUrl = "/deck#" + pos; // clean URL for links — new-tab opens always reload fully anyway
+    // The SAME <iframe> element gets reused across Prev/Next clicks. Setting
+    // .src to a URL that differs from the current one ONLY by fragment is a
+    // same-document navigation in real browsers — no reload happens, so the
+    // deck's own `location.hash` (read once on load, no hashchange listener)
+    // never re-fires and the displayed slide silently stays put. Adding a
+    // throwaway query param forces a genuine reload every time.
+    const iframeUrl = "/deck?p=" + pos + "#" + pos;
+    lightboxIdEl.textContent = "#" + pos + " · " + s.id;
+    lightboxLabelEl.textContent = s.label || "";
+    lightboxFrame.src = iframeUrl;
+    lightboxOpenTab.href = deckUrl;
+    presentLocalLink.href = deckUrl; // resume the real show from wherever you last looked
+    lightboxPrevBtn.disabled = idx <= 0;
+    lightboxNextBtn.disabled = idx >= previewOrder.length - 1;
+    syncOuterUrl(pos + "-" + encodeURIComponent(s.id));
+  }
+
+  // hidden=false → a REAL iframe of /deck#pos: the actual running slide, not
+  // a flat screenshot, so it looks and navigates exactly like presenting
+  // would. hidden=true → no position in the live show to point an iframe
+  // at, so fall back to the static full-res screenshot instead (and prev/
+  // next are disabled — nothing to step to for an excluded slide).
+  function openLightbox(slide, hidden, pos) {
+    if (!hidden && pos != null) {
+      // Rebuild the navigable order fresh from the grid's current visible
+      // cards, so prev/next always matches what's actually on screen.
+      previewOrder = buildPreviewOrder();
+      lightboxFrame.style.display = "";
+      lightboxImg.style.display = "none";
+      lightboxOpenTab.style.display = "";
+      lightboxPrevBtn.style.display = "";
+      lightboxNextBtn.style.display = "";
+      showPreviewAt(pos - 1); // also syncs the outer URL
+    } else {
+      previewOrder = [];
+      previewIdx = -1;
+      const label = "hidden";
+      lightboxIdEl.textContent = label + " · " + slide.id;
+      lightboxLabelEl.textContent = slide.label || "";
+      const src = slide.full
+        ? "/full/" + encodeURIComponent(slide.full)
+        : (slide.thumb ? "/thumbs/" + encodeURIComponent(slide.thumb) : "");
+      if (!src) return;
+      lightboxFrame.src = "about:blank";
+      lightboxFrame.style.display = "none";
+      lightboxImg.src = src;
+      lightboxImg.alt = slide.id;
+      lightboxImg.style.display = "";
+      lightboxOpenTab.style.display = "none"; // nothing meaningful to open in a new tab for a hidden slide
+      lightboxPrevBtn.style.display = "none";
+      lightboxNextBtn.style.display = "none";
+      syncOuterUrl("hidden-" + encodeURIComponent(slide.id));
+    }
+    lightbox.classList.add("show");
+  }
+  function closeLightbox() {
+    lightbox.classList.remove("show");
+    lightboxFrame.src = "about:blank";
+    lightboxImg.src = "";
+    previewOrder = [];
+    previewIdx = -1;
+    syncOuterUrl(null);
+  }
+  // Auto-focus the iframe's own document once it loads, so arrow keys reach
+  // the deck's own native navigation directly (smoothest — no reload, keeps
+  // its own transition/audio behavior). The parent-level ArrowLeft/Right
+  // handler below is a fallback for the moment right after opening, before
+  // this focus has landed, and for whenever focus isn't inside the iframe.
+  lightboxFrame.addEventListener("load", () => {
+    if (lightboxFrame.style.display === "none") return;
+    try { lightboxFrame.contentWindow.focus(); } catch (e) { /* ignore */ }
+  });
+  lightboxPrevBtn.addEventListener("click", () => showPreviewAt(previewIdx - 1));
+  lightboxNextBtn.addEventListener("click", () => showPreviewAt(previewIdx + 1));
+  // Only a click on the bare backdrop closes it — NOT lightboxPanel.contains()
+  // (that missed the toolbar entirely: prev/next/close/open-tab all live
+  // outside .lb-panel, so clicking any of them used to "miss" the contains()
+  // check and immediately close the lightbox right after running its own
+  // handler). e.target === lightbox is true only when the click hit the
+  // flex container itself, i.e. the dark padding area around its children.
+  lightbox.addEventListener("click", (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+  lightboxCloseBtn.addEventListener("click", closeLightbox);
+  // Double-Esc → back to /deck (the presenting view), mirroring the deck's
+  // own double-Esc → here gesture. Same 600ms window, same "first tap just
+  // arms it" shape. Only live when the lightbox preview is closed — with it
+  // open, a single Esc closes the lightbox instead (existing behavior,
+  // unchanged), since that's the more urgent action in that state.
+  let lastEscAtGrid = 0;
+  addEventListener("keydown", (e) => {
+    if (!lightbox.classList.contains("show")) {
+      if (e.key === "Escape") {
+        const now = Date.now();
+        if (now - lastEscAtGrid < 600) { location.href = "/deck"; return; }
+        lastEscAtGrid = now;
+      }
+      return;
+    }
+    if (e.key === "Escape") { closeLightbox(); return; }
+    // Don't double-handle if focus is already inside the iframe — its own
+    // listener will already respond to the same keypress natively.
+    if (document.activeElement === lightboxFrame) return;
+    if (e.key === "ArrowLeft") { e.preventDefault(); showPreviewAt(previewIdx - 1); }
+    else if (e.key === "ArrowRight") { e.preventDefault(); showPreviewAt(previewIdx + 1); }
+  });
+
+  let dragEl = null;
+  // Where dragEl will actually land on drop: a card element (insert before
+  // it) or null (append at the end). This is the source of truth for the
+  // drop — the visual indicator is just a picture of this value, and never
+  // itself lives in the grid's layout flow (see .drop-indicator CSS note).
+  let dropTarget = undefined; // undefined = "no valid target yet"
+  const dropIndicator = document.createElement("div");
+  dropIndicator.className = "drop-indicator";
+  document.body.appendChild(dropIndicator);
+
+  function positionIndicatorBefore(card) {
+    const rect = card.getBoundingClientRect();
+    dropIndicator.style.left = (rect.left - 7) + "px";
+    dropIndicator.style.top = rect.top + "px";
+    dropIndicator.style.height = rect.height + "px";
+    dropIndicator.classList.add("show");
+  }
+  function positionIndicatorAtEnd() {
+    const cards = [...grid.querySelectorAll(".card")];
+    const last = cards[cards.length - 1];
+    if (!last) { dropIndicator.classList.remove("show"); return; }
+    const rect = last.getBoundingClientRect();
+    dropIndicator.style.left = (rect.right + 3) + "px";
+    dropIndicator.style.top = rect.top + "px";
+    dropIndicator.style.height = rect.height + "px";
+    dropIndicator.classList.add("show");
+  }
+  function hideIndicator() {
+    dropIndicator.classList.remove("show");
+  }
+  function setDropTarget(target) {
+    // target: a card element, or null for "end of grid". Only touches the
+    // DOM/indicator when the value actually changed.
+    if (target === dropTarget) return;
+    dropTarget = target;
+    if (target === null) positionIndicatorAtEnd();
+    else positionIndicatorBefore(target);
+  }
+  function commitDrop() {
+    if (!dragEl) return;
+    grid.insertBefore(dragEl, dropTarget === undefined ? null : dropTarget);
+    hideIndicator();
+    dropTarget = undefined;
+  }
+
+  // Minimal inline eye / eye-off icons — no external icon font, stays offline.
+  const EYE_OPEN_SVG =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/>' +
+    '<circle cx="12" cy="12" r="3"/></svg>';
+  const EYE_OFF_SVG =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a18.6 18.6 0 0 1 4.22-5.06M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/>' +
+    '<line x1="1" y1="1" x2="23" y2="23"/></svg>';
+
+  // Instant hide/show, no drag needed — the card stays exactly where it is
+  // in the grid, just toggles the visual "hidden" state (grayed thumbnail +
+  // crossed eye). Position among the OTHER visible slides is unaffected;
+  // only its own badge switches to "hidden".
+  function toggleHidden(card) {
+    card.classList.toggle("is-hidden");
+    renumber();
+    markDirty();
+  }
+
+  function setStatus(kind, msg) {
+    statusEl.className = "show " + kind;
+    statusEl.textContent = msg;
+  }
+  function clearStatus() {
+    statusEl.className = "";
+    statusEl.textContent = "";
+  }
+
+  function makeCard(slide) {
+    const card = document.createElement("div");
+    card.className = "card" + (slide.hidden ? " is-hidden" : "");
+    card.draggable = true;
+    card.dataset.id = slide.id;
+
+    const thumbWrap = document.createElement("div");
+    thumbWrap.className = "thumb-wrap";
+    if (slide.thumb) {
+      const img = document.createElement("img");
+      img.src = "/thumbs/" + encodeURIComponent(slide.thumb);
+      img.alt = slide.id;
+      img.loading = "lazy";
+      img.addEventListener("click", (e) => {
+        // A plain click (no drag gesture) always fires normally even on a
+        // draggable ancestor — no conflict with the card's own drag/drop.
+        e.stopPropagation();
+        // Read hidden/position live off the card, not slide.hidden/slide.pos
+        // — those are a snapshot from page load and go stale after any drag
+        // or eye-toggle. renumber() keeps the badge text authoritative.
+        const hiddenNow = card.classList.contains("is-hidden");
+        const badgeNow = card.querySelector(".badge-pos");
+        const posNow = (!hiddenNow && badgeNow) ? parseInt(badgeNow.textContent.slice(1), 10) : null;
+        openLightbox(slide, hiddenNow, posNow);
+      });
+      thumbWrap.appendChild(img);
+    } else {
+      const noThumb = document.createElement("div");
+      noThumb.className = "no-thumb";
+      noThumb.textContent = "no thumbnail";
+      thumbWrap.appendChild(noThumb);
+    }
+    // Order number lives as a badge in the top-right corner of the thumbnail,
+    // not buried in the caption text — it's the thing you're tracking while
+    // dragging, so it should be the most visible element on the card. A
+    // hidden card has no meaningful position, so it gets a "hidden" tag.
+    const badge = document.createElement("span");
+    badge.className = "badge-pos" + (slide.hidden ? " hidden-badge" : "");
+    badge.textContent = slide.hidden ? "hidden" : "#" + slide.pos;
+    thumbWrap.appendChild(badge);
+
+    // Instant hide/show toggle — top-left corner, mirrors the position
+    // badge in the top-right. No need to drag down to the Hidden tray for
+    // a quick single-slide toggle.
+    const eyeBtn = document.createElement("button");
+    eyeBtn.type = "button";
+    eyeBtn.className = "eye-btn";
+    eyeBtn.title = slide.hidden ? "Show this slide" : "Hide this slide";
+    eyeBtn.innerHTML = slide.hidden ? EYE_OFF_SVG : EYE_OPEN_SVG;
+    eyeBtn.draggable = true; // swallow drag so starting a drag ON the button doesn't drag the card
+    eyeBtn.addEventListener("dragstart", (e) => { e.preventDefault(); e.stopPropagation(); });
+    eyeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleHidden(card); // calls renumber() internally, which syncs this icon too
+    });
+    thumbWrap.appendChild(eyeBtn);
+
+    const caption = document.createElement("div");
+    caption.className = "caption";
+    const idSpan = document.createElement("span");
+    idSpan.className = "id";
+    idSpan.textContent = slide.id;
+    const labelDiv = document.createElement("div");
+    labelDiv.className = "label";
+    labelDiv.textContent = slide.label || "";
+    caption.appendChild(idSpan);
+    caption.appendChild(labelDiv);
+
+    card.appendChild(thumbWrap);
+    card.appendChild(caption);
+
+    card.addEventListener("dragstart", (e) => {
+      dragEl = card;
+      card.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", slide.id);
+    });
+    card.addEventListener("dragend", () => {
+      card.classList.remove("dragging");
+      hideIndicator();
+      dragEl = null;
+      dropTarget = undefined;
+      renumber();
+      markDirty();
+    });
+    card.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      if (!dragEl || dragEl === card) return;
+      const rect = card.getBoundingClientRect();
+      const before = (e.clientX - rect.left) < rect.width / 2;
+      // "insert before this card" or "insert before whatever comes after
+      // this card" (i.e. after it) — nextElementSibling may be null if this
+      // card is currently last, which correctly means "end of grid".
+      setDropTarget(before ? card : card.nextElementSibling);
+    });
+    card.addEventListener("drop", (e) => {
+      e.preventDefault();
+      commitDrop();
+    });
+
+    return card;
+  }
+
+  function syncEyeBtn(card, hidden) {
+    const eyeBtn = card.querySelector(".eye-btn");
+    if (!eyeBtn) return;
+    eyeBtn.title = hidden ? "Show this slide" : "Hide this slide";
+    eyeBtn.innerHTML = hidden ? EYE_OFF_SVG : EYE_OPEN_SVG;
+  }
+
+  function renumber() {
+    // Single source of truth for "is this card hidden" is its own
+    // .is-hidden class (toggled by the eye button) — position in the grid
+    // is completely separate from hidden state now. Visible position
+    // numbers only count non-hidden cards, in DOM order; hidden cards keep
+    // their place but show "hidden" instead of a number.
+    let visiblePos = 0;
+    [...grid.querySelectorAll(".card")].forEach((card) => {
+      const hidden = card.classList.contains("is-hidden");
+      const badge = card.querySelector(".badge-pos");
+      if (badge) {
+        badge.classList.toggle("hidden-badge", hidden);
+        if (hidden) {
+          badge.textContent = "hidden";
+        } else {
+          visiblePos += 1;
+          badge.textContent = "#" + visiblePos;
+        }
+      }
+      syncEyeBtn(card, hidden);
+    });
+  }
+
+  function markDirty() {
+    saveBtn.disabled = false;
+    clearStatus();
+  }
+
+  function currentSplit() {
+    const order = [], hidden = [];
+    [...grid.querySelectorAll(".card")].forEach((c) => {
+      (c.classList.contains("is-hidden") ? hidden : order).push(c.dataset.id);
+    });
+    return { order, hidden };
+  }
+
+  // Cached from the last successful /api/slides load, so the hashchange
+  // handler below can restore/close the lightbox without a network round
+  // trip every time the hash changes.
+  let lastSlidesData = null;
+
+  // Deep-link restore — if the URL has a #<pos>-<name> or #hidden-<name>
+  // hash (reload, copy-pasted link, browser back/forward, or a typed
+  // address-bar URL), open the lightbox at that exact slide. If the hash is
+  // empty and the lightbox is currently open (e.g. user hit Back past the
+  // first preview), close it — keeps the visible state and the URL always
+  // telling the same story regardless of how you got here.
+  //
+  // Bound to `hashchange`, not just called once after load(): navigating to
+  // a URL that differs from the current one ONLY by fragment is a
+  // same-document navigation in real browsers — for some navigation paths
+  // (e.g. page.goto() to a hash-only-different URL on an already-open tab)
+  // that does NOT re-run this script, so relying solely on a one-time call
+  // after load() would silently miss those cases. `hashchange` fires
+  // whenever the fragment actually changes, regardless of how.
+  function restoreFromHash() {
+    if (!lastSlidesData) return;
+    const hash = location.hash.replace(/^#/, "");
+    if (hash.startsWith("hidden-")) {
+      const id = decodeURIComponent(hash.slice("hidden-".length));
+      const slide = lastSlidesData.slides.find((s) => s.id === id);
+      if (slide) openLightbox(slide, true, null);
+    } else if (hash) {
+      const m = hash.match(/^(\d+)-/);
+      const pos = m ? parseInt(m[1], 10) : null;
+      const visible = lastSlidesData.slides.filter((s) => !s.hidden);
+      const slide = pos ? visible[pos - 1] : null;
+      if (slide) openLightbox(slide, false, pos);
+    } else if (lightbox.classList.contains("show")) {
+      closeLightbox();
+    }
+  }
+  addEventListener("hashchange", restoreFromHash);
+
+  async function load() {
+    const res = await fetch("/api/slides");
+    if (!res.ok) {
+      countSub.textContent = "failed to load slides";
+      return;
+    }
+    const data = await res.json();
+    lastSlidesData = data;
+    const hiddenCount = data.slides.filter((s) => s.hidden).length;
+    countSub.textContent = data.slides.length + " slides" +
+      (hiddenCount ? " (" + hiddenCount + " hidden)" : "") +
+      (data.dead_ids && data.dead_ids.length
+        ? " (" + data.dead_ids.length + " dead ORDER entr" +
+          (data.dead_ids.length === 1 ? "y" : "ies") + " preserved on save)"
+        : "");
+    grid.innerHTML = "";
+    // No sorting by pos — the API already returns slides in their real
+    // file-order sequence (hidden ones interleaved in place, pos is just
+    // null for them), which is exactly "stays where it is" on load.
+    data.slides.forEach((slide) => grid.appendChild(makeCard(slide)));
+
+    restoreFromHash(); // covers the initial-load case (URL already has a hash when the page first opens)
+  }
+
+  // Fallback for dragging into empty space past the last card — drop target
+  // becomes "end of grid".
+  grid.addEventListener("dragover", (e) => {
+    if (!dragEl) return;
+    if (e.target === grid) {
+      e.preventDefault();
+      setDropTarget(null);
+    }
+  });
+  grid.addEventListener("drop", (e) => {
+    if (!dragEl || e.target !== grid) return;
+    e.preventDefault();
+    commitDrop();
+  });
+
+  saveBtn.addEventListener("click", async () => {
+    saveBtn.disabled = true;
+    clearStatus();
+    const split = currentSplit();
+    try {
+      const res = await fetch("/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(split),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setStatus("err", "Save failed: " + (data.error || res.statusText));
+        saveBtn.disabled = false;
+        return;
+      }
+      setStatus("ok", data.summary || "Saved.");
+      renumber();
+    } catch (e) {
+      setStatus("err", "Save failed: " + e.message);
+      saveBtn.disabled = false;
+    }
+  });
+
+  load();
+})();
+</script>
+</body>
+</html>
