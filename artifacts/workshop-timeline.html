@@ -1,0 +1,192 @@
+<title>Workshop Timeline — ARRA Oracle Second Brain for Research</title>
+<style>
+  :root {
+    --bg:#0a0b10; --panel:#12141c; --panel2:#171a24;
+    --ink:#eef0f7; --ink-soft:#a2a8bd; --ink-faint:#5c6178; --line:#23273a;
+    --gold:#ffcf4a; --blue:#5b9dff; --violet:#b79dff; --green:#52d98a; --amber:#f8a860;
+    --thai:"Noto Sans Thai","IBM Plex Sans Thai","Sarabun","Thonburi",system-ui,-apple-system,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace;
+  }
+  * { box-sizing:border-box; margin:0; }
+  body {
+    background:
+      radial-gradient(120% 90% at 50% -20%, #171d33 0%, #0a0b1000 55%),
+      radial-gradient(70% 50% at 88% 6%, #241a33 0%, #0a0b1000 60%),
+      var(--bg);
+    color:var(--ink); font-family:var(--thai); -webkit-font-smoothing:antialiased;
+    padding:clamp(24px,6vw,72px) 20px 80px;
+  }
+  .wrap { max-width:920px; margin:0 auto; }
+
+  .eyebrow { font-family:var(--mono); font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-faint); font-weight:700; margin-bottom:14px; }
+  .eyebrow .n { color:var(--gold); }
+  h1 { font-size:clamp(30px,5vw,52px); font-weight:800; letter-spacing:-0.02em; line-height:1.14; margin-bottom:14px; text-wrap:balance; }
+  .lead { font-size:clamp(15px,1.8vw,19px); color:var(--ink-soft); line-height:1.55; max-width:64ch; margin-bottom:8px; }
+
+  .hero {
+    margin-top:28px; border:1px solid #5a4a1f; border-radius:16px;
+    background:linear-gradient(180deg,#1e1a12,#14120b); padding:22px 24px;
+    display:flex; flex-wrap:wrap; gap:20px 40px; align-items:center;
+  }
+  .hero .stat .k { font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-faint); font-weight:700; margin-bottom:6px; }
+  .hero .stat .v { font-size:clamp(20px,2.6vw,28px); font-weight:800; color:var(--gold); }
+  .hero .stat .v small { font-size:0.55em; color:var(--ink-soft); font-weight:600; margin-left:6px; }
+
+  .legend { display:flex; gap:22px; flex-wrap:wrap; margin:34px 0 6px; font-family:var(--mono); font-size:12.5px; color:var(--ink-soft); }
+  .legend span { display:inline-flex; align-items:center; gap:8px; }
+  .dot { width:10px; height:10px; border-radius:3px; flex:none; }
+  .d-blue { background:var(--blue); } .d-violet { background:var(--violet); }
+
+  .tl { position:relative; margin-top:24px; padding-left:32px; }
+  .tl::before { content:""; position:absolute; left:6px; top:6px; bottom:6px; width:2px; background:var(--line); }
+  .ev { position:relative; margin-bottom:22px; }
+  .ev::before { content:""; position:absolute; left:-32px; top:4px; width:13px; height:13px; border-radius:50%; background:var(--panel2); border:2px solid var(--ink-faint); }
+  .ev.blue::before { border-color:var(--blue); }
+  .ev.violet::before { border-color:var(--violet); }
+  .ev.hero-ev::before { border-color:var(--gold); background:var(--gold); }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 18px; }
+  .ev.hero-ev .card { border-color:#5a4a1f; background:linear-gradient(180deg,#1e1a12,#14120b); }
+  .meta { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+  .ts { font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); font-weight:700; font-variant-numeric:tabular-nums; }
+  .ev.blue .ts { color:var(--blue); } .ev.violet .ts { color:var(--violet); } .ev.hero-ev .ts { color:var(--gold); }
+  .tag { font-family:var(--mono); font-size:10px; letter-spacing:0.06em; text-transform:uppercase; padding:2px 8px; border-radius:5px; font-weight:700; }
+  .tag.blue { background:#1a2540; color:var(--blue); } .tag.violet { background:#231c3d; color:var(--violet); }
+  .card p { font-size:clamp(14px,1.6vw,16px); color:var(--ink-soft); line-height:1.5; }
+  .card p b { color:var(--ink); }
+  .card .say { font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); border-left:2px solid var(--line); padding-left:10px; margin-top:8px; line-height:1.5; }
+
+  .section-label { font-family:var(--mono); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-faint); font-weight:700; margin:36px 0 4px; }
+
+  .status { margin-top:40px; border:1px solid var(--line); border-radius:16px; background:var(--panel); padding:20px 22px; }
+  .status h2 { font-size:19px; font-weight:800; margin-bottom:12px; }
+  .status ul { list-style:none; display:grid; gap:8px; }
+  .status li { position:relative; padding-left:22px; font-size:14.5px; color:var(--ink-soft); line-height:1.5; }
+  .status li::before { content:"✓"; position:absolute; left:0; color:var(--green); font-weight:800; }
+  .status li.open::before { content:"○"; color:var(--ink-faint); }
+
+  footer { margin-top:36px; font-family:var(--mono); font-size:11.5px; color:var(--ink-faint); border-top:1px solid var(--line); padding-top:16px; line-height:1.8; }
+  footer a { color:var(--ink-faint); }
+</style>
+
+<div class="wrap">
+  <p class="eyebrow"><span class="n">ARRA ORACLE</span> · Second Brain for Research</p>
+  <h1>จากภาพที่หายไป <span style="color:var(--gold)">สู่ห้องเรียนจริง 300 ที่นั่ง</span></h1>
+  <p class="lead">สองเส้นเรื่องราวที่มาบรรจบกัน — งานสืบที่มาของภาพ (t-SNE / similarity / network / PCA) กับ workshop จริงที่กำลังจะเกิดขึ้น</p>
+
+  <div class="hero">
+    <div class="stat"><div class="k">Workshop</div><div class="v">26 ก.ค. <small>09:00–12:00</small></div></div>
+    <div class="stat"><div class="k">ปิดรับสมัคร</div><div class="v">24 ก.ค. <small>20:00</small></div></div>
+    <div class="stat"><div class="k">ที่นั่ง</div><div class="v">300 <small>cap บน Zoom</small></div></div>
+    <div class="stat"><div class="k">ค่าเรียน</div><div class="v">ฟรี <small>บริจาคตามใจ</small></div></div>
+  </div>
+
+  <div class="legend">
+    <span><i class="dot d-blue"></i> 🔬 เส้นเทคนิค — ที่มาของภาพ</span>
+    <span><i class="dot d-violet"></i> 🎓 เส้นงานจริง — workshop</span>
+  </div>
+
+  <div style="margin-top:14px;border:1px solid #4a3a1f;border-radius:12px;background:#1a150b;padding:14px 16px;font-size:13.5px;color:var(--ink-soft);line-height:1.55">
+    <b style="color:var(--amber)">⚠️ ยังไม่ยืนยัน</b> — คำว่า "Gradpassion" ค้นทั่ว FB archive ของ Nat กับอาจารย์ฝนแล้ว <b>ไม่เจอเลย</b> คุยกันใน FB ใช้ชื่อ "AI for Research" ตลอด — Gradpassion อาจมาจากช่องทางอื่น (Discord/LINE/อีเมล) หลัง export ตัดที่ 12 ก.ค. ยังไม่ได้เช็คแหล่งอื่นยืนยัน
+  </div>
+
+  <div class="tl">
+    <div class="ev violet">
+      <div class="card">
+        <div class="meta"><span class="ts">4 พ.ค.</span><span class="tag violet">event</span></div>
+        <p><b>อาจารย์ฝน</b> (กมลทิพย์ เลิศชัยสถาพร) เป็นเพื่อน Facebook กับ Nat</p>
+      </div>
+    </div>
+    <div class="ev violet">
+      <div class="card">
+        <div class="meta"><span class="ts">25 พ.ค. 07:52</span><span class="tag violet">event</span></div>
+        <p>อาจารย์ฝนทักมาก่อน — แนะนำตัวว่าเป็นหมอ + ผู้ก่อตั้งกลุ่ม "AI for Research" มีสมาชิกแนะนำ Oracle ให้เธอ</p>
+        <p class="say">"สวัสดีค่ะ อ.นัท ฝน กมลทิพย์นะคะ...สนใจแนวคิด oracle ของอ.นัทมากค่ะ"</p>
+      </div>
+    </div>
+    <div class="ev violet">
+      <div class="card">
+        <div class="meta"><span class="ts">4 มิ.ย.</span><span class="tag violet">event</span></div>
+        <p>เธอเสนอจัด workshop "Oracle &amp; Second Brain for Research" ออนไลน์ 3 ชม.</p>
+      </div>
+    </div>
+    <div class="ev violet hero-ev">
+      <div class="card">
+        <div class="meta"><span class="ts">9 มิ.ย. 23:22</span><span class="tag violet">decision</span></div>
+        <p><b>Nat ล็อควันที่จริง</b>: "น่าจะช่วง 25/26 ก็ดีค้าบ" — วันงานเกิดตรงนี้</p>
+      </div>
+    </div>
+    <div class="ev blue">
+      <div class="card">
+        <div class="meta"><span class="ts">10 มิ.ย.</span><span class="tag blue">technical</span></div>
+        <p>Nat จุดประกายทั้งฟลีท (1 วันหลังล็อควันที่) — แยกกันสร้าง paper vector-DB คนละชุด: <b>มาเฟีย</b> (ChromaDB, claimed 61 — ภายหลังพิสูจน์ไม่ได้), <b>บ๊องแบ๊ง</b> (12, verify ได้จริง), <b>Jizo</b> (claimed 36 — พิสูจน์ไม่ได้), <b>Orz</b> (17, verify ได้จริง)</p>
+      </div>
+    </div>
+    <div class="ev blue">
+      <div class="card">
+        <div class="meta"><span class="ts">11 มิ.ย.</span><span class="tag blue">technical</span></div>
+        <p><b>DustBoy</b> พบภาพของบ๊องแบ๊ง (PCA scatter + semantic search) โพสต์ต่อพร้อมเครดิต</p>
+      </div>
+    </div>
+    <div class="ev blue">
+      <div class="card">
+        <div class="meta"><span class="ts">12 มิ.ย.</span><span class="tag blue">technical</span></div>
+        <p><b>DustBoy</b> สร้าง t-SNE / similarity / network / PCA เอง จาก 50 thesis concepts — 8 clusters ที่รอดมาถึงวันนี้</p>
+      </div>
+    </div>
+    <div class="ev blue">
+      <div class="card">
+        <div class="meta"><span class="ts">21 ก.ค.</span><span class="tag blue">technical</span></div>
+        <p>ภาพหายไปกว่า 5 อาทิตย์ (Discord signed URL หมดอายุ) — <b>atlas-oracle</b> กู้คืนบิตจริงกลับมาได้ · digger-oracle commit ถาวร</p>
+      </div>
+    </div>
+    <div class="ev blue">
+      <div class="card">
+        <div class="meta"><span class="ts">22 ก.ค.</span><span class="tag blue">technical</span></div>
+        <p>DustBoy + ajfon-oracle ยืนยันซ้ำสองทาง — แก้ตำนานผิดๆ (61/40/12 ไม่เคยเป็นชุดเดียวกัน "40" ไม่มีอยู่จริง) → ใส่เข้าสไลด์จริง → `/impeccable audit` เจอบั๊ก CSS cascade จริง 3 จุด แก้แล้วพิสูจน์ด้วยตัวเลขวัดจริง → commit + push แล้ว</p>
+        <p class="say">83e74c8, f03af35 → origin/main</p>
+      </div>
+    </div>
+
+    <div class="ev violet">
+      <div class="card">
+        <div class="meta"><span class="ts">ประกาศแล้ว</span><span class="tag violet">event</span></div>
+        <p>Workshop ประกาศสาธารณะผ่าน Facebook เพจ Grad Passion — เปิดลงทะเบียนฟรี บริจาคตามใจให้โรงพยาบาล</p>
+      </div>
+    </div>
+    <div class="ev violet hero-ev">
+      <div class="card">
+        <div class="meta"><span class="ts">24 ก.ค. 20:00</span><span class="tag violet">deadline</span></div>
+        <p><b>ปิดรับสมัคร</b> — เต็ม 300 ที่นั่งเมื่อไหร่ ปิดก่อนกำหนดได้เลย</p>
+      </div>
+    </div>
+    <div class="ev violet hero-ev">
+      <div class="card">
+        <div class="meta"><span class="ts">26 ก.ค. 09:00–12:00</span><span class="tag violet">workshop</span></div>
+        <p><b>สอนสดทาง Zoom</b> โดย อ.นัท Nat Weerawan — สไลด์จากเรื่องราวที่มาของภาพชุดนี้เอง คือสื่อการสอนจริง</p>
+      </div>
+    </div>
+    <div class="ev violet">
+      <div class="card">
+        <div class="meta"><span class="ts">หลัง 26 ก.ค.</span><span class="tag violet">event</span></div>
+        <p>ดูย้อนหลังได้ทาง Facebook กลุ่มปิด</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="status">
+    <h2>สถานะ ณ วันนี้ (22 ก.ค.)</h2>
+    <ul>
+      <li>Deck จริง <code style="font-family:var(--mono);color:var(--ink)">artifacts/lit-review-vector-search.html</code> — 9 สไลด์ ผ่าน audit แล้ว แก้บั๊กแล้ว push แล้ว</li>
+      <li>Provenance timeline เต็ม <code style="font-family:var(--mono);color:var(--ink)">artifacts/timeline-embedding-space-provenance.html</code></li>
+      <li class="open">สไลด์เก่า 17 หน้า <code style="font-family:var(--mono);color:var(--ink)">artifacts/workshop-deck.html</code> ยังอยู่แยกกัน — ยังไม่ตัดสินใจว่าจะใช้อันไหน/ทั้งคู่</li>
+      <li class="open">ยังไม่ได้ present ไล่ทั้ง 9 สไลด์แบบสดรอบสุดท้ายก่อนวันจริง</li>
+    </ul>
+  </div>
+
+  <footer>
+    ลงทะเบียน: forms.gle/Mpb7f1ymVPuum8qK7 · LINE ยืนยัน: lin.ee/xSXARyYD ("ลงเรียน Oracle" + ชื่อ-นามสกุล)<br>
+    รู้จัก ARRA Oracle: oracle101.vercel.app · ai-library-th.pages.dev<br>
+    บริจาค: มูลนิธิโรงพยาบาลสงขลานครินทร์ · SCB 565-2-09777-0 · กรุงเทพ 641-0-15655-5 · หรือกาชาด (organdonate.redcross.or.th)<br>
+    source: WORKSHOP-TIMELINE.md ในเรโปนี้ · #Gradpassion #ARRAOracle
+  </footer>
+</div>
