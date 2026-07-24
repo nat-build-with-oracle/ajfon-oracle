@@ -1,0 +1,4 @@
+# dropped images + generated state are local working files, not committed
+inbox/*
+!inbox/.gitkeep
+captions.json
