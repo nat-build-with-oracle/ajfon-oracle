@@ -41,6 +41,13 @@
   }
   button#save-btn:disabled { opacity: 0.5; cursor: default; }
   button#save-btn:hover:not(:disabled) { filter: brightness(1.08); }
+  button#reset-btn {
+    background: transparent; color: var(--muted); border: 1px solid var(--card-border);
+    font-weight: 600; font-size: 13px;
+    padding: 9px 16px; border-radius: 8px; cursor: pointer;
+  }
+  button#reset-btn:disabled { opacity: 0.4; cursor: default; }
+  button#reset-btn:hover:not(:disabled) { border-color: var(--danger); color: var(--danger); }
   .present-link {
     display: inline-flex; align-items: center; gap: 6px;
     color: var(--text); text-decoration: none;
@@ -58,6 +65,7 @@
   #status.show { display: inline-block; }
   #status.ok { background: rgba(74,222,128,0.15); color: var(--ok); }
   #status.err { background: rgba(255,107,107,0.15); color: var(--danger); white-space: pre-wrap; }
+  #status.pending { background: rgba(250,204,21,0.15); color: #facc15; white-space: pre-wrap; }
 
   #grid {
     display: grid;
@@ -193,6 +201,7 @@
   <span class="sub" id="count-sub">loading…</span>
   <span class="spacer"></span>
   <span id="status"></span>
+  <button id="reset-btn" disabled title="Discard unsaved drag/hide changes, reload from the saved deck">↺ Reset</button>
   <button id="save-btn" disabled>Save order</button>
   <a id="present-local" class="present-link" href="/deck" target="_blank" rel="noopener"
      title="Opens your CURRENT LOCAL file, read fresh every time — always matches your latest Save, no deploy needed.">▶ Present (local)</a>
@@ -203,8 +212,9 @@
 <footer>
   Drag cards to reorder. Click the eye icon to hide a slide from the live show without deleting
   it — it stays right where it is, just grayed out (click again to unhide). Click a thumbnail to
-  zoom in. Click <strong>Save order</strong> when done — this writes the <code>ORDER</code> and
-  <code>HIDDEN</code> arrays in both deck HTML files. Nothing is written until you save.
+  zoom in. Any change shows a yellow <strong>what changed</strong> summary next to the buttons.
+  Click <strong>Save order</strong> to write it to the deck file, or <strong>↺ Reset</strong> to
+  throw away unsaved changes and reload the last-saved order. Nothing is written until you save.
 </footer>
 
 <div id="lightbox">
@@ -227,8 +237,15 @@
 (function () {
   const grid = document.getElementById("grid");
   const saveBtn = document.getElementById("save-btn");
+  const resetBtn = document.getElementById("reset-btn");
   const statusEl = document.getElementById("status");
   const countSub = document.getElementById("count-sub");
+
+  // Snapshot of the last-loaded-or-saved state (visible order + hidden set),
+  // used both to reset back to it and to compute a live "what changed"
+  // summary as soon as something moves — so you don't have to click Save
+  // just to find out what you dragged.
+  let baseline = null; // { order: [...visible ids...], hidden: Set }
 
   const lightbox = document.getElementById("lightbox");
   const lightboxFrame = document.getElementById("lightbox-frame");
@@ -597,17 +614,46 @@
     });
   }
 
-  function markDirty() {
-    saveBtn.disabled = false;
-    clearStatus();
-  }
-
   function currentSplit() {
     const order = [], hidden = [];
     [...grid.querySelectorAll(".card")].forEach((c) => {
       (c.classList.contains("is-hidden") ? hidden : order).push(c.dataset.id);
     });
     return { order, hidden };
+  }
+
+  // Mirrors the server's diff_summary()/save_new_order() reporting, computed
+  // client-side against `baseline` so it updates live on every drag/hide —
+  // not just after a round trip to /save.
+  function diffAgainstBaseline() {
+    if (!baseline) return "";
+    const { order, hidden } = currentSplit();
+    const oldPos = {};
+    baseline.order.forEach((id, i) => { oldPos[id] = i + 1; });
+    const newPos = {};
+    order.forEach((id, i) => { newPos[id] = i + 1; });
+    const moves = [];
+    baseline.order.forEach((id) => {
+      if (!(id in newPos)) return; // now hidden, reported separately below
+      if (oldPos[id] !== newPos[id]) moves.push(`${id}: ${oldPos[id]}→${newPos[id]}`);
+    });
+    const newHiddenSet = new Set(hidden);
+    const nowHidden = [...newHiddenSet].filter((id) => !baseline.hidden.has(id)).sort();
+    const nowShown = [...baseline.hidden].filter((id) => !newHiddenSet.has(id)).sort();
+    const parts = [];
+    if (moves.length) parts.push("Moved " + moves.join(", "));
+    if (nowHidden.length) parts.push("Hidden: " + nowHidden.join(", "));
+    if (nowShown.length) parts.push("Un-hidden: " + nowShown.join(", "));
+    return parts.join(" | ");
+  }
+
+  function markDirty() {
+    const diff = diffAgainstBaseline();
+    const isDirty = diff.length > 0;
+    saveBtn.disabled = !isDirty;
+    resetBtn.disabled = !isDirty;
+    if (isDirty) setStatus("pending", diff);
+    else clearStatus();
   }
 
   // Cached from the last successful /api/slides load, so the hashchange
@@ -669,6 +715,14 @@
     // null for them), which is exactly "stays where it is" on load.
     data.slides.forEach((slide) => grid.appendChild(makeCard(slide)));
 
+    baseline = {
+      order: data.slides.filter((s) => !s.hidden).map((s) => s.id),
+      hidden: new Set(data.slides.filter((s) => s.hidden).map((s) => s.id)),
+    };
+    saveBtn.disabled = true;
+    resetBtn.disabled = true;
+    clearStatus();
+
     restoreFromHash(); // covers the initial-load case (URL already has a hash when the page first opens)
   }
 
@@ -705,10 +759,17 @@
       }
       setStatus("ok", data.summary || "Saved.");
       renumber();
+      baseline = { order: split.order.slice(), hidden: new Set(split.hidden) };
+      resetBtn.disabled = true;
     } catch (e) {
       setStatus("err", "Save failed: " + e.message);
       saveBtn.disabled = false;
     }
+  });
+
+  resetBtn.addEventListener("click", () => {
+    if (resetBtn.disabled) return;
+    load();
   });
 
   load();
