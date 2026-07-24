@@ -48,6 +48,71 @@
   }
   button#reset-btn:disabled { opacity: 0.4; cursor: default; }
   button#reset-btn:hover:not(:disabled) { border-color: var(--danger); color: var(--danger); }
+  button#fix-thumbs-btn {
+    background: transparent; color: var(--muted); border: 1px solid var(--card-border);
+    font-weight: 600; font-size: 13px;
+    padding: 9px 16px; border-radius: 8px; cursor: pointer;
+  }
+  button#fix-thumbs-btn:disabled { opacity: 0.4; cursor: default; }
+  button#fix-thumbs-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  /* Add-slide tile — lives IN the grid as the last card, not a header
+     button, so "drop an image on the last slot" is the affordance itself. */
+  .add-placeholder {
+    border: 2px dashed var(--card-border); border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    aspect-ratio: 190/230; /* roughly matches a real card's thumb+caption height */
+    cursor: pointer; color: var(--muted);
+    transition: border-color 0.12s, color 0.12s;
+  }
+  .add-placeholder:hover, .add-placeholder.drag-over {
+    border-color: var(--accent); color: var(--accent);
+  }
+  .add-placeholder .plus { font-size: 30px; line-height: 1; margin-bottom: 6px; }
+  .add-placeholder .txt { font-size: 12px; text-align: center; padding: 0 10px; }
+  .add-placeholder-inner { display: flex; flex-direction: column; align-items: center; }
+
+  /* macOS-style unsaved-change dot — a small filled circle, same shape as
+     the dot Apple puts in a window's close button for an unsaved document.
+     Sits at the top-center of a card that differs from the last-saved
+     baseline (moved position, or hidden/shown), so "what changed" is
+     visible per-card at a glance, not just in the status line. */
+  .unsaved-dot {
+    position: absolute; top: 8px; left: 50%; transform: translateX(-50%); z-index: 3;
+    width: 9px; height: 9px; border-radius: 50%;
+    background: #facc15;
+    box-shadow: 0 0 0 2px rgba(10,11,14,0.85);
+    display: none;
+    pointer-events: none;
+  }
+  .card.is-changed .unsaved-dot { display: block; }
+
+  #edit-modal {
+    display: none; position: fixed; inset: 0; z-index: 300;
+    background: rgba(5,6,10,0.92);
+    align-items: center; justify-content: center; padding: 24px;
+  }
+  #edit-modal.show { display: flex; }
+  #edit-modal .panel {
+    width: min(92vw, 480px);
+    background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px;
+    padding: 20px; display: flex; flex-direction: column; gap: 12px;
+  }
+  #edit-modal h3 { margin: 0; font-size: 15px; }
+  #edit-modal label { font-size: 12.5px; color: var(--muted); display: block; margin-bottom: 4px; }
+  #edit-modal input[type="text"], #edit-modal textarea {
+    width: 100%; background: #05060a; color: var(--text);
+    border: 1px solid var(--card-border); border-radius: 6px;
+    padding: 8px 10px; font-size: 13px; font-family: inherit;
+  }
+  #edit-modal textarea { resize: vertical; min-height: 50px; }
+  #edit-modal .row { display: flex; gap: 10px; justify-content: flex-end; }
+  #edit-modal .row button {
+    padding: 9px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;
+  }
+  #edit-cancel { background: transparent; color: var(--muted); border: 1px solid var(--card-border); }
+  #edit-submit { background: var(--accent); color: #0b0d11; border: none; }
+  #edit-submit:disabled { opacity: 0.5; cursor: default; }
+  .add-placeholder.uploading { opacity: 0.6; pointer-events: none; }
   .present-link {
     display: inline-flex; align-items: center; gap: 6px;
     color: var(--text); text-decoration: none;
@@ -96,6 +161,20 @@
     pointer-events: none;
   }
   .badge-pos.hidden-badge { color: var(--danger); border-color: rgba(255,107,107,0.5); }
+  /* "was #N" chip — sits just under the position badge on any card whose
+     visible position actually shifted, so when several slides move at once
+     you can tell exactly which one swapped with which (not just "something
+     changed"), without hunting through the text summary. */
+  .badge-was {
+    position: absolute; top: 34px; right: 8px; z-index: 2;
+    background: rgba(250,204,21,0.15); color: #facc15;
+    font-weight: 700; font-size: 10.5px;
+    padding: 2px 8px; border-radius: 20px;
+    border: 1px solid rgba(250,204,21,0.4);
+    pointer-events: none;
+    display: none;
+  }
+  .badge-was.show { display: block; }
   .eye-btn {
     position: absolute; top: 8px; left: 8px; z-index: 2;
     width: 26px; height: 26px;
@@ -107,6 +186,17 @@
   .eye-btn:hover { border-color: var(--accent); color: var(--accent); }
   .eye-btn svg { width: 15px; height: 15px; display: block; }
   .card.is-hidden .eye-btn { color: var(--danger); border-color: rgba(255,107,107,0.5); }
+  /* Permanent delete — separate from the eye icon (hide, reversible). Sits
+     at bottom-right of the thumbnail so it's never mistaken for hide. */
+  .delete-btn {
+    position: absolute; bottom: 8px; right: 8px; z-index: 2;
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(10,11,14,0.78); border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.18);
+    cursor: pointer; color: var(--text); font-size: 13px;
+  }
+  .delete-btn:hover { border-color: var(--danger); color: var(--danger); background: rgba(255,107,107,0.15); }
   /* Drop indicator: a PURE VISUAL OVERLAY, positioned by pixel coordinates —
      deliberately NOT a real grid child. Inserting it into the grid's actual
      flow would reflow every card after it, which shifts cards out from under
@@ -133,6 +223,14 @@
   }
   .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; cursor: zoom-in; }
   .thumb-wrap .no-thumb { color: var(--muted); font-size: 11px; padding: 8px; text-align: center; }
+  .regen-btn {
+    position: absolute; bottom: 42px; left: 50%; transform: translateX(-50%); z-index: 2;
+    background: rgba(124,158,255,0.15); color: var(--accent);
+    border: 1px solid rgba(124,158,255,0.4); border-radius: 20px;
+    padding: 5px 12px; font-size: 11px; font-weight: 600; cursor: pointer;
+  }
+  .regen-btn:hover:not(:disabled) { background: rgba(124,158,255,0.25); }
+  .regen-btn:disabled { opacity: 0.6; cursor: default; }
 
   /* Lightbox — click a thumbnail for a live preview: an actual iframe of
      /deck#<pos>, the real running slide (not just a flat screenshot), so it
@@ -182,13 +280,22 @@
     border-color: var(--card-border); color: var(--text);
   }
   #lightbox .lb-hint { color: var(--muted); font-size: 11.5px; }
-  .caption { padding: 8px 10px 10px; }
+  .caption { padding: 8px 10px 10px; display: flex; align-items: flex-start; gap: 6px; }
   .caption .id { font-size: 11px; color: var(--muted); }
+  .caption .text { flex: 1; min-width: 0; }
   .caption .label {
     font-size: 12px; color: var(--text); margin-top: 3px;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
     overflow: hidden; line-height: 1.35em; min-height: 1.35em;
   }
+  .edit-btn {
+    flex-shrink: 0; margin-top: 1px;
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; border: 1px solid var(--card-border); border-radius: 6px;
+    color: var(--muted); cursor: pointer; font-size: 12px;
+  }
+  .edit-btn:hover { border-color: var(--accent); color: var(--accent); }
   footer {
     padding: 10px 20px 30px; color: var(--muted); font-size: 12px;
   }
@@ -201,6 +308,7 @@
   <span class="sub" id="count-sub">loading…</span>
   <span class="spacer"></span>
   <span id="status"></span>
+  <button id="fix-thumbs-btn" type="button" title="Regenerate every 'no thumbnail' card in one pass (also fixes HEIC images broken in Chromium)">🔄 Fix missing thumbs</button>
   <button id="reset-btn" disabled title="Discard unsaved drag/hide changes, reload from the saved deck">↺ Reset</button>
   <button id="save-btn" disabled>Save order</button>
   <a id="present-local" class="present-link" href="/deck" target="_blank" rel="noopener"
@@ -233,11 +341,39 @@
   <div class="lb-hint">← / → or the ‹ › buttons to step through slides · click the dark area outside, or Esc, to close</div>
 </div>
 
+<!-- Hidden file input used by the in-grid "+" tile — Add is image-only, no
+     text fields. Text comes later via the ✎ edit modal below (filled in by
+     AI or by hand, never at add time). -->
+<input id="add-file" type="file" accept="image/png,image/jpeg,image/gif,image/webp" hidden>
+
+<div id="edit-modal">
+  <div class="panel">
+    <h3>✎ Edit slide text — <span id="edit-modal-id"></span></h3>
+    <div>
+      <label for="edit-eyebrow">Eyebrow (มุมบน)</label>
+      <input id="edit-eyebrow" type="text" placeholder="เช่น ภาพจริง 3/3">
+    </div>
+    <div>
+      <label for="edit-title">หัวข้อ (h2)</label>
+      <input id="edit-title" type="text" placeholder="หัวข้อสไลด์">
+    </div>
+    <div>
+      <label for="edit-caption">คำบรรยาย</label>
+      <textarea id="edit-caption" placeholder="คำบรรยายใต้ภาพ"></textarea>
+    </div>
+    <div class="row">
+      <button id="edit-cancel" type="button">ยกเลิก</button>
+      <button id="edit-submit" type="button">💾 บันทึกข้อความ</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function () {
   const grid = document.getElementById("grid");
   const saveBtn = document.getElementById("save-btn");
   const resetBtn = document.getElementById("reset-btn");
+  const fixThumbsBtn = document.getElementById("fix-thumbs-btn");
   const statusEl = document.getElementById("status");
   const countSub = document.getElementById("count-sub");
 
@@ -445,7 +581,12 @@
   }
   function commitDrop() {
     if (!dragEl) return;
-    grid.insertBefore(dragEl, dropTarget === undefined ? null : dropTarget);
+    // null/undefined both mean "end of the real cards" — but the add-slide
+    // tile is always the last DOM child, so "the end" means right before
+    // it, never actually after it.
+    const addTile = grid.querySelector(".add-placeholder");
+    const target = (dropTarget === undefined || dropTarget === null) ? addTile : dropTarget;
+    grid.insertBefore(dragEl, target);
     hideIndicator();
     dropTarget = undefined;
   }
@@ -512,7 +653,46 @@
       noThumb.className = "no-thumb";
       noThumb.textContent = "no thumbnail";
       thumbWrap.appendChild(noThumb);
+
+      // Usually means the source image was HEIC/HEIF (iPhone default) or
+      // some other format Chromium can't render inline — regenerate_thumb()
+      // on the server re-extracts the deck's own embedded image and, if
+      // it's one of those formats, converts it (via sips) and patches the
+      // deck's own <img src> too, not just the thumbnail.
+      const regenBtn = document.createElement("button");
+      regenBtn.type = "button";
+      regenBtn.className = "regen-btn";
+      regenBtn.textContent = "🔄 Regenerate thumbnail";
+      regenBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        regenBtn.disabled = true;
+        regenBtn.textContent = "กำลังแก้…";
+        try {
+          const res = await fetch("/regenerate-thumb", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: slide.id }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || res.statusText);
+          await load();
+        } catch (err) {
+          alert("Regenerate failed: " + err.message);
+          regenBtn.disabled = false;
+          regenBtn.textContent = "🔄 Regenerate thumbnail";
+        }
+      });
+      thumbWrap.appendChild(regenBtn);
     }
+    const unsavedDot = document.createElement("span");
+    unsavedDot.className = "unsaved-dot";
+    unsavedDot.title = "Changed since last save";
+    thumbWrap.appendChild(unsavedDot);
+
+    const wasBadge = document.createElement("span");
+    wasBadge.className = "badge-was";
+    thumbWrap.appendChild(wasBadge);
+
     // Order number lives as a badge in the top-right corner of the thumbnail,
     // not buried in the caption text — it's the thing you're tracking while
     // dragging, so it should be the most visible element on the card. A
@@ -538,16 +718,64 @@
     });
     thumbWrap.appendChild(eyeBtn);
 
+    // Permanent delete — separate control from hide, since hide is
+    // reversible (grays out, stays in the file) and this is not (removes
+    // the <section> from the deck entirely). Confirms first; disabled while
+    // the request is in flight so a double-click can't fire it twice.
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "delete-btn";
+    deleteBtn.title = "Delete this slide permanently";
+    deleteBtn.textContent = "🗑";
+    deleteBtn.draggable = true;
+    deleteBtn.addEventListener("dragstart", (e) => { e.preventDefault(); e.stopPropagation(); });
+    deleteBtn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const label = slide.label || slide.id;
+      if (!confirm(`ลบสไลด์ "${label}" (${slide.id}) ถาวรเลยไหมครับ? กู้คืนไม่ได้`)) return;
+      deleteBtn.disabled = true;
+      try {
+        const res = await fetch("/delete-slide", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: slide.id }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || res.statusText);
+        await load(); // re-fetch — the slide + baseline now reflect the deletion
+      } catch (err) {
+        alert("Delete failed: " + err.message);
+        deleteBtn.disabled = false;
+      }
+    });
+    thumbWrap.appendChild(deleteBtn);
+
     const caption = document.createElement("div");
     caption.className = "caption";
+    const textWrap = document.createElement("div");
+    textWrap.className = "text";
     const idSpan = document.createElement("span");
     idSpan.className = "id";
     idSpan.textContent = slide.id;
     const labelDiv = document.createElement("div");
     labelDiv.className = "label";
     labelDiv.textContent = slide.label || "";
-    caption.appendChild(idSpan);
-    caption.appendChild(labelDiv);
+    textWrap.appendChild(idSpan);
+    textWrap.appendChild(labelDiv);
+    caption.appendChild(textWrap);
+
+    const editBtn = document.createElement("button");
+    editBtn.type = "button";
+    editBtn.className = "edit-btn";
+    editBtn.title = "Edit eyebrow / title / caption text";
+    editBtn.textContent = "✎";
+    editBtn.draggable = true; // swallow drag, same trick as eye-btn
+    editBtn.addEventListener("dragstart", (e) => { e.preventDefault(); e.stopPropagation(); });
+    editBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openEditModal(slide);
+    });
+    caption.appendChild(editBtn);
 
     card.appendChild(thumbWrap);
     card.appendChild(caption);
@@ -647,7 +875,41 @@
     return parts.join(" | ");
   }
 
+  // Marks each card that individually differs from the baseline (moved
+  // position, or hidden/shown toggled) with a small dot — same idea as
+  // macOS's unsaved-document dot, but per-card instead of per-window.
+  function updateChangeDots() {
+    if (!baseline) return;
+    const oldPos = {};
+    baseline.order.forEach((id, i) => { oldPos[id] = i + 1; });
+    let visiblePos = 0;
+    [...grid.querySelectorAll(".card")].forEach((card) => {
+      const id = card.dataset.id;
+      const hidden = card.classList.contains("is-hidden");
+      const wasHidden = baseline.hidden.has(id);
+      const wasBadge = card.querySelector(".badge-was");
+      let changed = hidden !== wasHidden;
+      let wasLabel = "";
+      if (!hidden) {
+        visiblePos += 1;
+        if (wasHidden) {
+          changed = true;
+          wasLabel = "was hidden";
+        } else if (oldPos[id] !== visiblePos) {
+          changed = true;
+          wasLabel = "was #" + oldPos[id];
+        }
+      }
+      card.classList.toggle("is-changed", changed);
+      if (wasBadge) {
+        wasBadge.textContent = wasLabel;
+        wasBadge.classList.toggle("show", !!wasLabel);
+      }
+    });
+  }
+
   function markDirty() {
+    updateChangeDots();
     const diff = diffAgainstBaseline();
     const isDirty = diff.length > 0;
     saveBtn.disabled = !isDirty;
@@ -714,6 +976,7 @@
     // file-order sequence (hidden ones interleaved in place, pos is just
     // null for them), which is exactly "stays where it is" on load.
     data.slides.forEach((slide) => grid.appendChild(makeCard(slide)));
+    grid.appendChild(makeAddPlaceholder());
 
     baseline = {
       order: data.slides.filter((s) => !s.hidden).map((s) => s.id),
@@ -760,6 +1023,7 @@
       setStatus("ok", data.summary || "Saved.");
       renumber();
       baseline = { order: split.order.slice(), hidden: new Set(split.hidden) };
+      updateChangeDots();
       resetBtn.disabled = true;
     } catch (e) {
       setStatus("err", "Save failed: " + e.message);
@@ -770,6 +1034,143 @@
   resetBtn.addEventListener("click", () => {
     if (resetBtn.disabled) return;
     load();
+  });
+
+  fixThumbsBtn.addEventListener("click", async () => {
+    fixThumbsBtn.disabled = true;
+    fixThumbsBtn.textContent = "กำลังแก้…";
+    try {
+      const res = await fetch("/regenerate-thumbs", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || res.statusText);
+      setStatus("ok", data.summary || `Fixed ${data.fixed.length} thumbnail(s).`);
+      await load();
+    } catch (e) {
+      alert("Fix thumbnails failed: " + e.message);
+    } finally {
+      fixThumbsBtn.disabled = false;
+      fixThumbsBtn.textContent = "🔄 Fix missing thumbs";
+    }
+  });
+
+  // --- Add slide: image only, no modal ---------------------------------
+  // The human just drops/picks an image — text stays blank and gets filled
+  // in later (by AI or by hand) via the ✎ edit modal below. Keeping Add a
+  // single direct upload (no intermediate dialog) also sidesteps the bug
+  // where an OS-drag onto a modal-triggering tile opened the dialog before
+  // the file had actually loaded into it.
+  const addFileInput = document.getElementById("add-file");
+  let addTargetTile = null; // which tile's click opened the file picker
+
+  async function uploadImageFile(file, tile) {
+    if (!file || !file.type.startsWith("image/")) return;
+    tile.classList.add("uploading");
+    const inner = tile.querySelector(".add-placeholder-inner");
+    const prevHTML = inner.innerHTML;
+    inner.innerHTML = '<div class="txt">กำลังเพิ่ม…</div>';
+    try {
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+      const res = await fetch("/add-slide", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: dataUrl, eyebrow: "", title: "", caption: "" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || res.statusText);
+      await load(); // re-fetch — new slide (with a blank title, ready to ✎ edit) is now part of the real deck + baseline
+    } catch (e) {
+      alert("Add slide failed: " + e.message);
+      tile.classList.remove("uploading");
+      inner.innerHTML = prevHTML;
+    }
+  }
+
+  // The in-grid "+" tile (appended as the last item every load()) — click
+  // to pick a file, or drag an image straight onto it from the OS.
+  function makeAddPlaceholder() {
+    const tile = document.createElement("div");
+    tile.className = "add-placeholder";
+    tile.title = "Add a new slide from an image";
+    const inner = document.createElement("div");
+    inner.className = "add-placeholder-inner";
+    inner.innerHTML = '<div class="plus">+</div><div class="txt">ลากรูปมาวาง หรือคลิกเพื่อเพิ่มสไลด์</div>';
+    tile.appendChild(inner);
+
+    tile.addEventListener("click", () => { addTargetTile = tile; addFileInput.click(); });
+    tile.addEventListener("dragover", (e) => { e.preventDefault(); tile.classList.add("drag-over"); });
+    tile.addEventListener("dragleave", () => tile.classList.remove("drag-over"));
+    tile.addEventListener("drop", (e) => {
+      e.preventDefault();
+      tile.classList.remove("drag-over");
+      const file = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (file) uploadImageFile(file, tile);
+    });
+    return tile;
+  }
+
+  addFileInput.addEventListener("change", () => {
+    const file = addFileInput.files[0];
+    addFileInput.value = "";
+    if (file && addTargetTile) uploadImageFile(file, addTargetTile);
+  });
+
+  // --- Edit slide text (eyebrow / title / caption) ----------------------
+  const editModal = document.getElementById("edit-modal");
+  const editModalId = document.getElementById("edit-modal-id");
+  const editEyebrowInput = document.getElementById("edit-eyebrow");
+  const editTitleInput = document.getElementById("edit-title");
+  const editCaptionInput = document.getElementById("edit-caption");
+  const editCancelBtn = document.getElementById("edit-cancel");
+  const editSubmitBtn = document.getElementById("edit-submit");
+  let editingSlideId = null;
+
+  function openEditModal(slide) {
+    editingSlideId = slide.id;
+    editModalId.textContent = slide.id;
+    editEyebrowInput.value = slide.eyebrow || "";
+    editTitleInput.value = slide.title || "";
+    editCaptionInput.value = slide.caption || "";
+    editModal.classList.add("show");
+    editEyebrowInput.focus();
+  }
+  function closeEditModal() {
+    editModal.classList.remove("show");
+    editingSlideId = null;
+  }
+
+  editCancelBtn.addEventListener("click", closeEditModal);
+  editModal.addEventListener("click", (e) => { if (e.target === editModal) closeEditModal(); });
+
+  editSubmitBtn.addEventListener("click", async () => {
+    if (!editingSlideId) return;
+    editSubmitBtn.disabled = true;
+    editSubmitBtn.textContent = "กำลังบันทึก…";
+    try {
+      const res = await fetch("/edit-slide", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editingSlideId,
+          eyebrow: editEyebrowInput.value,
+          title: editTitleInput.value,
+          caption: editCaptionInput.value,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || res.statusText);
+      closeEditModal();
+      await load(); // re-fetch — label/eyebrow/title/caption now reflect the saved text
+    } catch (e) {
+      alert("Edit failed: " + e.message);
+    } finally {
+      editSubmitBtn.disabled = false;
+      editSubmitBtn.textContent = "💾 บันทึกข้อความ";
+    }
   });
 
   load();

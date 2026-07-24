@@ -15,6 +15,8 @@ Run:
 
 Then open the printed URL in a browser.
 """
+import base64
+import html as html_mod
 import http.server
 import json
 import mimetypes
@@ -22,6 +24,8 @@ import os
 import re
 import socket
 import socketserver
+import subprocess
+import tempfile
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -65,6 +69,21 @@ def extract_label(chunk: str) -> str:
     return ""
 
 
+def extract_editable_fields(chunk: str):
+    """Best-effort eyebrow/title/caption text for the edit-slide UI. Works
+    reliably for the single-image "figwrap" slides add_slide() produces;
+    for other (card-grid) slide layouts it still finds *a* h2/eyebrow, which
+    is harmless to prefill even if editing it only touches that one spot."""
+    eyebrow_m = re.search(r'<div class="eyebrow">(.*?)</div>', chunk, re.S)
+    title_m = re.search(r"<h2>(.*?)</h2>", chunk, re.S)
+    caption_m = re.search(r'<div class="cap">(.*?)</div>', chunk, re.S)
+    return {
+        "eyebrow": clean_text(eyebrow_m.group(1)) if eyebrow_m else "",
+        "title": clean_text(title_m.group(1)) if title_m else "",
+        "caption": clean_text(caption_m.group(1)) if caption_m else "",
+    }
+
+
 def parse_deck(html: str):
     """Return (ids_in_order, sections_by_id, hidden_ids) straight from DOM order."""
     starts = list(SECTION_START_RE.finditer(html))
@@ -93,7 +112,7 @@ def build_slide_data():
     thumbs_by_id = {}
     if THUMBS_DIR.is_dir():
         for f in THUMBS_DIR.iterdir():
-            if f.suffix.lower() in (".png", ".jpg", ".jpeg"):
+            if f.suffix.lower() in (".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp"):
                 thumbs_by_id[f.stem] = f.name
 
     slides = []
@@ -103,14 +122,16 @@ def build_slide_data():
         is_hidden = aid in hidden_set
         if not is_hidden:
             visible_pos += 1
-        slides.append({
+        slide = {
             "id": aid,
             "pos": None if is_hidden else visible_pos,
             "hidden": is_hidden,
             "label": extract_label(chunk),
             "thumb": thumbs_by_id.get(aid),
             "full": thumbs_by_id.get(aid),  # same image serves both grid + lightbox fallback
-        })
+        }
+        slide.update(extract_editable_fields(chunk))
+        slides.append(slide)
     return slides, []  # no such thing as a "dead id" here — every section IS a real slide
 
 
@@ -217,6 +238,274 @@ def save_new_order(new_order, new_hidden):
 
 
 # ---------------------------------------------------------------------------
+# Add slide — append a brand-new <section> built from an uploaded image,
+# matching the deck's existing single-image "figwrap/figmat" slide pattern
+# (see e.g. data-id="s5"). Image is embedded inline as base64, same as every
+# other image in this self-contained deck file — no sibling asset files.
+# ---------------------------------------------------------------------------
+
+SECTION_FULL_RE = re.compile(
+    r'<section class="slide( active)?"( data-hidden)? data-id="([^"]+)">.*?</section>',
+    re.S,
+)
+
+def _next_slide_id(ids):
+    nums = [int(m.group(1)) for aid in ids if (m := re.match(r"^s(\d+)$", aid))]
+    return f"s{(max(nums) + 1) if nums else 1}"
+
+
+_EXT_MAP = {
+    "jpeg": "jpg", "jpg": "jpg", "png": "png", "gif": "gif",
+    "webp": "webp", "svg+xml": "svg", "bmp": "bmp",
+}
+
+# Formats the browser's FileReader will happily base64-encode but Chromium
+# (unlike Safari) cannot actually decode inline — an <img> pointed at one of
+# these renders as a broken-image icon both in the reorder grid's thumbnail
+# AND in the live deck itself. iPhone photos default to HEIC, so this bites
+# constantly. Converted via macOS's built-in `sips` (no pip install — stays
+# within this tool's stdlib-only rule) rather than silently accepted broken.
+_BROWSER_UNSAFE_SUBTYPES = {"heic", "heif"}
+
+
+def _convert_to_png_via_sips(raw_bytes: bytes) -> bytes:
+    with tempfile.TemporaryDirectory() as tmp:
+        src = Path(tmp) / "in"
+        dst = Path(tmp) / "out.png"
+        src.write_bytes(raw_bytes)
+        result = subprocess.run(
+            ["sips", "-s", "format", "png", str(src), "--out", str(dst)],
+            capture_output=True, text=True,
+        )
+        if result.returncode != 0 or not dst.is_file():
+            raise RuntimeError(f"sips conversion failed: {result.stderr.strip() or result.stdout.strip()}")
+        return dst.read_bytes()
+
+
+def _normalize_image(raw_bytes: bytes, subtype: str):
+    """Returns (bytes, ext, subtype) — converts browser-unsafe formats
+    (HEIC/HEIF) to PNG via sips, passes everything else through untouched."""
+    if subtype in _BROWSER_UNSAFE_SUBTYPES:
+        return _convert_to_png_via_sips(raw_bytes), "png", "png"
+    ext = _EXT_MAP.get(subtype, re.sub(r"[^a-z0-9]", "", subtype) or "img")
+    return raw_bytes, ext, subtype
+
+
+def add_slide(data_url, eyebrow, title, caption):
+    # Accept ANY image/* subtype the browser's FileReader produced, not a
+    # hardcoded png/jpg/gif/webp allowlist — a prior version rejected valid
+    # drags (e.g. HEIC photos, or other image/* types Chrome still base64s
+    # correctly) with a useless "expected .../base64 URL" error that didn't
+    # even say what type it actually got.
+    m = re.match(r"^data:image/([a-zA-Z0-9.+-]+);base64,(.+)$", data_url, re.S)
+    if not m:
+        head = data_url[:40] if isinstance(data_url, str) else str(type(data_url))
+        return False, f"Not an image data URL (got: {head!r}...)."
+    subtype = m.group(1).lower()
+    try:
+        raw_bytes = base64.b64decode(m.group(2), validate=True)
+    except Exception as e:
+        return False, f"Invalid base64 image data: {e}"
+
+    try:
+        raw_bytes, ext, subtype = _normalize_image(raw_bytes, subtype)
+    except Exception as e:
+        return False, f"Couldn't convert {subtype} image to a browser-safe format: {e}"
+    data_url = "data:image/" + subtype + ";base64," + base64.b64encode(raw_bytes).decode("ascii")
+
+    html_text = DECK_PATH.read_text(encoding="utf-8")
+    matches = list(SECTION_FULL_RE.finditer(html_text))
+    if not matches:
+        return False, "No <section class=\"slide...\"> blocks found — can't locate insertion point."
+
+    ids = [mm.group(3) for mm in matches]
+    new_id = _next_slide_id(ids)
+
+    # Humans drop the image only — text is left blank on purpose here and
+    # filled in afterwards (by AI or by hand) via edit_slide()/PATCH-style
+    # /edit-slide, not at add time.
+    safe_eyebrow = html_mod.escape(eyebrow or "")
+    safe_title = html_mod.escape(title or "(ยังไม่มีหัวข้อ — รอเติมทีหลัง)")
+    safe_caption = html_mod.escape(caption or "")
+
+    new_chunk = f'''<section class="slide" data-id="{new_id}">
+    <div class="inner">
+      <div class="eyebrow">{safe_eyebrow}</div>
+      <h2>{safe_title}</h2>
+      <div class="figwrap">
+        <div class="figmat" role="button" tabindex="0" aria-label="ขยายภาพเต็มจอ"><img src="{data_url}" alt="{safe_title}" /><span class="zoom-hint">🔍 คลิก หรือกด <kbd>Z</kbd> เพื่อขยายเต็มจอ</span></div>
+        <div class="cap">{safe_caption}</div>
+      </div>
+    </div>
+  </section>
+
+  '''
+
+    # Preserve everything between/around the sections BYTE-FOR-BYTE — this
+    # deck has non-section content interleaved (HTML comments between slides,
+    # a <script> block sitting between the last visible slide and the hidden
+    # one). Concatenating only matches[i].group(0) silently drops all of
+    # that; splicing on [start-of-first-match : end-of-last-match] instead
+    # keeps it untouched and only inserts the new chunk right after it.
+    prefix = html_text[: matches[0].start()]
+    unchanged_body = html_text[matches[0].start(): matches[-1].end()]
+    epilogue = html_text[matches[-1].end():]
+    new_html = prefix + unchanged_body + "\n\n  " + new_chunk.rstrip() + epilogue
+
+    _atomic_write(DECK_PATH, new_html)
+
+    thumb_path = THUMBS_DIR / f"{new_id}.{ext}"
+    THUMBS_DIR.mkdir(parents=True, exist_ok=True)
+    thumb_path.write_bytes(raw_bytes)
+
+    return True, {"id": new_id, "summary": f"Added new slide {new_id} at the end (visible)."}
+
+
+def edit_slide(slide_id, eyebrow, title, caption):
+    """Rewrite the eyebrow/h2/first-caption text INSIDE one slide's own
+    section, leaving the image and every other slide byte-for-byte
+    untouched. Only touches a field if it's present in that slide's chunk —
+    e.g. a caption-less slide's caption arg is silently ignored rather than
+    inventing markup that wasn't there."""
+    html_text = DECK_PATH.read_text(encoding="utf-8")
+    matches = list(SECTION_FULL_RE.finditer(html_text))
+    target = next((mm for mm in matches if mm.group(3) == slide_id), None)
+    if target is None:
+        return False, f"No slide with id '{slide_id}' found."
+
+    chunk = target.group(0)
+
+    def sub_once(pattern, new_text, text):
+        m = re.search(pattern, text, re.S)
+        if not m:
+            return text, False
+        return text[: m.start(1)] + html_mod.escape(new_text) + text[m.end(1):], True
+
+    changed_any = False
+    if eyebrow is not None:
+        chunk, ok = sub_once(r'<div class="eyebrow">(.*?)</div>', eyebrow, chunk)
+        changed_any = changed_any or ok
+    if title is not None:
+        chunk, ok = sub_once(r"<h2>(.*?)</h2>", title, chunk)
+        changed_any = changed_any or ok
+    if caption is not None:
+        chunk, ok = sub_once(r'<div class="cap">(.*?)</div>', caption, chunk)
+        changed_any = changed_any or ok
+
+    new_html = html_text[: target.start()] + chunk + html_text[target.end():]
+    _atomic_write(DECK_PATH, new_html)
+
+    return True, {"id": slide_id, "changed": changed_any, "summary": f"Updated text for {slide_id}."}
+
+
+def delete_slide(slide_id):
+    """Permanently remove one <section> — unlike the eye-icon hide (which
+    just marks data-hidden and keeps the slide in the file), this actually
+    deletes it. Also removes any preceding HTML comment header (e.g.
+    "<!-- 8 · Provenance timeline -->") and one trailing blank line, so
+    repeated deletes don't leave orphaned comments/gaps behind."""
+    html_text = DECK_PATH.read_text(encoding="utf-8")
+    matches = list(SECTION_FULL_RE.finditer(html_text))
+    target = next((mm for mm in matches if mm.group(3) == slide_id), None)
+    if target is None:
+        return False, f"No slide with id '{slide_id}' found."
+    if len(matches) <= 1:
+        return False, "Can't delete the last remaining slide."
+
+    start, end = target.start(), target.end()
+
+    before = html_text[:start]
+    comment_m = re.search(r"<!--[^\n]*-->\s*$", before)
+    if comment_m:
+        start = comment_m.start()
+
+    after = html_text[end:]
+    trail_m = re.match(r"[ \t]*\n", after)
+    if trail_m:
+        end += trail_m.end()
+
+    new_html = html_text[:start] + html_text[end:]
+    _atomic_write(DECK_PATH, new_html)
+
+    for ext in ("png", "jpg", "jpeg", "gif", "webp", "svg", "bmp"):
+        thumb_path = THUMBS_DIR / f"{slide_id}.{ext}"
+        if thumb_path.is_file():
+            thumb_path.unlink()
+
+    return True, {"id": slide_id, "summary": f"Deleted slide {slide_id}."}
+
+
+def regenerate_thumb(slide_id):
+    """Re-extract a slide's own inline base64 <img> straight out of the deck
+    HTML and write it to thumbs/ — fixes a "no thumbnail" card without
+    needing the original upload again, since the deck already has the full
+    image embedded (thumb and deck image are the same bytes by design).
+
+    If the embedded image is HEIC/HEIF (browser-unsafe — see _normalize_image),
+    this ALSO rewrites the deck's own <img src="..."> to the converted PNG,
+    since a HEIC image is broken in the live presentation too, not just the
+    thumbnail — a thumb-only fix would leave the real bug in place."""
+    html_text = DECK_PATH.read_text(encoding="utf-8")
+    matches = list(SECTION_FULL_RE.finditer(html_text))
+    target = next((mm for mm in matches if mm.group(3) == slide_id), None)
+    if target is None:
+        return False, f"No slide with id '{slide_id}' found."
+    chunk = target.group(0)
+
+    m = re.search(r'src="data:image/([a-zA-Z0-9.+-]+);base64,([^"]+)"', chunk, re.S)
+    if not m:
+        return False, f"Slide '{slide_id}' has no inline base64 <img> to regenerate a thumbnail from."
+
+    subtype = m.group(1).lower()
+    try:
+        raw_bytes = base64.b64decode(m.group(2), validate=True)
+    except Exception as e:
+        return False, f"Invalid base64 image data in slide: {e}"
+
+    try:
+        raw_bytes, ext, new_subtype = _normalize_image(raw_bytes, subtype)
+    except Exception as e:
+        return False, f"Couldn't convert {subtype} image to a browser-safe format: {e}"
+
+    deck_fixed = False
+    if new_subtype != subtype:
+        # The deck's own <img src> was pointing at a browser-unsafe format —
+        # patch it in place to the converted PNG, same splice-in-place
+        # technique as edit_slide() (touches only this slide's own chunk).
+        new_data_url = "data:image/" + new_subtype + ";base64," + base64.b64encode(raw_bytes).decode("ascii")
+        new_chunk = chunk[: m.start()] + 'src="' + new_data_url + '"' + chunk[m.end():]
+        new_html = html_text[: target.start()] + new_chunk + html_text[target.end():]
+        _atomic_write(DECK_PATH, new_html)
+        deck_fixed = True
+
+    THUMBS_DIR.mkdir(parents=True, exist_ok=True)
+    # Clear any stale thumb under a different extension for this id first,
+    # so a format change doesn't leave two files (old ignored, new picked up).
+    for old_ext in ("png", "jpg", "jpeg", "gif", "webp", "svg", "bmp", "heic", "heif"):
+        old = THUMBS_DIR / f"{slide_id}.{old_ext}"
+        if old.is_file() and old_ext != ext:
+            old.unlink()
+
+    (THUMBS_DIR / f"{slide_id}.{ext}").write_bytes(raw_bytes)
+    summary = f"Regenerated thumbnail for {slide_id} ({ext})."
+    if deck_fixed:
+        summary += f" Also converted the deck's own image from {subtype} → {new_subtype} (was broken in Chromium)."
+    return True, {"id": slide_id, "ext": ext, "deck_fixed": deck_fixed, "summary": summary}
+
+
+def regenerate_missing_thumbs():
+    """Bulk-repair: regenerate every slide currently showing 'no thumbnail'."""
+    slides, _ = build_slide_data()
+    fixed, failed = [], []
+    for s in slides:
+        if s["thumb"]:
+            continue
+        ok, payload = regenerate_thumb(s["id"])
+        (fixed if ok else failed).append(s["id"] if ok else {"id": s["id"], "error": payload})
+    return True, {"fixed": fixed, "failed": failed, "summary": f"Regenerated {len(fixed)}, failed {len(failed)}."}
+
+
+# ---------------------------------------------------------------------------
 # HTTP server (unchanged from ai-party-oracle's tool, minus /img /audio routes
 # — this deck is fully self-contained base64, no sibling assets to serve)
 # ---------------------------------------------------------------------------
@@ -290,9 +579,6 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def do_POST(self):
         parsed = urlparse(self.path)
-        if parsed.path != "/save":
-            self._send_bytes(404, "text/plain; charset=utf-8", b"not found")
-            return
 
         length = int(self.headers.get("Content-Length", "0") or "0")
         raw = self.rfile.read(length) if length else b""
@@ -302,26 +588,122 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self._send_json(400, {"error": f"Invalid JSON body: {e}"})
             return
 
-        if isinstance(body, list):
-            new_order, new_hidden = body, []
-        elif isinstance(body, dict):
-            new_order = body.get("order", [])
-            new_hidden = body.get("hidden", [])
-        else:
-            self._send_json(400, {"error": "Expected a JSON object {order, hidden} or an array."})
+        if parsed.path == "/save":
+            if isinstance(body, list):
+                new_order, new_hidden = body, []
+            elif isinstance(body, dict):
+                new_order = body.get("order", [])
+                new_hidden = body.get("hidden", [])
+            else:
+                self._send_json(400, {"error": "Expected a JSON object {order, hidden} or an array."})
+                return
+
+            try:
+                ok, payload = save_new_order(new_order, new_hidden)
+            except Exception as e:
+                self._send_json(500, {"error": f"Server error while saving: {e}"})
+                return
+
+            if not ok:
+                self._send_json(400, {"error": payload})
+                return
+
+            self._send_json(200, payload)
             return
 
-        try:
-            ok, payload = save_new_order(new_order, new_hidden)
-        except Exception as e:
-            self._send_json(500, {"error": f"Server error while saving: {e}"})
+        if parsed.path == "/add-slide":
+            if not isinstance(body, dict) or not body.get("data"):
+                self._send_json(400, {"error": "Expected {data, eyebrow, title, caption}."})
+                return
+
+            try:
+                ok, payload = add_slide(
+                    body.get("data", ""),
+                    body.get("eyebrow", ""),
+                    body.get("title", ""),
+                    body.get("caption", ""),
+                )
+            except Exception as e:
+                self._send_json(500, {"error": f"Server error while adding slide: {e}"})
+                return
+
+            if not ok:
+                self._send_json(400, {"error": payload})
+                return
+
+            self._send_json(200, payload)
             return
 
-        if not ok:
-            self._send_json(400, {"error": payload})
+        if parsed.path == "/edit-slide":
+            if not isinstance(body, dict) or not body.get("id"):
+                self._send_json(400, {"error": "Expected {id, eyebrow, title, caption}."})
+                return
+
+            try:
+                ok, payload = edit_slide(
+                    body.get("id"),
+                    body.get("eyebrow"),
+                    body.get("title"),
+                    body.get("caption"),
+                )
+            except Exception as e:
+                self._send_json(500, {"error": f"Server error while editing slide: {e}"})
+                return
+
+            if not ok:
+                self._send_json(400, {"error": payload})
+                return
+
+            self._send_json(200, payload)
             return
 
-        self._send_json(200, payload)
+        if parsed.path == "/delete-slide":
+            if not isinstance(body, dict) or not body.get("id"):
+                self._send_json(400, {"error": "Expected {id}."})
+                return
+
+            try:
+                ok, payload = delete_slide(body.get("id"))
+            except Exception as e:
+                self._send_json(500, {"error": f"Server error while deleting slide: {e}"})
+                return
+
+            if not ok:
+                self._send_json(400, {"error": payload})
+                return
+
+            self._send_json(200, payload)
+            return
+
+        if parsed.path == "/regenerate-thumb":
+            if not isinstance(body, dict) or not body.get("id"):
+                self._send_json(400, {"error": "Expected {id}."})
+                return
+
+            try:
+                ok, payload = regenerate_thumb(body.get("id"))
+            except Exception as e:
+                self._send_json(500, {"error": f"Server error while regenerating thumbnail: {e}"})
+                return
+
+            if not ok:
+                self._send_json(400, {"error": payload})
+                return
+
+            self._send_json(200, payload)
+            return
+
+        if parsed.path == "/regenerate-thumbs":
+            try:
+                ok, payload = regenerate_missing_thumbs()
+            except Exception as e:
+                self._send_json(500, {"error": f"Server error while regenerating thumbnails: {e}"})
+                return
+
+            self._send_json(200, payload)
+            return
+
+        self._send_bytes(404, "text/plain; charset=utf-8", b"not found")
 
 
 class ThreadingHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
