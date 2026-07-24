@@ -44,6 +44,17 @@ Announced via Grad Passion's Facebook page, hashtags `#Gradpassion #ARRAOracle #
 > cutoff), or it's a rename that happened after the archive was captured. Not
 > contradictory, just not independently confirmed yet — worth a direct check if
 > it matters for anything official.
+>
+> **Update (relayed from facebook-timeline-oracle)**: the thread is confirmed
+> exclusively 1-on-1 — no third party ever appears in it (กมลทิพย์ 45 messages,
+> Nat 16 messages, 61 total, 2026-05-25 to 2026-06-09). Last message in the
+> thread is 2026-06-09 23:25:21 (just after Nat's 23:22 reply above) — then
+> silence through the 07-12 export cutoff, no further FB coordination at all.
+> That strengthens the case that "Gradpassion" (or any further logistics)
+> moved to a different channel entirely, rather than being buried elsewhere
+> in this same thread — it doesn't resolve the name question, just narrows
+> where the answer must be. Peer-relayed data, not independently re-verified
+> by this session.
 
 ## How this workshop came to be
 

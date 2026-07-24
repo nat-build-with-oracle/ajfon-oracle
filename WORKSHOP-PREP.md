@@ -47,6 +47,31 @@
 
 ---
 
+## 📓 Jupyter/Colab notebooks — ของจริง รันได้ ให้ผู้เรียนโหลดไปเล่นเอง
+
+หลุดไปจาก prep pack รอบก่อนเพราะทำคนละ session กับตอนเขียนเอกสาร workshop — เจอทีหลังผ่าน `/dig --deep`
+**17 บท รัน headless validate ผ่านหมดแล้วจริง** (ไม่ใช่แค่เขียนไว้เฉยๆ) push ขึ้น **public repo** แล้ว:
+
+- **Repo**: https://github.com/laris-co/ajfon-oracle (public) — โฟลเดอร์ `book/notebooks/`
+- **เปิด Colab คลิกเดียว**: ทุก notebook มีปุ่ม "Open in Colab" ฝังในเซลล์แรกอยู่แล้ว ไม่ต้อง setup อะไร
+- **เปิด local**: `book/.venv` (Python 3.12) มี JupyterLab 4.6.1 + kernel `vector-book` ลงทะเบียนไว้แล้ว
+  ```bash
+  cd book && .venv/bin/jupyter lab --no-browser --port 8899 --notebook-dir .
+  ```
+
+**บทที่ตรงกับเนื้อหาสอนวันอาทิตย์ที่สุด** (แนะนำให้ลิงก์ในสไลด์ Block 2-4):
+| บท | เรื่อง | ผูกกับ block ไหน |
+|---|---|---|
+| `ch01_second_brain_20_lines.ipynb` | Second brain ใน 20 บรรทัด | Block 1 — set up |
+| `ch02_fix_thai_bge_m3.ipynb` | แก้ปัญหาภาษาไทยด้วย bge-m3 | Block 2 — demo |
+| `ch05_semantic_map.ipynb` | Semantic map (t-SNE) | Block 3 — research gap |
+| **`ch09_rag_cite.ipynb`** | **RAG พร้อมอ้างอิง** | Block 4 — writing/review loop |
+| `ch11_golden_set_eval.ipynb` | วัดผลแบบ golden-set | Block 4 — evaluation |
+
+ลิงก์ตรงสำหรับใส่สไลด์: `https://github.com/laris-co/ajfon-oracle/blob/main/book/notebooks/ch09_rag_cite.ipynb`
+
+---
+
 ## Run-of-show ที่เลือกใช้ (DustBoy's hands-on version)
 
 มี run-of-show 2 เวอร์ชัน — **ใช้ของ DustBoy** เพราะ hands-on กว่า ("ดู→ทำ→คุย" ทุก block)
