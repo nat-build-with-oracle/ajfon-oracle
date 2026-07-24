@@ -298,22 +298,29 @@ EDITOR_HTML = """<!doctype html><html><head><meta charset="utf-8">
     <input id="deckTitle" placeholder="ชื่อ deck (สไลด์ปก)" value="{deck_title}">
     <input id="deckSub" placeholder="subtitle ปก (optional)" value="{subtitle}">
   </div>
-  <div id="drop">📥 ลากรูปมาวางที่นี่ (png / jpg / gif / webp) — วางได้หลายไฟล์พร้อมกัน</div>
+  <div id="drop">📥 ลากรูปมาวางที่นี่ — หรือกดปุ่ม <b>➕ New</b> เพื่อเลือกไฟล์ (png / jpg / gif / webp, หลายไฟล์พร้อมกันได้)
+    <div style="margin-top:14px"><button class="go" onclick="document.getElementById('picker').click()">➕ New — เลือกรูป</button></div>
+    <input id="picker" type="file" accept="image/*" multiple style="display:none">
+  </div>
   <div id="cards">{rows}</div>
 </main>
 <script>
-  const drop=document.getElementById('drop'), cards=document.getElementById('cards'), status=document.getElementById('status');
+  const drop=document.getElementById('drop'), cards=document.getElementById('cards'), status=document.getElementById('status'), picker=document.getElementById('picker');
   function flash(t){{ status.textContent=t; setTimeout(()=>status.textContent='',2500); }}
-  ['dragenter','dragover'].forEach(e=>drop.addEventListener(e,ev=>{{ev.preventDefault();drop.classList.add('over');}}));
-  ['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{{ev.preventDefault();drop.classList.remove('over');}}));
-  drop.addEventListener('drop',async ev=>{{
-    const files=[...ev.dataTransfer.files].filter(f=>f.type.startsWith('image/'));
-    for(const f of files){{
+  async function uploadFiles(files){{
+    const imgs=[...files].filter(f=>f.type.startsWith('image/'));
+    for(const f of imgs){{
       const buf=await f.arrayBuffer();
       const b64=btoa(String.fromCharCode(...new Uint8Array(buf)));
       await fetch('/upload?name='+encodeURIComponent(f.name),{{method:'POST',body:b64}});
     }}
-    flash(files.length+' รูปเพิ่มแล้ว'); location.reload();
+    flash(imgs.length+' รูปเพิ่มแล้ว'); location.reload();
+  }}
+  picker.addEventListener('change',ev=>uploadFiles(ev.target.files));
+  ['dragenter','dragover'].forEach(e=>drop.addEventListener(e,ev=>{{ev.preventDefault();drop.classList.add('over');}}));
+  ['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{{ev.preventDefault();drop.classList.remove('over');}}));
+  drop.addEventListener('drop',async ev=>{{
+    await uploadFiles(ev.dataTransfer.files);
   }});
   function collect(){{
     const slides={{}}, order=[];
