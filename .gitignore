@@ -8,6 +8,7 @@
 **/chroma_bench/
 **/bench_chroma/
 **/bench_lance/
+**/bench_lance_migrated/
 **/my_vault/
 
 # --- Snapshot images (43M, regenerable ด้วย snapshot_audit.py) ---
