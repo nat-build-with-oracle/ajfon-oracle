@@ -23,7 +23,7 @@
 
 คลิกเปิดบทแรกได้เลย รันบนคลาวด์ฟรี:
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/laris-co/ajfon-oracle/blob/main/book/notebooks/ch01_second_brain_20_lines.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nat-build-with-oracle/ajfon-oracle/blob/main/book/notebooks/ch01_second_brain_20_lines.ipynb)
 
 ทุก notebook ในโฟลเดอร์ [`book/notebooks/`](book/notebooks/) มีปุ่ม **Open in Colab** ที่เซลล์แรก
 

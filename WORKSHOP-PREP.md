@@ -55,7 +55,7 @@
 หลุดไปจาก prep pack รอบก่อนเพราะทำคนละ session กับตอนเขียนเอกสาร workshop — เจอทีหลังผ่าน `/dig --deep`
 **17 บท รัน headless validate ผ่านหมดแล้วจริง** (ไม่ใช่แค่เขียนไว้เฉยๆ) push ขึ้น **public repo** แล้ว:
 
-- **Repo**: https://github.com/laris-co/ajfon-oracle (public) — โฟลเดอร์ `book/notebooks/`
+- **Repo**: https://github.com/nat-build-with-oracle/ajfon-oracle (public) — โฟลเดอร์ `book/notebooks/`
 - **เปิด Colab คลิกเดียว**: ทุก notebook มีปุ่ม "Open in Colab" ฝังในเซลล์แรกอยู่แล้ว ไม่ต้อง setup อะไร
 - **เปิด local**: `book/.venv` (Python 3.12) มี JupyterLab 4.6.1 + kernel `vector-book` ลงทะเบียนไว้แล้ว
   ```bash
@@ -71,7 +71,7 @@
 | **`ch09_rag_cite.ipynb`** | **RAG พร้อมอ้างอิง** | Block 4 — writing/review loop |
 | `ch11_golden_set_eval.ipynb` | วัดผลแบบ golden-set | Block 4 — evaluation |
 
-ลิงก์ตรงสำหรับใส่สไลด์: `https://github.com/laris-co/ajfon-oracle/blob/main/book/notebooks/ch09_rag_cite.ipynb`
+ลิงก์ตรงสำหรับใส่สไลด์: `https://github.com/nat-build-with-oracle/ajfon-oracle/blob/main/book/notebooks/ch09_rag_cite.ipynb`
 
 ---
 
