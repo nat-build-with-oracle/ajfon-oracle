@@ -40,3 +40,6 @@ artifacts/chatchai-esp32-order.html
 # deck audit output (regenerable)
 book/deck-shots/
 **/deck-shots/
+
+# --- Cloudflare Workers local build cache ---
+.wrangler/
