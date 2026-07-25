@@ -12,14 +12,17 @@
 ก่อนหน้านี้ runsheet บอกว่า demo ใช้ "บ๊องแบ๊ง 12 + Orz 17 papers" — **ไม่ถูกทั้งหมด**
 พอขุดลึกเจอว่ามี 2 คนละชุด:
 
-- **corpus จริงสำหรับ demo = literature review วิทยานิพนธ์ DustBoy เอง = 52 papers**
-  (Q1 54%, 6 หมวด: sensor calibration 18 / satellite 14 / Thailand burning 13 /
-  health 7 / fusion 4 / QA 5) — **นี่คือของจริงที่ใช้สอน** เพราะเป็นงาน PhD ที่ อ.นัท/DustBoy
+- **corpus จริงสำหรับ demo = literature review วิทยานิพนธ์ DustBoy เอง = 56 papers**
+  (6 หมวด: calibration 14 / satellite 11 / Thailand burning 11 / health-policy 9 /
+  bam 6 / fusion 5) — **นี่คือของจริงที่ใช้สอน** เพราะเป็นงาน PhD ที่ อ.นัท/DustBoy
   ทำเองจริง มี R²/RMSE จริง มี research gap จริง
+  > ⚠️ ตัวเลขนี้แก้จาก **52** เป็น **56** (2026-07-25, ยืนยันจาก Muninn Oracle ที่นับตรงจาก
+  > `artifacts/literature_corpus.jsonl` — 56 บรรทัดจริง) 52 เป็นตัวเลขร่างแรกจาก
+  > `LITERATURE_REVIEW_PAPERS.md` ก่อน export จริง ไม่ตรงกับ jsonl ที่ใช้ ingest จริง
 - บ๊องแบ๊ง-12 / Orz-17 = vector-DB ที่ fleet ทำเป็น **แบบฝึกหัด** เดือน มิ.ย. — เป็นภาพประกอบใน
   slide ได้ แต่ไม่ใช่ corpus หลักที่ demo สด
 
-**สรุป: สอนจากคอร์ปัส 52 paper ของวิทยานิพนธ์จริง** ตรงกับที่ อ.นัท ย้ำ — ใช้ความเชี่ยวชาญจริง
+**สรุป: สอนจากคอร์ปัส 56 paper ของวิทยานิพนธ์จริง** ตรงกับที่ อ.นัท ย้ำ — ใช้ความเชี่ยวชาญจริง
 ไม่ใช่หยิบ paper ที่ไม่คุ้นมามั่ว
 
 ---
