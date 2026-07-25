@@ -18,6 +18,15 @@ of any one session.
 **Cost**: Free — donation-based, to any hospital of the attendee's choosing
 **Capacity**: 300 seats (Zoom limit) — registration closes early if full
 **Registration closes**: 24 July 2026, 20:00 (GMT+7)
+> ⚠️ **Update (2026-07-25, direct message from อาจารย์ฝน, not peer-relayed)**: despite
+> the 24 July close date above, Zoom still had **70 seats open** as of Sat 25 July
+> 12:45 — she asked Nat to help promote via his own FB page for more sign-ups,
+> since more attendees benefits more hospitals through the donation model.
+
+**Consent note (2026-07-25)**: Nat asked อาจารย์ฝน directly how she feels about her
+messages being referenced for workshop materials. Her reply, paraphrased: it's fine
+to share however he finds convenient. Recorded here as the actual consent basis for
+using this conversation in workshop docs — not assumed, not inferred from peer relay.
 
 **Workflow taught in the class**:
 1. Paper → Agent summarizes, tags, stores into Memory

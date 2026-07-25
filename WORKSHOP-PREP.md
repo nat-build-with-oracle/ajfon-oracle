@@ -50,6 +50,18 @@
 
 ---
 
+## 🔭 Citation Oracle — เครื่องมือใหม่ที่แชร์ให้อาจารย์ฝนแล้ว (25 ก.ค.)
+
+**Repo**: https://github.com/Soul-Brews-Studio/phd-citation-oracle (public)
+
+AI oracle สำหรับ literature corpus ระดับ PhD — neural semantic search (bge-m3) +
+citation constellation แบบ interactive มี Claude Code skills ในตัว (รวม Gemini Deep
+Research prompt builder) ตรงกับหัวข้อ "Knowledge management ส่วนตัว + Literature
+review" ที่ อ.นัท ส่งให้อาจารย์ฝนดูโดยตรงในแชท 25 ก.ค. — น่าจะใช้เป็น**ตัวอย่างที่สอง**
+คู่กับ corpus 56 papers เดิม หรือใส่ในสไลด์ "resources เพิ่มเติม" ท้าย workshop ก็ได้
+
+---
+
 ## 📓 Jupyter/Colab notebooks — ของจริง รันได้ ให้ผู้เรียนโหลดไปเล่นเอง
 
 หลุดไปจาก prep pack รอบก่อนเพราะทำคนละ session กับตอนเขียนเอกสาร workshop — เจอทีหลังผ่าน `/dig --deep`
