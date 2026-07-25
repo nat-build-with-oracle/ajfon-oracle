@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>อจ.ฝน × อ.นัท — ดีลเวิร์กช็อป (แก้ไข: ฝั่งอาจารย์ฝนสรุปความ)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #0a0b10; --panel: #12141c; --panel-2: #171a24; --chip: #0e1420;
+    --line: #23273a; --ink: #eef0f7; --ink-soft: #a2a8bd; --ink-faint: #5c6178;
+    --gold: #ffcf4a; --blue: #5b9dff; --rose: #ff7bab; --green: #52d98a; --amber: #f8a860;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+    --sans: "Noto Sans Thai", "IBM Plex Sans Thai", "Sarabun", "Thonburi", system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); }
+  body { padding: 64px 90px 100px; }
+  .wrap { max-width: 1740px; margin: 0 auto; }
+
+  h1 {
+    font-size: clamp(30px, 3vw, 44px); font-weight: 800; margin: 8px 0 8px;
+    letter-spacing: -0.015em; text-wrap: balance;
+  }
+  .sub { color: var(--ink-soft); font-size: 17px; margin: 0 0 26px; font-family: var(--mono); }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 12px 30px;
+    background: var(--chip); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 24px; margin-bottom: 40px; font-size: 16px; color: var(--ink-soft);
+  }
+  .legend b { color: var(--ink); }
+  .legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; }
+  .legend .dot.nat { background: var(--blue); }
+  .legend .dot.fon { background: var(--rose); }
+
+  .day { margin: 44px 0 22px; display: flex; align-items: center; gap: 16px; }
+  .day .line { flex: 1; height: 1px; background: var(--line); }
+  .day .lbl { font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--ink-faint); white-space: nowrap; }
+  .day.key .lbl { color: var(--gold); }
+
+  .msg { display: flex; gap: 18px; margin-bottom: 18px; align-items: flex-start; }
+  .msg .who { width: 110px; flex-shrink: 0; text-align: right; padding-top: 4px; }
+  .msg .who .name { font-size: 16px; font-weight: 700; }
+  .msg.nat .who .name { color: var(--blue); }
+  .msg.fon .who .name { color: var(--rose); }
+  .msg .who .time { font-family: var(--mono); font-size: 13px; color: var(--ink-faint); margin-top: 3px; }
+
+  .bubble {
+    flex: 1; border-radius: 14px; padding: 18px 24px; font-size: 18px; line-height: 1.6;
+    max-width: 1560px;
+  }
+  .msg.nat .bubble { background: var(--panel-2); border: 1px solid var(--line); color: var(--ink); }
+  .msg.fon .bubble {
+    background: rgba(255,123,171,0.06); border: 1px dashed rgba(255,123,171,0.35);
+    color: var(--ink-soft); font-style: italic;
+  }
+  .paraphrase-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--mono); font-style: normal; font-size: 12px; font-weight: 700;
+    letter-spacing: 0.04em; text-transform: uppercase; color: var(--rose);
+    background: rgba(255,123,171,0.12); border: 1px solid rgba(255,123,171,0.4);
+    border-radius: 6px; padding: 2px 9px; margin-bottom: 9px;
+  }
+  .bubble .link { color: var(--blue); font-style: normal; word-break: break-all; }
+  .bubble.card {
+    background: var(--chip) !important; border: 1px solid var(--line) !important;
+    font-style: normal !important; color: var(--ink) !important;
+  }
+  .bubble.card .h { font-weight: 700; margin-bottom: 6px; color: var(--gold); font-size: 19px; }
+  .bubble.card ul { margin: 8px 0 0; padding-left: 22px; }
+  .bubble.card li { margin-bottom: 5px; }
+
+  .final {
+    margin-top: 48px; background: var(--chip); border: 1px solid rgba(82,217,138,0.4);
+    border-radius: 16px; padding: 30px 34px;
+  }
+  .final .tag {
+    display: inline-block; font-family: var(--mono); font-size: 13px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--green);
+    background: rgba(82,217,138,0.12); border: 1px solid rgba(82,217,138,0.4);
+    border-radius: 7px; padding: 4px 11px; margin-bottom: 13px;
+  }
+  .final h2 { margin: 0 0 8px; font-size: 26px; }
+  .final p { margin: 0; color: var(--ink-soft); font-size: 17px; }
+
+  footer {
+    margin-top: 50px; padding-top: 22px; border-top: 1px solid var(--line);
+    font-family: var(--mono); font-size: 13.5px; color: var(--ink-faint); line-height: 1.7;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>อจ.ฝน × อ.นัท — ดีลเวิร์กช็อป Oracle</h1>
+  <p class="sub">SOURCE: ~/fb_archive.duckdb · thread "กมลทิพย์ เลิศชัยสถาพร" · 25 พ.ค. – 25 ก.ค. 2026</p>
+
+  <div class="legend">
+    <span><span class="dot nat"></span><b>อ.นัท</b> — คำพูดจริงเต็มข้อความ (เป็นคำพูดของเราเอง)</span>
+    <span><span class="dot fon"></span><b>อาจารย์ฝน</b> — สรุปความ ไม่ใช่คำพูดตรงตัว (ตัวเอียง + ป้าย PARAPHRASE)</span>
+  </div>
+
+  <div class="day"><span class="lbl">25 พ.ค. 2026 — ทักทาย · เริ่มบทสนทนา</span><span class="line"></span></div>
+
+  <div class="msg fon">
+    <div class="who"><div class="name">ฝน</div><div class="time">07:52</div></div>
+    <div class="bubble"><span class="paraphrase-tag">Paraphrase</span><br>
+      แนะนำตัวเองว่าเป็นแพทย์และผู้ก่อตั้งกลุ่ม FB "AI for Research" บอกว่ามีสมาชิกในกลุ่มแนะนำแนวคิด Oracle ให้เธอ เธอสนใจและอยากชวน อ.นัท มาสอนหรือร่วมงานในหัวข้อ Second Brain / Claude Code สำหรับงานวิจัย
+    </div>
+  </div>
+
+  <div class="msg nat">
+    <div class="who"><div class="name">นัท</div><div class="time">08:02</div></div>
+    <div class="bubble">สุดยอดเลยครับ ขอขีดตอบข้าเห็นด้วย มอบไปพักร้อนครับผม 555</div>
+  </div>
+
+  <div class="msg nat">
+    <div class="who"><div class="name">นัท</div><div class="time">08:05</div></div>
+    <div class="bubble">ยังไม่แน่ใจว่าจะรูปแบบไหนดี คิดว่าจะมี workshop ที่กรุงเทพเดือนหน้าครับ</div>
+  </div>
+
+  <div class="msg fon">
+    <div class="who"><div class="name">ฝน</div><div class="time">08:07</div></div>
+    <div class="bubble"><span class="paraphrase-tag">Paraphrase</span><br>
+      อธิบายว่าคอมมูนิตี้ของเธอมีขนาดประมาณ 200 คนสำหรับ session ฟรี และ 20 คนสำหรับ session แบบเสียเงิน (ส่วนใหญ่เป็นหมอ อาจารย์ นักวิจัย)
+    </div>
+  </div>
+
+  <div class="msg fon">
+    <div class="who"><div class="name">ฝน</div><div class="time">08:17</div></div>
+    <div class="bubble card"><span class="paraphrase-tag">Paraphrase</span>
+      <div class="h">ข้อเสนอแรก — 2 sessions</div>
+      <ul>
+        <li>Free Online Class — แนะนำ Research Second Brain</li>
+        <li>Paid Workshop — สร้าง Research Second Brain จริง</li>
+        <li>ช่วงที่เสนอตอนนั้น: เสาร์ 27 / อาทิตย์ 28 มิ.ย.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="day"><span class="lbl">26 พ.ค. 2026 — ขยับเป็นเดือนกรกฎาคม</span><span class="line"></span></div>
+
+  <div class="msg nat">
+    <div class="who"><div class="name">นัท</div><div class="time">07:45</div></div>
+    <div class="bubble">ของ June ขยับไปอีกสัก 2 สัปดาห์ได้ไหมครับ July มีลายอะไรกว่าครับ</div>
+  </div>
+  <div class="msg nat">
+    <div class="who"><div class="name">นัท</div><div class="time">08:15</div></div>
+    <div class="bubble">ระหว่างรอ ผมจะทำ YouTube ให้ลองเตรียมของและเครื่องมือไปก่อนครับ</div>
+  </div>
+  <div class="msg fon">
+    <div class="who"><div class="name">ฝน</div><div class="time">08:16</div></div>
+    <div class="bubble"><span class="paraphrase-tag">Paraphrase</span><br>ตอบรับด้วยความยินดี</div>
+  </div>
+
+  <div class="day"><span class="lbl">4 มิ.ย. 2026 — เสนอวันจริง + ถามค่าใช้จ่าย</span><span class="line"></span></div>
+
+  <div class="msg fon">
+    <div class="who"><div class="name">ฝน</div><div class="time">11:59</div></div>
+    <div class="bubble card"><span class="paraphrase-tag">Paraphrase</span>
+      <div class="h">Agenda เดือน ก.ค. ที่เสนอ</div>
+      <ul>
+        <li>Free Class — เสาร์ 11 ก.ค. 18:00–19:00 (Zoom)</li>
+        <li>Paid Workshop — เสาร์ 25 ก.ค. 16:00–19:00 <i>หรือ</i> อาทิตย์ 26 ก.ค. 3–6 ชม.</li>
+      </ul>
+      พร้อมถามว่า อ.นัท คิดค่าใช้จ่ายอย่างไร
+    </div>
+  </div>
+
+  <div class="msg nat">
+    <div class="who"><div class="name">นัท</div><div class="time">16:47</div></div>
+    <div class="bubble">สักครู่นะครับ เดี๋ยวพรุ่งนี้มาคุยครับ</div>
+  </div>
+
+  <div class="day key"><span class="lbl">★ 6 มิ.ย. 2026 — ข้อเสนอของนัท (หัวใจของดีล)</span><span class="line"></span></div>
+
+  <div class="msg nat">
+    <div class="who"><div class="name">นัท</div><div class="time">10:43</div></div>
+    <div class="bubble">คิดออกแล้วครับ อจ.</div>
+  </div>
+
+  <div class="msg nat">
+    <div class="who"><div class="name">นัท</div><div class="time">10:44</div></div>
+    <div class="bubble">ผมคิดว่ารอบนี้ <b>เรียนฟรีครับ</b> แลกกับ 2 อย่าง<br><br>
+      ขอให้ <b>บริจาคเงินให้โรงพยาบาลในภาคใต้ได้</b> จากน้ำท่วมปีที่แล้วครับ รพไหนก็ได้ครับ สามารถเลือกรพ. ที่ออกใบเสร็จสำหรับ นำไปลดหย่อนภาษีได้ครับ ยอด 999 หรือ 1079 ก็ได้ครับ แล้วก็ <b>บอกหัวข้อที่อยากจะเรียนและนำไปใช้ประโยชน์ต่อครับผม</b>
+    </div>
+  </div>
+
+  <div class="msg fon">
+    <div class="who"><div class="name">ฝน</div><div class="time">14:25</div></div>
+    <div class="bubble"><span class="paraphrase-tag">Paraphrase</span><br>ตอบรับข้อเสนอด้วยความยินดีมาก</div>
+  </div>
+
+  <div class="day"><span class="lbl">9 มิ.ย. 2026 — Use Cases + ล็อควัน</span><span class="line"></span></div>
+
+  <div class="msg fon">
+    <div class="who"><div class="name">ฝน</div><div class="time">23:02</div></div>
+    <div class="bubble card"><span class="paraphrase-tag">Paraphrase</span>
+      ขอบคุณ อ.นัท แทนเพื่อนๆ ครู อาจารย์ นักวิจัยในกลุ่ม บอกว่าตอนนี้ทุกคนสนใจ use case ของ Oracle Second Brain สำหรับงานวิจัยเป็นพิเศษ และย้ำว่า workshop นี้จะบริจาคให้โรงพยาบาลภาคใต้ตามที่ตกลงกัน — แนบสรุป use case 3 กลุ่ม (งานวิจัย / knowledge organization / AI agent workflow) ที่ อ.นัท เคยส่งให้ก่อนหน้า
+    </div>
+  </div>
+
+  <div class="msg nat">
+    <div class="who"><div class="name">นัท</div><div class="time">23:19</div></div>
+    <div class="bubble">ได้ครับผม</div>
+  </div>
+
+  <div class="msg fon">
+    <div class="who"><div class="name">ฝน</div><div class="time">23:21</div></div>
+    <div class="bubble"><span class="paraphrase-tag">Paraphrase</span><br>ถามว่า อ.นัท สะดวกวันไหนใน 3 ตัวเลือก: เสาร์ 11 / เสาร์ 25 / อาทิตย์ 26 ก.ค.</div>
+  </div>
+
+  <div class="msg nat">
+    <div class="who"><div class="name">นัท</div><div class="time">23:22</div></div>
+    <div class="bubble">น่าจะช่วง 25/26 กค ก็ดีค้าบ</div>
+  </div>
+
+  <div class="msg fon">
+    <div class="who"><div class="name">ฝน</div><div class="time">23:25</div></div>
+    <div class="bubble"><span class="paraphrase-tag">Paraphrase</span><br>ขอบคุณด้วยความยินดี</div>
+  </div>
+
+  <div class="day"><span class="lbl">25 ก.ค. 2026 (วันเสาร์) — เช็ค consent + อัปเดตที่นั่ง</span><span class="line"></span></div>
+
+  <div class="msg nat">
+    <div class="who"><div class="name">นัท</div><div class="time">12:32</div></div>
+    <div class="bubble">อจ. ครับ อจ. รู้สึกยังไงกับข้อมูลพวกนี้ครับ ถ้าผมเล่าถึงแล้วอจ. จะอึดอัด หรือว่าอยากให้เป็นแบบไหนครับผม</div>
+  </div>
+
+  <div class="msg fon">
+    <div class="who"><div class="name">ฝน</div><div class="time">12:44</div></div>
+    <div class="bubble"><span class="paraphrase-tag">Paraphrase</span><br>ให้ความยินยอมว่าเล่าได้ตามที่ อ.นัท สะดวก</div>
+  </div>
+
+  <div class="msg fon">
+    <div class="who"><div class="name">ฝน</div><div class="time">12:45</div></div>
+    <div class="bubble"><span class="paraphrase-tag">Paraphrase</span><br>
+      แจ้งว่า Zoom ยังรับได้อีก 70 ที่ ขอให้ อ.นัท ช่วยประกาศผ่านเพจของตัวเองด้วย เพราะยิ่งมีคนมาเรียนมาก ยิ่งเป็นประโยชน์ต่อโรงพยาบาลที่จะได้รับบริจาค
+    </div>
+  </div>
+
+  <div class="msg nat">
+    <div class="who"><div class="name">นัท</div><div class="time">16:03</div></div>
+    <div class="bubble">ผมทำอันนี้มา เพื่อให้ช่วยบันทึก เก็บข้อมูล และ วิเคราะห์ในส่วนของการทำ Knowledge management ส่วนตัว และ Literature review ได้ครับผม<br><br>
+      <span class="link">https://github.com/Soul-Brews-Studio/phd-citation-oracle</span>
+    </div>
+  </div>
+
+  <div class="msg fon">
+    <div class="who"><div class="name">ฝน</div><div class="time">16:05</div></div>
+    <div class="bubble"><span class="paraphrase-tag">Paraphrase</span><br>ขอบคุณด้วยความรู้สึกดี</div>
+  </div>
+
+  <div class="final">
+    <span class="tag">Confirmed</span>
+    <h2>อาทิตย์ 26 กรกฎาคม 2026 · 09:00–12:00</h2>
+    <p>Oracle Second Brain for Research — สร้างระบบความรู้ส่วนตัวด้วย AI Agent · เรียนฟรี แลกกับบริจาคให้โรงพยาบาลภาคใต้</p>
+  </div>
+
+  <footer>
+    RENDERED: internal note · Noto Sans Thai<br>
+    ข้อความฝั่ง อ.นัท คงคำพูดจริงทั้งหมด (เป็นคำพูดของเราเอง) · ข้อความฝั่งอาจารย์ฝนสรุปความทั้งหมด ไม่ใช้คำพูดตรงตัว
+    ตามหลักที่ว่าไม่ใช่คำพูดของเรา แม้จะได้รับ consent จากอาจารย์ฝนแล้วเมื่อ 25 ก.ค. ก็ตาม
+  </footer>
+</div>
+</body>
+</html>
