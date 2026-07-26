@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iter 26 — เมื่อ Triple-RRF แย่ลงกว่าเดี่ยว</title>
+<style>
+  :root{
+    --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+    --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; --bad:#a3402f;
+    --mono:'SF Mono',ui-monospace,'Cascadia Code',Menlo,monospace;
+    --sans:'Sarabun','Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; --bad:#e08a7f; }
+  }
+  :root[data-theme=dark]{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; --bad:#e08a7f; }
+  :root[data-theme=light]{ --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+           --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; --bad:#a3402f; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+       display:flex;justify-content:center;align-items:center;min-height:100vh;padding:32px}
+  .slide{width:min(1180px,100%);aspect-ratio:16/9;background:var(--surface);
+    border:1px solid var(--line);border-radius:18px;padding:52px 60px;
+    display:flex;flex-direction:column;gap:16px;box-shadow:0 18px 50px rgba(0,0,0,.10);overflow:hidden}
+  .eyebrow{font-family:var(--mono);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  h1{margin:0;font-size:30px;line-height:1.16;font-weight:800;text-wrap:balance}
+  h1 small{display:block;font-size:16px;font-weight:500;color:var(--muted);margin-top:8px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0}
+  .card{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 18px;
+        display:flex;flex-direction:column;gap:8px;min-height:0}
+  .card h2{margin:0;font-size:13.5px;font-family:var(--mono);letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
+  .bars{display:flex;flex-direction:column;gap:8px;font-family:var(--mono);font-size:13px}
+  .barrow{display:grid;grid-template-columns:150px 1fr 60px;align-items:center;gap:8px}
+  .bar{height:14px;border-radius:4px}
+  .calc{font-family:var(--mono);font-size:13.5px;line-height:1.6}
+  .calc b{color:var(--good)}
+  .calc .x{color:var(--bad);font-weight:700}
+  .real{grid-column:1/-1;background:var(--accent-soft);border:1px solid var(--line);border-radius:10px;
+        padding:10px 16px;font-family:var(--mono);font-size:13px}
+  .foot{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);
+        font-family:var(--mono);border-top:1px solid var(--line);padding-top:10px}
+  .pill{background:var(--accent);color:#fff;border-radius:999px;padding:3px 12px;font-weight:700}
+</style>
+</head>
+<body>
+  <section class="slide">
+    <div class="eyebrow">Dig-loop 26 / 50 · vector-search evaluation</div>
+    <h1>"มีหลาย engine ≠ ดีกว่า" — Triple-RRF แย่ลงได้จริง
+      <small>RRF ถ่วงทุก ranker เท่ากัน — 2 ranker อ่อนที่ผิด "แบบเดียวกัน" โหวตชนะ 1 ranker เก่งได้</small></h1>
+    <div class="cols">
+      <div class="card">
+        <h2>วัดจริง (7 query, code นี้)</h2>
+        <div class="bars">
+          <div class="barrow"><span>bge-m3 เดี่ยว</span><div class="bar" style="width:100%;background:var(--good)"></div><span>1.000</span></div>
+          <div class="barrow"><span>triple-RRF</span><div class="bar" style="width:71%;background:var(--bad)"></div><span>0.714</span></div>
+          <div class="barrow"><span>dual-RRF (1 อ่อน)</span><div class="bar" style="width:100%;background:var(--good)"></div><span>1.000</span></div>
+        </div>
+        <div class="calc" style="font-size:12px;color:var(--muted);margin-top:4px">
+          book/17 จริง: bge-m3 1.000 vs triple-RRF 0.929 (แย่ลง!)
+        </div>
+      </div>
+      <div class="card">
+        <h2>ทำไมพลิก — คะแนน RRF เป๊ะๆ</h2>
+        <div class="calc">
+          doc B (ผิด): <span class="x">0.04866</span><br>
+          doc A (ถูก): 0.04865<br><br>
+          <span style="color:var(--muted)">weak1+weak2 <b>เห็นตรงกัน</b>ว่า B มาก่อน (correlated)<br>
+          → เสียง 2 โหวตชนะ bge-m3 1 โหวตถูก แบบเฉียดฉิว</span>
+        </div>
+      </div>
+      <div class="real">
+        บทเรียน: fusion ช่วยเมื่อ ranker เก่งพอ + พลาดคนละแบบ (independent) — ไม่ใช่ correlated · วัด fused vs best-single บน golden set เอง ไม่มีเลขวิเศษ
+      </div>
+    </div>
+    <div class="foot">
+      <span>เชื่อม iter25: consensus ชนะ rank-1 เดี่ยว — กลไกเดียวกัน แต่พลิกกลับเมื่อ consensus มาจากความอ่อนที่ correlated</span>
+      <span class="pill">มากตัว ≠ ดีกว่า</span>
+    </div>
+  </section>
+</body>
+</html>

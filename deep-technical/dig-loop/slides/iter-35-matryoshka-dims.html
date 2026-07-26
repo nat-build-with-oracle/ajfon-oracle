@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iter 35 — Matryoshka: ตัดหาง ไม่พัง</title>
+<style>
+  :root{
+    --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+    --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; --bad:#a3402f;
+    --mono:'SF Mono',ui-monospace,'Cascadia Code',Menlo,monospace;
+    --sans:'Sarabun','Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; --bad:#e08a7f; }
+  }
+  :root[data-theme=dark]{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; --bad:#e08a7f; }
+  :root[data-theme=light]{ --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+           --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; --bad:#a3402f; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+       display:flex;justify-content:center;align-items:center;min-height:100vh;padding:32px}
+  .slide{width:min(1180px,100%);aspect-ratio:16/9;background:var(--surface);
+    border:1px solid var(--line);border-radius:18px;padding:52px 60px;
+    display:flex;flex-direction:column;gap:16px;box-shadow:0 18px 50px rgba(0,0,0,.10);overflow:hidden}
+  .eyebrow{font-family:var(--mono);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  h1{margin:0;font-size:31px;line-height:1.15;font-weight:800;text-wrap:balance}
+  h1 small{display:block;font-size:16px;font-weight:500;color:var(--muted);margin-top:8px}
+  .eq{background:var(--accent-soft);border-radius:12px;padding:10px 20px;font-family:var(--mono);
+      font-size:13.5px;color:var(--ink);text-align:center;border:1px solid var(--line)}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0}
+  .card{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 18px;
+        display:flex;flex-direction:column;gap:8px;min-height:0}
+  .card h2{margin:0;font-size:13.5px;font-family:var(--mono);letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
+  .bars{display:flex;flex-direction:column;gap:8px;font-family:var(--mono);font-size:13px}
+  .barrow{display:grid;grid-template-columns:150px 1fr 60px;align-items:center;gap:8px}
+  .bar{height:14px;border-radius:4px}
+  .calc{font-family:var(--mono);font-size:13.5px;line-height:1.6}
+  .calc b{color:var(--good)}
+  .foot{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);
+        font-family:var(--mono);border-top:1px solid var(--line);padding-top:10px}
+  .pill{background:var(--accent);color:#fff;border-radius:999px;padding:3px 12px;font-weight:700}
+</style>
+</head>
+<body>
+  <section class="slide">
+    <div class="eyebrow">Dig-loop 35 / 50 · vector-search internals</div>
+    <h1>Matryoshka Embedding — ตัดหางเวกเตอร์ ไม่พัง (ถ้าเทรนมาถูก)
+      <small>เทรนหลาย prefix พร้อมกัน → มิติหน้าๆ อัดข้อมูลสำคัญไว้ก่อน → ตัด v[256:] ทิ้งได้</small></h1>
+    <div class="eq">v = [v₁...v₆₄ | v₆₅...v₁₂₈ | ... v₁₀₂₄] — ใช้แค่ 64 ก็ยังดี ไม่ต้องเทรนใหม่</div>
+    <div class="cols">
+      <div class="card">
+        <h2>ตัด 64D → 16D: top-5 รอดไหม (วัดจริง)</h2>
+        <div class="bars">
+          <div class="barrow"><span>Matryoshka-style</span><div class="bar" style="width:100%;background:var(--good)"></div><span>1.00</span></div>
+          <div class="barrow"><span>embedding ธรรมดา</span><div class="bar" style="width:40%;background:var(--bad)"></div><span>0.40</span></div>
+        </div>
+        <div class="calc" style="font-size:12px;color:var(--muted);margin-top:4px">
+          front-loaded signal = ตัดแล้วยังแม่น · สัญญาณกระจายเท่ากัน = ตัดแล้วพัง
+        </div>
+      </div>
+      <div class="card">
+        <h2>adaptive 2-stage กู้เคสที่พัง</h2>
+        <div class="calc">
+          truncated ล้วน (เคสยาก) = <b>0.40</b><br>
+          coarse(16D)→fine(64D) rerank = <b>0.80</b><br><br>
+          <span style="color:var(--muted)">รูปแบบเดียวกับ Ch8 quantization recall-recovery<br>
+          แต่ใช้ "มิติ" แทน "precision"</span>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <span>ARRA 35k doc ไม่ต้องลดมิติ (140MB จิ๊บ) — โอกาสจริงตอน scale ล้าน+</span>
+      <span class="pill">ตัดหาง ไม่พัง (ถ้า MRL)</span>
+    </div>
+  </section>
+</body>
+</html>

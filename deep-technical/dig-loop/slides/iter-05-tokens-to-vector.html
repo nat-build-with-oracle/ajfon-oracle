@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iter 05 — ประโยค → Token → เวกเตอร์</title>
+<style>
+  :root{
+    --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+    --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f;
+    --mono:'SF Mono',ui-monospace,'Cascadia Code',Menlo,monospace;
+    --sans:'Sarabun','Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; }
+  }
+  :root[data-theme=dark]{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; }
+  :root[data-theme=light]{ --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+           --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+       display:flex;justify-content:center;align-items:center;min-height:100vh;padding:32px}
+  .slide{width:min(1180px,100%);aspect-ratio:16/9;background:var(--surface);
+    border:1px solid var(--line);border-radius:18px;padding:52px 60px;
+    display:flex;flex-direction:column;gap:18px;box-shadow:0 18px 50px rgba(0,0,0,.10);overflow:hidden}
+  .eyebrow{font-family:var(--mono);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  h1{margin:0;font-size:34px;line-height:1.14;font-weight:800;text-wrap:balance}
+  h1 small{display:block;font-size:17px;font-weight:500;color:var(--muted);margin-top:8px}
+  .pipeline{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:15px;
+    background:var(--accent-soft);border:1px solid var(--line);border-radius:12px;padding:14px 18px;flex-wrap:wrap}
+  .pipeline .stage{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 12px}
+  .pipeline .arrow{color:var(--accent);font-weight:700}
+  .cols{display:grid;grid-template-columns:1.1fr 1fr;gap:20px;flex:1;min-height:0}
+  .card{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:16px 20px;
+        display:flex;flex-direction:column;gap:9px;min-height:0}
+  .card h2{margin:0;font-size:14px;font-family:var(--mono);letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
+  .calc{font-family:var(--mono);font-size:14.5px;line-height:1.7}
+  .calc b{color:var(--good)}
+  table{border-collapse:collapse;width:100%;font-size:14px;font-family:var(--mono)}
+  td,th{padding:4px 8px;text-align:left;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600}
+  .foot{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);
+        font-family:var(--mono);border-top:1px solid var(--line);padding-top:12px}
+  .pill{background:var(--accent);color:#fff;border-radius:999px;padding:3px 12px;font-weight:700}
+</style>
+</head>
+<body>
+  <section class="slide">
+    <div class="eyebrow">Dig-loop 05 / 50 · vector-search teaching</div>
+    <h1>ก่อนจะเป็นเวกเตอร์ — ประโยคต้องผ่านอะไรมาบ้าง
+      <small>ห่วงโซ่จริงเบื้องหลัง cos(A,B): sentence → subword tokens (BPE) → per-token vectors → pooled = เวกเตอร์เดียว</small></h1>
+    <div class="pipeline">
+      <span class="stage">"the lower newest window"</span><span class="arrow">→</span>
+      <span class="stage">tokenize (BPE/SentencePiece)</span><span class="arrow">→</span>
+      <span class="stage">[lowe, r, newe, st, ...]</span><span class="arrow">→</span>
+      <span class="stage">per-token vector × N</span><span class="arrow">→</span>
+      <span class="stage" style="border-color:var(--accent);color:var(--accent);font-weight:700">mean-pool → 1 vector</span>
+    </div>
+    <div class="cols">
+      <div class="card">
+        <h2>1 · BPE จริง (deep-technical/09 §9.2)</h2>
+        <table>
+          <tr><th>คำ</th><th>ตัวอักษร</th><th>→ token</th></tr>
+          <tr><td>lower</td><td class="calc">5</td><td class="calc"><b>2</b> = [lowe, r]</td></tr>
+          <tr><td>newest</td><td class="calc">6</td><td class="calc"><b>2</b> = [newe, st]</td></tr>
+          <tr><td>lowering</td><td class="calc">8</td><td class="calc"><b>6</b> = [lowe,r,i,n,g]</td></tr>
+        </table>
+        <div class="calc" style="margin-top:4px">merge คู่ตัวอักษรที่พบบ่อยสุดซ้ำๆ — คำที่เจอบ่อยในคลัง (corpus) หดเหลือ token น้อย</div>
+      </div>
+      <div class="card">
+        <h2>2 · pooling = จุดอ่อนที่ต้องรู้</h2>
+        <div class="calc">
+          "the lower newest window"<br>
+          "newest lower the window" (คำเดิม สลับที่)<br><br>
+          cos(สลับที่) = <b>1.0000</b> ← <span style="color:var(--accent)">เหมือนกันเป๊ะ!</span><br>
+          cos(ประโยคไม่เกี่ยว) = <b>0.338</b><br><br>
+          <span style="color:var(--muted)">mean-pool ไม่สนลำดับคำ → นี่คือเหตุผลที่มี<br>ColBERT (iter 37) / cross-encoder (iter 34)</span>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <span>token ≠ คำ ≠ ตัวอักษร (§9.6) · bge-m3 ใช้ SentencePiece ไม่พึ่ง space → ตัดคำไทยได้</span>
+      <span class="pill">tokens → vecs → pool</span>
+    </div>
+  </section>
+</body>
+</html>

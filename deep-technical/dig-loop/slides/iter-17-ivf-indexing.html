@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iter 17 — IVF: แบ่งเซลล์ ค้นแค่ที่ใกล้</title>
+<style>
+  :root{
+    --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+    --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; --bad:#a3402f;
+    --mono:'SF Mono',ui-monospace,'Cascadia Code',Menlo,monospace;
+    --sans:'Sarabun','Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; --bad:#e08a7f; }
+  }
+  :root[data-theme=dark]{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; --bad:#e08a7f; }
+  :root[data-theme=light]{ --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+           --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; --bad:#a3402f; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+       display:flex;justify-content:center;align-items:center;min-height:100vh;padding:32px}
+  .slide{width:min(1180px,100%);aspect-ratio:16/9;background:var(--surface);
+    border:1px solid var(--line);border-radius:18px;padding:52px 60px;
+    display:flex;flex-direction:column;gap:16px;box-shadow:0 18px 50px rgba(0,0,0,.10);overflow:hidden}
+  .eyebrow{font-family:var(--mono);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  h1{margin:0;font-size:32px;line-height:1.14;font-weight:800;text-wrap:balance}
+  h1 small{display:block;font-size:16px;font-weight:500;color:var(--muted);margin-top:8px}
+  .cols{display:grid;grid-template-columns:1.05fr 1fr;gap:20px;flex:1;min-height:0}
+  .card{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 18px;
+        display:flex;flex-direction:column;gap:8px;min-height:0}
+  .card h2{margin:0;font-size:13.5px;font-family:var(--mono);letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
+  table{border-collapse:collapse;width:100%;font-size:13px;font-family:var(--mono)}
+  td,th{padding:4px 8px;text-align:left;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600}
+  .calc{font-family:var(--mono);font-size:13.5px;line-height:1.6}
+  .calc b{color:var(--good)}
+  .calc .x{color:var(--bad);font-weight:700}
+  .foot{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);
+        font-family:var(--mono);border-top:1px solid var(--line);padding-top:10px}
+  .pill{background:var(--accent);color:#fff;border-radius:999px;padding:3px 12px;font-weight:700}
+</style>
+</head>
+<body>
+  <section class="slide">
+    <div class="eyebrow">Dig-loop 17 / 50 · vector-search internals</div>
+    <h1>IVF — แบ่งพื้นที่เป็นเซลล์ ค้นเฉพาะที่ใกล้ query
+      <small>k-means แบ่ง N เวกเตอร์เป็น nlist เซลล์ → probe แค่ nprobe เซลล์ที่ใกล้สุด</small></h1>
+    <div class="cols">
+      <div class="card">
+        <h2>วัดจริง (N=5,000, nlist=32)</h2>
+        <table>
+          <tr><th>nprobe</th><th>recall@5</th><th>ตรวจกี่ตัว</th></tr>
+          <tr><td>1</td><td class="x">0.475</td><td>157</td></tr>
+          <tr><td>4</td><td>0.770</td><td>627</td></tr>
+          <tr><td>16</td><td>0.990</td><td>2,500</td></tr>
+          <tr><td>32 (ทั้งหมด)</td><td class="calc" style="color:var(--good)">1.000</td><td>5,000 = brute force!</td></tr>
+        </table>
+        <div class="calc" style="font-size:12px;color:var(--muted);margin-top:4px">
+          nprobe=nlist ⟺ กลายเป็น brute-force เป๊ะ (Ch3 §3.7)
+        </div>
+      </div>
+      <div class="card">
+        <h2>edge effect (พลาดจริง, วัดจากโค้ด)</h2>
+        <div class="calc">
+          query #1218 อยู่เซลล์ #25<br>
+          เพื่อนบ้านแท้จริง #1240 อยู่เซลล์ #30<br><br>
+          nprobe=1 → probe แค่เซลล์ #25<br>
+          <span class="x">พลาดเพื่อนบ้านที่อยู่ข้างเซลล์!</span><br><br>
+          <span style="color:var(--muted)">นี่คือความเสี่ยงจริงของ IVF: เพื่อนบ้าน<br>
+          อาจอยู่ "ข้างรั้ว" เซลล์ที่ไม่ได้ probe</span>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <span>train ครั้งเดียว (k-means) · search: probe nprobe เซลล์ + brute-force ในนั้น</span>
+      <span class="pill">nprobe = recall↔speed</span>
+    </div>
+  </section>
+</body>
+</html>

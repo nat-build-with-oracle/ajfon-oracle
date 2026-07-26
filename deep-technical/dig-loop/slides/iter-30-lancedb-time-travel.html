@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iter 30 — LanceDB Time-Travel: ลบผิด กู้คืนได้</title>
+<style>
+  :root{
+    --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+    --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; --bad:#a3402f;
+    --mono:'SF Mono',ui-monospace,'Cascadia Code',Menlo,monospace;
+    --sans:'Sarabun','Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; --bad:#e08a7f; }
+  }
+  :root[data-theme=dark]{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; --bad:#e08a7f; }
+  :root[data-theme=light]{ --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+           --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; --bad:#a3402f; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+       display:flex;justify-content:center;align-items:center;min-height:100vh;padding:32px}
+  .slide{width:min(1180px,100%);aspect-ratio:16/9;background:var(--surface);
+    border:1px solid var(--line);border-radius:18px;padding:52px 60px;
+    display:flex;flex-direction:column;gap:16px;box-shadow:0 18px 50px rgba(0,0,0,.10);overflow:hidden}
+  .eyebrow{font-family:var(--mono);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  h1{margin:0;font-size:31px;line-height:1.15;font-weight:800;text-wrap:balance}
+  h1 small{display:block;font-size:16px;font-weight:500;color:var(--muted);margin-top:8px}
+  .timeline{display:flex;gap:8px;flex:1;min-height:0}
+  .stage{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;
+        display:flex;flex-direction:column;gap:6px}
+  .stage h2{margin:0;font-size:12px;font-family:var(--mono);color:var(--muted);text-transform:uppercase}
+  .stage .rows{font-family:var(--mono);font-size:13px}
+  .stage .rows .missing{color:var(--bad);text-decoration:line-through}
+  .arrow-row{display:flex;align-items:center;color:var(--accent);font-size:18px;font-weight:700}
+  .foot{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);
+        font-family:var(--mono);border-top:1px solid var(--line);padding-top:10px}
+  .pill{background:var(--accent);color:#fff;border-radius:999px;padding:3px 12px;font-weight:700}
+</style>
+</head>
+<body>
+  <section class="slide">
+    <div class="eyebrow">Dig-loop 30 / 50 · vector-search internals</div>
+    <h1>Time-Travel — ทุกการแก้ = version ใหม่ ไม่มีอะไรหายจริง
+      <small>Chroma ลบแล้วหายเลย · LanceDB checkout+restore กู้คืนได้ — history ไม่ถูกเขียนทับ</small></h1>
+    <div class="timeline">
+      <div class="stage">
+        <h2>v2 · add 3 โน้ต</h2>
+        <div class="rows">n1 · n2 · n3</div>
+      </div>
+      <div class="arrow-row">→</div>
+      <div class="stage">
+        <h2>v3 · ลบ n1 (พลาด!)</h2>
+        <div class="rows"><span class="missing">n1</span> · n2 · n3</div>
+      </div>
+      <div class="arrow-row">→</div>
+      <div class="stage">
+        <h2>checkout(v2)</h2>
+        <div class="rows">n1 · n2 · n3<br><span style="color:var(--muted);font-size:11px">(ดูอย่างเดียว current ไม่เปลี่ยน)</span></div>
+      </div>
+      <div class="arrow-row">→</div>
+      <div class="stage">
+        <h2>restore() → v4</h2>
+        <div class="rows" style="color:var(--good)">n1 · n2 · n3<br><span style="color:var(--muted);font-size:11px">v3 (ความผิดพลาด) ยังอยู่ใน history</span></div>
+      </div>
+    </div>
+    <div class="foot">
+      <span>ค้นหาที่ v3 (n1 หาย) vs v4 (n1 กลับมา) ให้ผลต่างกันจริง — reproduce ได้ว่า "ตอนนั้นระบบรู้อะไร"</span>
+      <span class="pill">restore = undo ไม่ใช่ rewrite</span>
+    </div>
+  </section>
+</body>
+</html>

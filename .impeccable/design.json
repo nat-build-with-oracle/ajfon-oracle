@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-22T00:00:00Z",
+  "title": "Design System: ARRA Oracle — Second Brain Workshop System",
+  "extensions": {
+    "colorMeta": {
+      "gold": { "role": "primary", "displayName": "Proof Gold", "canonical": "#ffcf4a", "tonalRamp": ["#4d3800","#8f6900","#cc9600","#ffbe0a","#ffce47","#ffdc7a","#ffebb3","#fff8e5"] },
+      "blue": { "role": "secondary", "displayName": "Signal Blue", "canonical": "#5b9dff", "tonalRamp": ["#001f4d","#00398f","#0052cc","#0a6dff","#4791ff","#7ab0ff","#b3d1ff","#e5f0ff"] },
+      "cyan": { "role": "secondary", "displayName": "Bright Cyan", "canonical": "#7fd4ff", "tonalRamp": ["#00334d","#005f8f","#0087cc","#0aadff","#47c1ff","#7ad2ff","#b3e5ff","#e5f6ff"] },
+      "green": { "role": "status-good", "displayName": "Measured Green", "canonical": "#52d98a", "tonalRamp": ["#0e3f22","#1a7540","#25a75b","#36d377","#68de99","#92e7b5","#c0f1d5","#eafaf1"] },
+      "amber": { "role": "status-warning", "displayName": "Caution Amber", "canonical": "#f8a860", "tonalRamp": ["#492403","#894406","#c36109","#f57f15","#f79f4f","#f9ba80","#fcd7b6","#fef2e7"] },
+      "rose": { "role": "status-correction", "displayName": "Correction Rose", "canonical": "#ff7bab", "tonalRamp": ["#4d001c","#8f0034","#cc004a","#ff0a63","#ff478a","#ff7aab","#ffb3ce","#ffe5ef"] },
+      "red": { "role": "status-critical", "displayName": "Stop Red", "canonical": "#ff6b6b", "tonalRamp": ["#4d0000","#8f0000","#cc0000","#ff0a0a","#ff4747","#ff7a7a","#ffb3b3","#ffe5e5"] },
+      "violet": { "role": "categorical-secondary", "displayName": "Category Violet", "canonical": "#b79dff", "tonalRamp": ["#14004d","#26008f","#3600cc","#4b0aff","#7847ff","#9e7aff","#c7b3ff","#ece5ff"] },
+      "bg": { "role": "neutral", "displayName": "Void", "canonical": "#0a0b10", "tonalRamp": ["#1d202f","#373c58","#4e567e","#6872a1","#8e95b8","#adb3cc","#d0d3e2","#eff0f5"] },
+      "panel": { "role": "neutral", "displayName": "Panel", "canonical": "#12141c", "tonalRamp": ["#1e212f","#383e57","#50597c","#6a759f","#8f97b7","#aeb4cb","#d0d4e1","#eff1f5"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The one h1 per screen — slide title, poster headline." },
+      "headline": { "displayName": "Headline", "purpose": "h2 — section titles within a deck or handout." },
+      "body": { "displayName": "Lead / Body", "purpose": "The argument. Lead paragraphs capped at 42ch." },
+      "label": { "displayName": "Label", "purpose": "Mono, uppercase, tracked — badges, tags, footers, timestamps. Never prose." }
+    },
+    "shadows": [],
+    "motion": [],
+    "breakpoints": []
+  },
+  "components": [
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Panel with ambient-light gradient and 16px radius; the default container for grouped content.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-h\">Golden set eval</div><div class=\"ds-card-b\">MiniLM recall@3 = 0.36 vs bge-m3 = 0.93</div></div>",
+      "css": ".ds-card { background: linear-gradient(180deg, #141824, #0f1119); border: 1px solid var(--line, #23273a); border-radius: 16px; padding: 22px; color: var(--ink, #eef0f7); } .ds-card-h { font-weight: 800; margin-bottom: 8px; } .ds-card-b { color: var(--ink-soft, #a2a8bd); font-size: 15px; line-height: 1.5; }"
+    },
+    {
+      "name": "Pill",
+      "kind": "chip",
+      "refersTo": "pill",
+      "description": "Fully-rounded status chip or small inline CTA.",
+      "html": "<span class=\"ds-pill\">ARRA Oracle · 26 กรกฎาคม</span>",
+      "css": ".ds-pill { display: inline-block; border: 1px solid var(--line, #23273a); border-radius: 999px; padding: 7px 15px; background: #12141c88; color: var(--ink-soft, #a2a8bd); font-size: 13px; } .ds-pill:hover { border-color: var(--cyan, #7fd4ff); }"
+    },
+    {
+      "name": "Badge — Recommended",
+      "kind": "chip",
+      "refersTo": "badge-good",
+      "description": "The one badge variant where text sits on a saturated fill — reserved for 'this is the recommended path'.",
+      "html": "<span class=\"ds-badge-good\">RECOMMENDED</span>",
+      "css": ".ds-badge-good { display: inline-block; font-family: ui-monospace, \"SF Mono\", \"JetBrains Mono\", Menlo, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 9px; border-radius: 6px; background: var(--green, #52d98a); color: #0d1310; }"
+    },
+    {
+      "name": "Status Box — Good",
+      "kind": "custom",
+      "refersTo": "box-good",
+      "description": "Panel box with a green heading — 'this measured out'. Never used for anything unverified.",
+      "html": "<div class=\"ds-box ds-box-good\"><div class=\"ds-box-h\">VERIFIED</div><div class=\"ds-box-b\">Contrast checked against WCAG AA before publish.</div></div>",
+      "css": ".ds-box { border: 1px solid var(--line, #23273a); border-radius: 16px; padding: 22px; background: var(--panel, #12141c); } .ds-box-h { font-family: ui-monospace, monospace; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; } .ds-box-good .ds-box-h { color: var(--green, #52d98a); } .ds-box-b { color: var(--ink-soft, #a2a8bd); font-size: 14px; line-height: 1.5; }"
+    },
+    {
+      "name": "Status Box — Warn",
+      "kind": "custom",
+      "refersTo": "box-warn",
+      "description": "Panel box with an amber heading — 'treat this as unverified'. Shares shape with Status Box — Good; only the heading color and meaning differ.",
+      "html": "<div class=\"ds-box ds-box-warn\"><div class=\"ds-box-h\">ยังไม่ยืนยัน</div><div class=\"ds-box-b\">Single-source claim, no second measurement yet.</div></div>",
+      "css": ".ds-box { border: 1px solid var(--line, #23273a); border-radius: 16px; padding: 22px; background: var(--panel, #12141c); } .ds-box-h { font-family: ui-monospace, monospace; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; } .ds-box-warn .ds-box-h { color: var(--amber, #f8a860); } .ds-box-b { color: var(--ink-soft, #a2a8bd); font-size: 14px; line-height: 1.5; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Proof Terminal",
+    "overview": "Everything on screen reads like it came off an instrument, not a slide deck. The background is near-black with a barely-there blue-violet tilt — a room lit by monitors, not daylight — and text sits in two typefaces with one strict rule between them: the Thai humanist sans carries argument and narrative, the monospace carries anything that IS a measurement (a number, a command, a timestamp, a filename). Eight accent hues exist, and every one of them is a fixed status, never a decoration — gold marks the number that is the proof, green marks what was verified, amber marks what wasn't yet, rose marks the assumption that turned out wrong. This system explicitly rejects the SaaS-marketing toolkit: no cream/beige backgrounds, no gradient text, no hero-metric templates, no eyebrow-over-every-section reflex, no 01/02/03 scaffolding unless the content is a real sequence. It was built for a room that includes doctors, professors, and grad students with zero code background sitting next to developers — so the surface has to read as precise, not as insider.",
+    "keyCharacteristics": [
+      "Near-black, blue-violet-tinted void, never true #000 or a warm neutral",
+      "Flat by construction — depth comes from panel layering + a 1px border, never a shadow",
+      "Eight semantic accents, each locked to one meaning across every artifact",
+      "Mono type is the tell for 'this is data'; Thai sans is the tell for 'this is argument'",
+      "clamp() display type with negative letter-spacing and text-wrap: balance, already in place"
+    ],
+    "rules": [
+      { "name": "The One Proof Rule", "body": "Gold appears only on the number, quote, or delta that IS the evidence — never as general decoration. Multiple gold elements on one screen means the emphasis has already failed.", "section": "colors" },
+      { "name": "The Fixed-Meaning Rule", "body": "Green/amber/rose/red never rotate by row or by artifact. Green always means verified; amber always means unverified/caution; rose always means 'this was the wrong assumption'; red always means hard-stop/error. A 9th status meaning becomes a labeled chip, not a new hue.", "section": "colors" },
+      { "name": "The Mono-Is-Measured Rule", "body": "If it's monospace, it's a number, a command, a timestamp, or a filename. If it's the Thai sans, it's argument or narrative. Never swap the two.", "section": "typography" },
+      { "name": "The Flat Instrument Rule", "body": "No shadows, ever. An instrument panel doesn't cast one — it sits flush with the console.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do put a real number, chart, or timestamp behind every claim — gold marks the one that IS the proof.",
+      "Do keep green/amber/rose/red locked to their one meaning across every artifact, not just within one slide.",
+      "Do reserve the mono stack exclusively for data — numbers, commands, timestamps, filenames.",
+      "Do stay flat: panel-on-panel layering plus a 1px border, never a box-shadow.",
+      "Do hold every artifact — slides, poster, handout — to WCAG AA contrast, the same bar already applied to the book's html/ output.",
+      "Do write the workshop-facing layer in Thai first; keep English only for code, tool names, and terms that shouldn't be translated."
+    ],
+    "donts": [
+      "Don't introduce a second dark palette — workshop-deck.html and vector-viz.html each drift; reconcile toward the canonical tokens instead of extending either drift.",
+      "Don't use cream/beige/sand backgrounds, gradient text (background-clip: text), or hero-metric SaaS templates.",
+      "Don't reach for a tiny uppercase tracked eyebrow above every section by reflex — fine as an occasional device, not a default.",
+      "Don't add 01/02/03 numbered-section scaffolding unless the content is a genuinely ordered sequence.",
+      "Don't cycle the 8 accent hues decoratively per-artifact — a color's meaning must survive across the whole system.",
+      "Don't add a drop shadow to a card 'for depth' — use panel/panel-2/chip layering instead."
+    ]
+  }
+}

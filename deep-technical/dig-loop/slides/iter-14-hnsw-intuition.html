@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iter 14 — HNSW: Skip List บนกราฟ</title>
+<style>
+  :root{
+    --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+    --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f;
+    --mono:'SF Mono',ui-monospace,'Cascadia Code',Menlo,monospace;
+    --sans:'Sarabun','Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; }
+  }
+  :root[data-theme=dark]{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; }
+  :root[data-theme=light]{ --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+           --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+       display:flex;justify-content:center;align-items:center;min-height:100vh;padding:32px}
+  .slide{width:min(1180px,100%);aspect-ratio:16/9;background:var(--surface);
+    border:1px solid var(--line);border-radius:18px;padding:52px 60px;
+    display:flex;flex-direction:column;gap:16px;box-shadow:0 18px 50px rgba(0,0,0,.10);overflow:hidden}
+  .eyebrow{font-family:var(--mono);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  h1{margin:0;font-size:32px;line-height:1.14;font-weight:800;text-wrap:balance}
+  h1 small{display:block;font-size:16px;font-weight:500;color:var(--muted);margin-top:8px}
+  .layers{display:flex;flex-direction:column;gap:6px;font-family:var(--mono);font-size:12px}
+  .lrow{display:flex;align-items:center;gap:8px}
+  .lrow .dots{display:flex;gap:3px;flex:1}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+  .cols{display:grid;grid-template-columns:1.1fr 1fr;gap:20px;flex:1;min-height:0}
+  .card{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 18px;
+        display:flex;flex-direction:column;gap:8px;min-height:0}
+  .card h2{margin:0;font-size:13.5px;font-family:var(--mono);letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
+  .calc{font-family:var(--mono);font-size:13.5px;line-height:1.6}
+  .calc b{color:var(--good)}
+  .foot{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);
+        font-family:var(--mono);border-top:1px solid var(--line);padding-top:10px}
+  .pill{background:var(--accent);color:#fff;border-radius:999px;padding:3px 12px;font-weight:700}
+</style>
+</head>
+<body>
+  <section class="slide">
+    <div class="eyebrow">Dig-loop 14 / 50 · vector-search internals</div>
+    <h1>HNSW = Skip List ที่ทำเป็นกราฟ
+      <small>ชั้นบนเบาบาง (กระโดดไกล) ชั้นล่างหนาแน่น (ละเอียด) — เหมือนถามทาง ไม่ใช่เคาะทุกบ้าน</small></h1>
+    <div class="cols">
+      <div class="card">
+        <h2>1 · ชั้นยิ่งสูง ยิ่งบาง (วัดจริง, M=4)</h2>
+        <div class="layers">
+          <div class="lrow"><span style="width:52px">layer 0</span><span>20,000 node</span></div>
+          <div class="lrow"><span style="width:52px">layer 1</span><span>5,043</span></div>
+          <div class="lrow"><span style="width:52px">layer 2</span><span>1,317</span></div>
+          <div class="lrow"><span style="width:52px">layer 3</span><span>320</span></div>
+          <div class="lrow"><span style="width:52px">layer 4</span><span>81</span></div>
+          <div class="lrow"><span style="width:52px">layer 5</span><span>25</span></div>
+        </div>
+        <div class="calc" style="font-size:12px;color:var(--muted);margin-top:2px">
+          l = floor(−ln(uniform) × 1/ln M) → แต่ละชั้นเหลือ ~1/M ของชั้นล่าง
+        </div>
+      </div>
+      <div class="card">
+        <h2>2 · จำนวน hop ที่เดินจริง (N vs brute force)</h2>
+        <div class="calc">
+          N=500 &nbsp;&nbsp;&nbsp;→ <b>13.0</b> hop (ไม่ใช่ 500)<br>
+          N=2,000 &nbsp;→ <b>15.4</b> hop<br>
+          N=8,000 &nbsp;→ <b>19.3</b> hop<br>
+          N=32,000 → <b>20.4</b> hop<br><br>
+          <span style="color:var(--muted)">N โต 64 เท่า แต่ hop โตแค่ ~1.6 เท่า — log(N) จริง!</span>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <span>navigate ลงชั้น (§17.1) + heuristic เลือกเพื่อนบ้านกระจายทิศ (§17.3) = กราฟที่ "เดินถึงทุกที่ได้"</span>
+      <span class="pill">O(log n) ไม่ใช่ O(n)</span>
+    </div>
+  </section>
+</body>
+</html>

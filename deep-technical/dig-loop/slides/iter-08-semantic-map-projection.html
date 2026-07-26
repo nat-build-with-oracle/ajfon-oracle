@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iter 08 — 1024D → 2D: แผนที่ความหมาย (PCA)</title>
+<style>
+  :root{
+    --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+    --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; --bad:#a3402f;
+    --mono:'SF Mono',ui-monospace,'Cascadia Code',Menlo,monospace;
+    --sans:'Sarabun','Segoe UI',system-ui,-apple-system,sans-serif;
+    --dot1:#b8532b; --dot2:#3d7a56; --dot3:#5a6ba8;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; --bad:#e08a7f;
+           --dot1:#e08a5c; --dot2:#7fc4a0; --dot3:#8fa3e0; }
+  }
+  :root[data-theme=dark]{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; --bad:#e08a7f;
+           --dot1:#e08a5c; --dot2:#7fc4a0; --dot3:#8fa3e0; }
+  :root[data-theme=light]{ --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+           --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; --bad:#a3402f;
+           --dot1:#b8532b; --dot2:#3d7a56; --dot3:#5a6ba8; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+       display:flex;justify-content:center;align-items:center;min-height:100vh;padding:32px}
+  .slide{width:min(1180px,100%);aspect-ratio:16/9;background:var(--surface);
+    border:1px solid var(--line);border-radius:18px;padding:52px 60px;
+    display:flex;flex-direction:column;gap:16px;box-shadow:0 18px 50px rgba(0,0,0,.10);overflow:hidden}
+  .eyebrow{font-family:var(--mono);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  h1{margin:0;font-size:32px;line-height:1.14;font-weight:800;text-wrap:balance}
+  h1 small{display:block;font-size:16px;font-weight:500;color:var(--muted);margin-top:8px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0}
+  .card{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 18px;
+        display:flex;flex-direction:column;gap:8px;min-height:0}
+  .card h2{margin:0;font-size:13.5px;font-family:var(--mono);letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
+  .calc{font-family:var(--mono);font-size:14px;line-height:1.6}
+  .calc b{color:var(--good)}
+  .calc .x{color:var(--bad)}
+  .map{flex:1;position:relative;border:1px solid var(--line);border-radius:8px;background:var(--surface);min-height:0}
+  .dot{position:absolute;width:8px;height:8px;border-radius:50%;transform:translate(-50%,-50%)}
+  .warn{grid-column:1/-1;background:var(--accent-soft);border:1px solid var(--line);border-radius:10px;
+        padding:10px 16px;font-family:var(--mono);font-size:13.5px}
+  .foot{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);
+        font-family:var(--mono);border-top:1px solid var(--line);padding-top:10px}
+  .pill{background:var(--accent);color:#fff;border-radius:999px;padding:3px 12px;font-weight:700}
+</style>
+</head>
+<body>
+  <section class="slide">
+    <div class="eyebrow">Dig-loop 08 / 50 · vector-search teaching</div>
+    <h1>ฉาย 1024 มิติ ลงกระดาษ 2 มิติ — แผนที่ความหมาย (PCA)
+      <small>สวยพอให้ "ตาเห็น" กลุ่มความหมาย แต่ห้ามใช้พิกัด 2D หา nearest-neighbor จริง</small></h1>
+    <div class="cols">
+      <div class="card">
+        <h2>1 · แผนที่ (สังเคราะห์ 3 กลุ่ม, 32→2 มิติ)</h2>
+        <div class="map">
+          <div class="dot" style="left:22%;top:70%;background:var(--dot1)"></div>
+          <div class="dot" style="left:18%;top:76%;background:var(--dot1)"></div>
+          <div class="dot" style="left:26%;top:66%;background:var(--dot1)"></div>
+          <div class="dot" style="left:24%;top:78%;background:var(--dot1)"></div>
+          <div class="dot" style="left:20%;top:82%;background:var(--dot1)"></div>
+          <div class="dot" style="left:65%;top:25%;background:var(--dot2)"></div>
+          <div class="dot" style="left:70%;top:20%;background:var(--dot2)"></div>
+          <div class="dot" style="left:60%;top:30%;background:var(--dot2)"></div>
+          <div class="dot" style="left:68%;top:15%;background:var(--dot2)"></div>
+          <div class="dot" style="left:50%;top:55%;background:var(--dot3)"></div>
+          <div class="dot" style="left:55%;top:60%;background:var(--dot3)"></div>
+          <div class="dot" style="left:45%;top:50%;background:var(--dot3)"></div>
+        </div>
+        <div class="calc" style="font-size:12.5px;color:var(--muted)">
+          <span style="color:var(--dot1)">●</span> สัตว์เลี้ยง &nbsp;
+          <span style="color:var(--dot2)">●</span> อาหาร &nbsp;
+          <span style="color:var(--dot3)">●</span> การเงิน
+        </div>
+      </div>
+      <div class="card">
+        <h2>2 · ตัวเลขจริงจากโค้ด</h2>
+        <div class="calc">
+          explained variance (2 จาก 32 มิติ) = <b>0.590</b><br>
+          <span style="color:var(--muted)">(1.0 = ไม่เสียข้อมูลเลย — 2D เสีย ~41%)</span><br><br>
+          2D dist ในกลุ่มเดียวกัน เฉลี่ย = <b>0.225</b><br>
+          2D dist ข้ามกลุ่ม เฉลี่ย = <b>1.160</b> ✓ กลุ่มแยกกันชัด<br><br>
+          <span class="x">แต่:</span> top-1 neighbor 2D ≠ full-dim<br>
+          <span class="x">9 จาก 12 คำ</span> — ใช้พิกัด 2D หาเพื่อนบ้านผิด!
+        </div>
+      </div>
+    </div>
+    <div class="warn">
+      book/demo/demo6_semantic_map.py ทำแบบนี้จริง: ฉาย 2D เพื่อ<b>วาดรูป</b>ให้คนดู แต่หาเพื่อนบ้านใกล้สุดด้วย
+      <b>cosine บน 1024 มิติเต็ม</b> เสมอ — ไม่เคยใช้พิกัดในกราฟ
+    </div>
+    <div class="foot">
+      <span>PCA/UMAP = เครื่องมือ "ให้ตาดู" ไม่ใช่ index ค้นหาจริง</span>
+      <span class="pill">plot ≠ index</span>
+    </div>
+  </section>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iter 16 — วัดจริง: Brute Force ชนะ HNSW ที่ 20k</title>
+<style>
+  :root{
+    --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+    --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f;
+    --mono:'SF Mono',ui-monospace,'Cascadia Code',Menlo,monospace;
+    --sans:'Sarabun','Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; }
+  }
+  :root[data-theme=dark]{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; }
+  :root[data-theme=light]{ --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+           --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+       display:flex;justify-content:center;align-items:center;min-height:100vh;padding:32px}
+  .slide{width:min(1180px,100%);aspect-ratio:16/9;background:var(--surface);
+    border:1px solid var(--line);border-radius:18px;padding:52px 60px;
+    display:flex;flex-direction:column;gap:16px;box-shadow:0 18px 50px rgba(0,0,0,.10);overflow:hidden}
+  .eyebrow{font-family:var(--mono);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  h1{margin:0;font-size:31px;line-height:1.15;font-weight:800;text-wrap:balance}
+  h1 small{display:block;font-size:16px;font-weight:500;color:var(--muted);margin-top:8px}
+  .cols{display:grid;grid-template-columns:1.1fr 1fr;gap:20px;flex:1;min-height:0}
+  .card{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 18px;
+        display:flex;flex-direction:column;gap:8px;min-height:0}
+  .card h2{margin:0;font-size:13.5px;font-family:var(--mono);letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
+  .bars{display:flex;flex-direction:column;gap:8px;font-family:var(--mono);font-size:13px}
+  .barrow{display:grid;grid-template-columns:120px 1fr 80px;align-items:center;gap:8px}
+  .bar{height:14px;border-radius:4px}
+  .calc{font-family:var(--mono);font-size:13.5px;line-height:1.65}
+  .calc b{color:var(--good)}
+  .real{grid-column:1/-1;background:var(--accent-soft);border:1px solid var(--line);border-radius:10px;
+        padding:10px 16px;font-family:var(--mono);font-size:13px}
+  .foot{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);
+        font-family:var(--mono);border-top:1px solid var(--line);padding-top:10px}
+  .pill{background:var(--accent);color:#fff;border-radius:999px;padding:3px 12px;font-weight:700}
+</style>
+</head>
+<body>
+  <section class="slide">
+    <div class="eyebrow">Dig-loop 16 / 50 · vector-search internals</div>
+    <h1>วัดจริง: ที่ N=20,000 Brute Force ชนะ HNSW
+      <small>numpy matmul เวกเตอร์เดียว เร็วกว่าเดินกราฟทีละ hop ใน Python — จนกว่า N จะเป็นล้าน</small></h1>
+    <div class="cols">
+      <div class="card">
+        <h2>วัดจริงจากโค้ด (N=20,000, dim=32)</h2>
+        <div class="bars">
+          <div class="barrow"><span>brute force</span><div class="bar" style="width:7%;background:var(--good)"></div><span>1.77 ms</span></div>
+          <div class="barrow"><span>graph ef=50</span><div class="bar" style="width:11%;background:var(--accent)"></div><span>2.85 ms</span></div>
+          <div class="barrow"><span>graph ef=200</span><div class="bar" style="width:100%;background:var(--accent)"></div><span>25.9 ms</span></div>
+        </div>
+        <div class="calc" style="font-size:12px;color:var(--muted);margin-top:4px">
+          numpy = SIMD เวกเตอร์เดียว · graph = Python-level hop ทีละก้าว (overhead)
+        </div>
+      </div>
+      <div class="card">
+        <h2>ตรงกับ book/06 (วัดจริงเช่นกัน)</h2>
+        <div class="calc">
+          brute force: <b>2.9 ms</b> · recall 5/5<br>
+          HNSW ef=200: 12.6 ms · recall 4-5/5<br><br>
+          <span style="color:var(--muted)">brute force ชนะทั้งความเร็ว<br>
+          และความแม่นที่สเกลนี้!</span>
+        </div>
+      </div>
+      <div class="real">
+        overhead ของกราฟ (bookkeeping ทีละ node ใน Python) จ่ายคืนก็ต่อเมื่อ N ใหญ่พอที่ O(N) เริ่มแพงจริง — หมื่น-แสนโน้ต (personal vault) มักยังไม่ถึงจุดนั้น
+      </div>
+    </div>
+    <div class="foot">
+      <span>อย่าเชื่อว่า "ANN เร็วกว่าเสมอ" — วัดที่สเกลจริงของคุณก่อนเลือก</span>
+      <span class="pill">scale-appropriate เสมอ</span>
+    </div>
+  </section>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iter 01 — Cosine: สมการเดียวที่ต้องรู้</title>
+<style>
+  :root{
+    --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+    --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f;
+    --mono:'SF Mono',ui-monospace,'Cascadia Code',Menlo,monospace;
+    --sans:'Sarabun','Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; }
+  }
+  :root[data-theme=dark]{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; }
+  :root[data-theme=light]{ --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+           --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+       display:flex;justify-content:center;align-items:center;min-height:100vh;padding:32px}
+  .slide{width:min(1180px,100%);aspect-ratio:16/9;background:var(--surface);
+    border:1px solid var(--line);border-radius:18px;padding:52px 60px;
+    display:flex;flex-direction:column;gap:22px;box-shadow:0 18px 50px rgba(0,0,0,.10);overflow:hidden}
+  .eyebrow{font-family:var(--mono);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  h1{margin:0;font-size:40px;line-height:1.12;font-weight:800;text-wrap:balance}
+  h1 small{display:block;font-size:19px;font-weight:500;color:var(--muted);margin-top:8px}
+  .eq{background:var(--accent-soft);border-radius:12px;padding:18px 24px;font-family:var(--mono);
+      font-size:24px;color:var(--ink);text-align:center;border:1px solid var(--line)}
+  .cols{display:grid;grid-template-columns:1.05fr 1fr;gap:26px;flex:1;min-height:0}
+  .card{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:18px 20px;
+        display:flex;flex-direction:column;gap:10px;min-height:0}
+  .card h2{margin:0;font-size:15px;font-family:var(--mono);letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+  table{border-collapse:collapse;width:100%;font-size:16px}
+  td,th{padding:5px 10px;text-align:left;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600}
+  td.v{font-family:var(--mono);color:var(--accent)}
+  pre{margin:0;font-family:var(--mono);font-size:14.5px;line-height:1.5;white-space:pre-wrap;color:var(--ink)}
+  .calc{font-family:var(--mono);font-size:15px;line-height:1.7}
+  .calc b{color:var(--good)}
+  .foot{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);
+        font-family:var(--mono);border-top:1px solid var(--line);padding-top:14px}
+  .pill{background:var(--accent);color:#fff;border-radius:999px;padding:3px 12px;font-weight:700}
+</style>
+</head>
+<body>
+  <section class="slide">
+    <div class="eyebrow">Dig-loop 01 / 50 · vector-search teaching</div>
+    <h1>Cosine Similarity — สมการเดียวที่ต้องรู้
+      <small>“ใกล้” วัดยังไง? — จับคู่ คูณ บวก หาร แค่นั้น ไม่มี AI ในสมการนี้</small></h1>
+    <div class="eq">cos(A,B) = (A · B) / (‖A‖ ‖B‖) = Σ aᵢbᵢ / (√Σaᵢ² · √Σbᵢ²)</div>
+    <div class="cols">
+      <div class="card">
+        <h2>คิดมือ · โลก 2 แกน [แมว, รถ]</h2>
+        <table>
+          <tr><th>คำ</th><th>เวกเตอร์</th></tr>
+          <tr><td>แมว</td><td class="v">[0.9, 0.1]</td></tr>
+          <tr><td>ลูกแมว</td><td class="v">[0.85, 0.15]</td></tr>
+          <tr><td>รถยนต์</td><td class="v">[0.1, 0.95]</td></tr>
+        </table>
+        <div class="calc">
+          dot&nbsp;&nbsp;= 0.9·0.85 + 0.1·0.15 = 0.780<br>
+          ‖แมว‖ = √(0.81+0.01) = 0.906<br>
+          ‖ลูกแมว‖ = √(0.7225+0.0225) = 0.863<br>
+          cos(แมว,ลูกแมว) = 0.78/(0.906·0.863) = <b>0.998</b><br>
+          cos(แมว,รถยนต์) = <b>0.214</b> &nbsp;← เกือบตั้งฉาก
+        </div>
+      </div>
+      <div class="card">
+        <h2>โค้ด · ทั้งฟังก์ชัน 5 บรรทัด</h2>
+<pre>import math
+def cosine(a, b):
+    dot = sum(x*y for x,y in zip(a,b))
+    na  = math.sqrt(sum(x*x for x in a))
+    nb  = math.sqrt(sum(x*x for x in b))
+    return dot / (na*nb)</pre>
+        <h2 style="margin-top:6px">สเกลจริง · 1024 มิติ ฟังก์ชันเดิมเป๊ะ</h2>
+        <div class="calc">
+          cos(<span style="color:var(--accent)">"แมวนอนบนโซฟา"</span>,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;"ลูกแมวหลับบนเก้าอี้") = <b>0.8181</b><br>
+          <span style="color:var(--muted)">bge-m3 · ผลรันจริง · ฟังก์ชันไม่เปลี่ยนเลย</span>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <span>เศษ = ทิศตรงกันแค่ไหน · ส่วน = normalize ตัดผลของ “ความยาว”</span>
+      <span class="pill">-1 ≤ cos ≤ 1</span>
+    </div>
+  </section>
+</body>
+</html>

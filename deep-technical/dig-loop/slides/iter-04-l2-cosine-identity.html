@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iter 04 — ‖a−b‖² = 2−2cosθ: L2 กับ Cosine บนทรงกลมหน่วย</title>
+<style>
+  :root{
+    --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+    --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f;
+    --mono:'SF Mono',ui-monospace,'Cascadia Code',Menlo,monospace;
+    --sans:'Sarabun','Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; }
+  }
+  :root[data-theme=dark]{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; }
+  :root[data-theme=light]{ --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+           --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+       display:flex;justify-content:center;align-items:center;min-height:100vh;padding:32px}
+  .slide{width:min(1180px,100%);aspect-ratio:16/9;background:var(--surface);
+    border:1px solid var(--line);border-radius:18px;padding:52px 60px;
+    display:flex;flex-direction:column;gap:16px;box-shadow:0 18px 50px rgba(0,0,0,.10);overflow:hidden}
+  .eyebrow{font-family:var(--mono);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  h1{margin:0;font-size:34px;line-height:1.14;font-weight:800;text-wrap:balance}
+  h1 small{display:block;font-size:17px;font-weight:500;color:var(--muted);margin-top:8px}
+  .proof{background:var(--accent-soft);border:1px solid var(--line);border-radius:12px;
+      padding:12px 22px;font-family:var(--mono);font-size:15px;line-height:1.75;color:var(--ink)}
+  .proof .step{color:var(--muted)}
+  .proof b{color:var(--accent)}
+  .cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;flex:1;min-height:0}
+  .card{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 16px;
+        display:flex;flex-direction:column;gap:8px;min-height:0}
+  .card h2{margin:0;font-size:13px;font-family:var(--mono);letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
+  .calc{font-family:var(--mono);font-size:14px;line-height:1.65}
+  .calc b{color:var(--good)}
+  svg{width:100%;height:auto}
+  .foot{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);
+        font-family:var(--mono);border-top:1px solid var(--line);padding-top:10px}
+  .pill{background:var(--accent);color:#fff;border-radius:999px;padding:3px 12px;font-weight:700}
+</style>
+</head>
+<body>
+  <section class="slide">
+    <div class="eyebrow">Dig-loop 04 / 50 · vector-search teaching</div>
+    <h1>‖a−b‖² = 2 − 2cos θ — L2 กับ Cosine เป็นเรื่องเดียวกันบนทรงกลมหน่วย
+      <small>ทำไม ANN index ที่รองรับแค่ Euclidean (L2) ใช้แทน cosine ได้ ถ้า normalize ก่อน</small></h1>
+    <div class="proof">
+      ‖a−b‖² = (a−b)·(a−b) = a·a <span class="step">−</span> 2(a·b) + b·b<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;= ‖a‖² − 2(a·b) + ‖b‖² <span class="step">= 1 − 2cosθ + 1</span> &nbsp;(unit: ‖a‖=‖b‖=1, a·b=cosθ)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;= <b>2 − 2cos θ</b> &nbsp;∎
+    </div>
+    <div class="cols">
+      <div class="card">
+        <h2>1 · ตัวเลขจริง</h2>
+        <div class="calc">
+          â = (0.6, 0.8)<br>b̂ = (−0.447, 0.894)<br><br>
+          cos θ = 0.4472<br>
+          ‖â−b̂‖² = <b>1.1056</b><br>
+          2−2(0.4472) = <b>1.1056</b> ✓
+        </div>
+      </div>
+      <div class="card">
+        <h2>2 · จุดยึด 3 กรณี</h2>
+        <div class="calc">
+          เหมือนกัน: cosθ=1 → L2²=<b>0</b><br>
+          ตั้งฉาก: cosθ=0 → L2²=<b>2</b><br>
+          ตรงข้าม: cosθ=−1 → L2²=<b>4</b><br><br>
+          <span style="color:var(--muted)">cos ↑ ⟹ L2 ↓ เสมอ</span>
+        </div>
+      </div>
+      <div class="card">
+        <h2>3 · เรียงอันดับเหมือนกันเป๊ะ</h2>
+        <svg viewBox="0 0 160 130" aria-hidden="true">
+          <circle cx="80" cy="65" r="55" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+          <line x1="80" y1="65" x2="135" y2="65" stroke="var(--accent)" stroke-width="2.5"/>
+          <circle cx="135" cy="65" r="3" fill="var(--accent)"/>
+          <line x1="80" y1="65" x2="122" y2="27" stroke="var(--good)" stroke-width="2.5"/>
+          <circle cx="122" cy="27" r="3" fill="var(--good)"/>
+          <line x1="80" y1="65" x2="80" y2="10" stroke="var(--muted)" stroke-width="2"/>
+          <circle cx="80" cy="10" r="3" fill="var(--muted)"/>
+          <text x="105" y="46" font-size="9" fill="var(--good)" font-family="monospace">close</text>
+          <text x="82" y="22" font-size="9" fill="var(--muted)" font-family="monospace">far</text>
+        </svg>
+      </div>
+    </div>
+    <div class="foot">
+      <span>ระยะทางบนผิวทรงกลม (chord) วัด "หันหน้าตรงกันแค่ไหน" ได้เป๊ะเหมือน cosine</span>
+      <span class="pill">‖a−b‖² = 2−2cosθ</span>
+    </div>
+  </section>
+</body>
+</html>

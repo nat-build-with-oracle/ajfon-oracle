@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iter 11 — Semantic + Metadata Filter ในคำค้นเดียว</title>
+<style>
+  :root{
+    --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+    --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; --bad:#a3402f;
+    --mono:'SF Mono',ui-monospace,'Cascadia Code',Menlo,monospace;
+    --sans:'Sarabun','Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; --bad:#e08a7f; }
+  }
+  :root[data-theme=dark]{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; --bad:#e08a7f; }
+  :root[data-theme=light]{ --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+           --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; --bad:#a3402f; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+       display:flex;justify-content:center;align-items:center;min-height:100vh;padding:32px}
+  .slide{width:min(1180px,100%);aspect-ratio:16/9;background:var(--surface);
+    border:1px solid var(--line);border-radius:18px;padding:52px 60px;
+    display:flex;flex-direction:column;gap:16px;box-shadow:0 18px 50px rgba(0,0,0,.10);overflow:hidden}
+  .eyebrow{font-family:var(--mono);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  h1{margin:0;font-size:31px;line-height:1.15;font-weight:800;text-wrap:balance}
+  h1 small{display:block;font-size:16px;font-weight:500;color:var(--muted);margin-top:8px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0}
+  .card{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 18px;
+        display:flex;flex-direction:column;gap:7px;min-height:0}
+  .card h2{margin:0;font-size:13.5px;font-family:var(--mono);letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
+  .row{font-family:var(--mono);font-size:13px;display:flex;justify-content:space-between;gap:8px;
+       border-bottom:1px solid var(--line);padding:3px 0}
+  .row .x{color:var(--bad);font-weight:700}
+  .row .ok{color:var(--good);font-weight:700}
+  .warn{grid-column:1/-1;background:var(--accent-soft);border:1px solid var(--line);border-radius:10px;
+        padding:10px 16px;font-family:var(--mono);font-size:13.5px}
+  .foot{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);
+        font-family:var(--mono);border-top:1px solid var(--line);padding-top:10px}
+  .pill{background:var(--accent);color:#fff;border-radius:999px;padding:3px 12px;font-weight:700}
+</style>
+</head>
+<body>
+  <section class="slide">
+    <div class="eyebrow">Dig-loop 11 / 50 · vector-search demo</div>
+    <h1>Semantic หา "เกี่ยว" · Metadata Filter ตัด "ไม่เข้าเงื่อนไข"
+      <small>คำค้นจริงเป็นลูกผสมเสมอ: ความหมาย (vector) + เงื่อนไขเป๊ะ (folder/year/draft)</small></h1>
+    <div class="cols">
+      <div class="card">
+        <h2>1 · semantic ล้วน (รั่ว!)</h2>
+        <div class="row"><span>แผนสอน workshop</span><span>0.995</span></div>
+        <div class="row"><span class="x">แผนสอน (draft!)</span><span class="x">0.992</span></div>
+        <div class="row"><span class="x">SQL ปีที่แล้ว!</span><span class="x">0.978</span></div>
+      </div>
+      <div class="card">
+        <h2>2 · + filter (teaching∧2026∧¬draft)</h2>
+        <div class="row"><span class="ok">แผนสอน workshop</span><span class="ok">0.995</span></div>
+        <div class="row"><span class="ok">ไอเดียสอน (เดโม)</span><span class="ok">0.935</span></div>
+        <div class="row" style="color:var(--muted);border:none">draft/ปีเก่า/research/personal → หายหมด ✓</div>
+      </div>
+      <div class="warn">
+        ⚠️ กับดัก §3.6: filter <b>ก่อน</b> ranking (safe) → top-2 = [d1, d5] ✓ &nbsp;|&nbsp;
+        rank top-2 <b>ก่อน</b> filter (naive) → เหลือแค่ [d1] — <span style="color:var(--bad)">ผลหายไป 1 ทั้งที่มีจริง!</span>
+      </div>
+    </div>
+    <div class="foot">
+      <span>filter เข้ม = ผลน้อยเป็นเรื่องปกติ · แต่ต้อง filter-then-rank ไม่ใช่ rank-then-filter</span>
+      <span class="pill">where + $and/$or</span>
+    </div>
+  </section>
+</body>
+</html>

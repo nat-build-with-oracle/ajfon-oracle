@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iter 13 — Chroma default = L2, ไม่ใช่ cosine!</title>
+<style>
+  :root{
+    --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+    --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; --bad:#a3402f;
+    --mono:'SF Mono',ui-monospace,'Cascadia Code',Menlo,monospace;
+    --sans:'Sarabun','Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; --bad:#e08a7f; }
+  }
+  :root[data-theme=dark]{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; --bad:#e08a7f; }
+  :root[data-theme=light]{ --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+           --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; --bad:#a3402f; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+       display:flex;justify-content:center;align-items:center;min-height:100vh;padding:32px}
+  .slide{width:min(1180px,100%);aspect-ratio:16/9;background:var(--surface);
+    border:1px solid var(--line);border-radius:18px;padding:52px 60px;
+    display:flex;flex-direction:column;gap:16px;box-shadow:0 18px 50px rgba(0,0,0,.10);overflow:hidden}
+  .eyebrow{font-family:var(--mono);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  h1{margin:0;font-size:30px;line-height:1.16;font-weight:800;text-wrap:balance}
+  h1 small{display:block;font-size:16px;font-weight:500;color:var(--muted);margin-top:8px}
+  .proof{background:var(--accent-soft);border:1px solid var(--line);border-radius:12px;
+      padding:10px 20px;font-family:var(--mono);font-size:14.5px;color:var(--ink)}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0}
+  .card{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 18px;
+        display:flex;flex-direction:column;gap:8px;min-height:0}
+  .card h2{margin:0;font-size:13.5px;font-family:var(--mono);letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
+  .calc{font-family:var(--mono);font-size:14px;line-height:1.7}
+  .calc b{color:var(--good)}
+  .calc .x{color:var(--bad);font-weight:700}
+  .foot{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);
+        font-family:var(--mono);border-top:1px solid var(--line);padding-top:10px}
+  .pill{background:var(--accent);color:#fff;border-radius:999px;padding:3px 12px;font-weight:700}
+</style>
+</head>
+<body>
+  <section class="slide">
+    <div class="eyebrow">Dig-loop 13 / 50 · vector-search demo</div>
+    <h1>Chroma Default วัดระยะแบบ L2 ไม่ใช่ Cosine — กับดักจริง
+      <small>เชื่อม iter04: ‖a−b‖²=2−2cosθ → คะแนน default ผิด = 2cosθ−1 เสมอ</small></h1>
+    <div class="proof">
+      Chroma "1−distance" เมื่อ hnsw:space=L2 (default) = 1−(2−2cosθ) = <b>2cosθ−1</b> — ไม่ใช่ cosθ!
+    </div>
+    <div class="cols">
+      <div class="card">
+        <h2>คู่จริงจากโค้ด (cos=0.6105)</h2>
+        <div class="calc">
+          true cosine &nbsp;&nbsp;&nbsp;&nbsp;= <b>0.6105</b><br>
+          space=cosine (ถูก) = <b>0.6105</b> ✓<br>
+          space=L2 (default!) = <span class="x">0.2211</span> ✗<br><br>
+          <span style="color:var(--muted)">สเกลทั้งหมดเพี้ยน ไม่ใช่แค่คลาดเคลื่อนนิดหน่อย</span>
+        </div>
+      </div>
+      <div class="card">
+        <h2>ผลจริง: threshold ตัดสินผิด</h2>
+        <div class="calc">
+          abstain threshold = 0.45 (book/09 §9.2)<br><br>
+          cosine 0.6105 ≥ 0.45 → <b>ผ่าน ✓ ตอบได้</b><br>
+          L2-default 0.2211 ≥ 0.45 → <span class="x">ไม่ผ่าน — ตอบ "ไม่พบ" ทั้งที่มีจริง!</span>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <span>อันดับ (ranking) ยังถูกอยู่ (2x−1 เป็น monotonic) — แต่ threshold แบบ absolute พังทันที</span>
+      <span class="pill">ระบุ hnsw:space='cosine' เสมอ</span>
+    </div>
+  </section>
+</body>
+</html>

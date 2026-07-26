@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iter 32 — RAG: Retrieve + Threshold + Cite + Abstain</title>
+<style>
+  :root{
+    --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+    --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; --bad:#a3402f;
+    --mono:'SF Mono',ui-monospace,'Cascadia Code',Menlo,monospace;
+    --sans:'Sarabun','Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; --bad:#e08a7f; }
+  }
+  :root[data-theme=dark]{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; --bad:#e08a7f; }
+  :root[data-theme=light]{ --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+           --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; --bad:#a3402f; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+       display:flex;justify-content:center;align-items:center;min-height:100vh;padding:32px}
+  .slide{width:min(1180px,100%);aspect-ratio:16/9;background:var(--surface);
+    border:1px solid var(--line);border-radius:18px;padding:52px 60px;
+    display:flex;flex-direction:column;gap:16px;box-shadow:0 18px 50px rgba(0,0,0,.10);overflow:hidden}
+  .eyebrow{font-family:var(--mono);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  h1{margin:0;font-size:30px;line-height:1.16;font-weight:800;text-wrap:balance}
+  h1 small{display:block;font-size:16px;font-weight:500;color:var(--muted);margin-top:8px}
+  .flow{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:13px;flex-wrap:wrap}
+  .flow .stage{background:var(--accent-soft);border:1px solid var(--line);border-radius:8px;padding:6px 12px}
+  .flow .arrow{color:var(--accent);font-weight:700}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0}
+  .card{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 18px;
+        display:flex;flex-direction:column;gap:8px;min-height:0}
+  .card h2{margin:0;font-size:13.5px;font-family:var(--mono);letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
+  .calc{font-family:var(--mono);font-size:13.5px;line-height:1.6}
+  .calc b{color:var(--good)}
+  .calc .x{color:var(--bad);font-weight:700}
+  .foot{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);
+        font-family:var(--mono);border-top:1px solid var(--line);padding-top:10px}
+  .pill{background:var(--accent);color:#fff;border-radius:999px;padding:3px 12px;font-weight:700}
+</style>
+</head>
+<body>
+  <section class="slide">
+    <div class="eyebrow">Dig-loop 32 / 50 · vector-search demo</div>
+    <h1>RAG — Retrieve (threshold+source) → Generate (ground+cite+abstain)
+      <small>LLM ไม่ต้องจำความรู้ของเรา — โน้ตคือความจริง LLM คือผู้เรียบเรียง</small></h1>
+    <div class="flow">
+      <span class="stage">query</span><span class="arrow">→</span>
+      <span class="stage">retrieve top-k</span><span class="arrow">→</span>
+      <span class="stage" style="border-color:var(--bad);color:var(--bad)">threshold gate</span><span class="arrow">→</span>
+      <span class="stage">context + [source]</span><span class="arrow">→</span>
+      <span class="stage" style="border-color:var(--accent);color:var(--accent);font-weight:700">ground/cite/abstain</span>
+    </div>
+    <div class="cols">
+      <div class="card">
+        <h2>ในเรื่อง (workshop)</h2>
+        <div class="calc">
+          🤖 "Workshop วันที่ 26 กรกฎาคม..."<br>
+          <b>(workshop-plan.md)</b> ← cite ไฟล์จริง<br><br>
+          <span style="color:var(--muted)">นอกเรื่อง (หุ้น) → 0 chunk ผ่าน threshold<br>
+          🤖 "ไม่พบข้อมูลเรื่องนี้ใน vault ครับ"</span>
+        </div>
+      </div>
+      <div class="card">
+        <h2>threshold คือด่านกันมั่ว</h2>
+        <div class="calc">
+          "เงินเฟ้อ" → budget เกือบใกล้สุด<br>
+          threshold=0 &nbsp;→ <span class="x">รั่ว! ป้อน LLM ทั้งที่ไม่เกี่ยว</span><br>
+          threshold=0.45 → <b>[] กรองถูกต้อง</b><br><br>
+          <span style="color:var(--muted)">เชื่อม iter09: "ใกล้สุดที่มี ≠ เกี่ยวจริง"</span>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <span>ANN คืน top-k เสมอแม้ไม่มีอะไรเกี่ยว — threshold ต้องกรองก่อนป้อน LLM ทุกครั้ง</span>
+      <span class="pill">ground · cite · abstain</span>
+    </div>
+  </section>
+</body>
+</html>

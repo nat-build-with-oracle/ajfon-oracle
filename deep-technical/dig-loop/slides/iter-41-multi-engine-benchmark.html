@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iter 41 — กับดัก Circular Golden Set</title>
+<style>
+  :root{
+    --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+    --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; --bad:#a3402f;
+    --mono:'SF Mono',ui-monospace,'Cascadia Code',Menlo,monospace;
+    --sans:'Sarabun','Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; --bad:#e08a7f; }
+  }
+  :root[data-theme=dark]{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; --bad:#e08a7f; }
+  :root[data-theme=light]{ --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+           --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; --bad:#a3402f; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+       display:flex;justify-content:center;align-items:center;min-height:100vh;padding:32px}
+  .slide{width:min(1180px,100%);aspect-ratio:16/9;background:var(--surface);
+    border:1px solid var(--line);border-radius:18px;padding:52px 60px;
+    display:flex;flex-direction:column;gap:16px;box-shadow:0 18px 50px rgba(0,0,0,.10);overflow:hidden}
+  .eyebrow{font-family:var(--mono);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  h1{margin:0;font-size:30px;line-height:1.16;font-weight:800;text-wrap:balance}
+  h1 small{display:block;font-size:16px;font-weight:500;color:var(--muted);margin-top:8px}
+  table{border-collapse:collapse;width:100%;font-size:14px;font-family:var(--mono);flex:1}
+  td,th{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600}
+  .x{color:var(--bad);font-weight:700}
+  .ok{color:var(--good);font-weight:700}
+  .real{background:var(--accent-soft);border:1px solid var(--line);border-radius:10px;
+        padding:10px 16px;font-family:var(--mono);font-size:13px}
+  .foot{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);
+        font-family:var(--mono);border-top:1px solid var(--line);padding-top:10px}
+  .pill{background:var(--accent);color:#fff;border-radius:999px;padding:3px 12px;font-weight:700}
+</style>
+</head>
+<body>
+  <section class="slide">
+    <div class="eyebrow">Dig-loop 41 / 50 · vector-search evaluation</div>
+    <h1>กับดัก Circular Golden Set — เฉลยจาก engine ตัวเดียว = ผลกลับหัว
+      <small>ถ้าตัดสิน "ถูก" จาก output ของ engine เอง engine นั้นจะดูสมบูรณ์แบบเสมอ ไม่ว่าจะแย่แค่ไหนจริง</small></h1>
+    <table>
+      <tr><th>evaluation</th><th>weak engine</th><th>strong engine</th></tr>
+      <tr><td>golden จาก weak เอง (circular)</td><td class="ok">1.00 "สมบูรณ์แบบ"</td><td class="x">0.00 "แย่มาก"</td></tr>
+      <tr><td>golden จริง (อ่าน corpus, honest)</td><td class="x">0.00 แย่จริง</td><td class="ok">1.00 ดีจริง</td></tr>
+    </table>
+    <div class="real">
+      ผลกลับหัวสนิท: circular golden ทำให้ weak engine "ชนะ" strong engine — golden ที่ถูกต้องเผยความจริงตรงข้ามเป๊ะ<br><br>
+      ทางแก้ (TREC/BEIR pooled judgment): รวม candidate จากหลาย engine (union) ก่อน แล้วให้คนอ่าน corpus ตัดสินว่าอันไหนเกี่ยวจริง — ไม่ใช่เชื่อ engine ตัวเดียว
+    </div>
+    <div class="foot">
+      <span>golden set ต้องมาจากการอ่าน ไม่ใช่จาก engine ที่กำลังจะถูกวัด</span>
+      <span class="pill">honest eval &gt; circular eval</span>
+    </div>
+  </section>
+</body>
+</html>

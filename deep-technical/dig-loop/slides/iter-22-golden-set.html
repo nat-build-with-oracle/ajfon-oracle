@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iter 22 — Golden Set: ข้อสอบที่เขียนครั้งเดียว ใช้ตลอดไป</title>
+<style>
+  :root{
+    --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+    --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; --bad:#a3402f;
+    --mono:'SF Mono',ui-monospace,'Cascadia Code',Menlo,monospace;
+    --sans:'Sarabun','Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; --bad:#e08a7f; }
+  }
+  :root[data-theme=dark]{ --bg:#14140f; --surface:#1e1e19; --ink:#f2efe6; --muted:#a8a294;
+           --accent:#e08a5c; --accent-soft:#3a2a20; --line:#33322a; --good:#7fc4a0; --bad:#e08a7f; }
+  :root[data-theme=light]{ --bg:#f7f6f3; --surface:#ffffff; --ink:#1a1a17; --muted:#5b5b52;
+           --accent:#b8532b; --accent-soft:#f0d9cd; --line:#e2ddd3; --good:#2f6d4f; --bad:#a3402f; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+       display:flex;justify-content:center;align-items:center;min-height:100vh;padding:32px}
+  .slide{width:min(1180px,100%);aspect-ratio:16/9;background:var(--surface);
+    border:1px solid var(--line);border-radius:18px;padding:52px 60px;
+    display:flex;flex-direction:column;gap:16px;box-shadow:0 18px 50px rgba(0,0,0,.10);overflow:hidden}
+  .eyebrow{font-family:var(--mono);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  h1{margin:0;font-size:31px;line-height:1.15;font-weight:800;text-wrap:balance}
+  h1 small{display:block;font-size:16px;font-weight:500;color:var(--muted);margin-top:8px}
+  .timeline{display:flex;gap:10px;flex:1;min-height:0}
+  .stage{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 16px;
+        display:flex;flex-direction:column;gap:6px}
+  .stage h2{margin:0;font-size:12.5px;font-family:var(--mono);color:var(--muted);text-transform:uppercase}
+  .stage .score{font-family:var(--mono);font-size:22px;font-weight:800}
+  .stage .score.good{color:var(--good)}
+  .stage .score.bad{color:var(--bad)}
+  .stage .note{font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.5}
+  .arrow-row{display:flex;align-items:center;color:var(--accent);font-size:20px;font-weight:700}
+  .foot{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);
+        font-family:var(--mono);border-top:1px solid var(--line);padding-top:10px}
+  .pill{background:var(--accent);color:#fff;border-radius:999px;padding:3px 12px;font-weight:700}
+</style>
+</head>
+<body>
+  <section class="slide">
+    <div class="eyebrow">Dig-loop 22 / 50 · vector-search evaluation</div>
+    <h1>Golden Set — ข้อสอบที่มนุษย์ตัดสินครั้งเดียว รันซ้ำได้ตลอดไป
+      <small>คนตัดสิน (query, doc ที่ถูก) ไว้ครั้งเดียว → รัน evaluate() ซ้ำทุกครั้งที่เปลี่ยนอะไรก็ตาม</small></h1>
+    <div class="timeline">
+      <div class="stage">
+        <h2>Day 1 · baseline</h2>
+        <div class="score good">1.000</div>
+        <div class="note">3 query, model ดี → บันทึกคะแนนไว้เป็นหลักฐาน</div>
+      </div>
+      <div class="arrow-row">→</div>
+      <div class="stage">
+        <h2>Day 30 · เปลี่ยน embedder</h2>
+        <div class="score bad">0.250</div>
+        <div class="note">รัน evaluate() ซ้ำ → คะแนนร่วง 0.75 → <b style="color:var(--bad)">flag ทันที</b></div>
+      </div>
+      <div class="arrow-row">→</div>
+      <div class="stage">
+        <h2>Day 45 · แก้ + เพิ่มข้อสอบ</h2>
+        <div class="score good">1.000</div>
+        <div class="note">3→4 query (เพิ่ม query ที่เคยพลาดจริง) · คะแนนเต็มทั้งชุดเก่า+ใหม่</div>
+      </div>
+    </div>
+    <div class="foot">
+      <span>golden set โตได้ ไม่มีวันหด — ทุก query ที่เคยพลาด กลายเป็นเกราะป้องกันถาวร</span>
+      <span class="pill">build once · test every change</span>
+    </div>
+  </section>
+</body>
+</html>

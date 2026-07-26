@@ -1,0 +1,431 @@
+<title>RAG Space — Fleet Findings</title>
+<style>
+  :root {
+    --surface-1:      #fcfcfb;
+    --page-plane:     #f9f9f7;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --gridline:       #e1e0d9;
+    --border:         rgba(11,11,11,0.10);
+    --series-1:       #2a78d6;
+    --series-1-wash:  rgba(42,120,214,0.08);
+    --series-2:       #1baf7a;
+    --series-2-wash:  rgba(27,175,122,0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --surface-1:      #1a1a19;
+      --page-plane:     #0d0d0d;
+      --text-primary:   #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted:     #898781;
+      --gridline:       #2c2c2a;
+      --border:         rgba(255,255,255,0.10);
+      --series-1:       #3987e5;
+      --series-1-wash:  rgba(57,135,229,0.12);
+      --series-2:       #199e70;
+      --series-2-wash:  rgba(25,158,112,0.12);
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface-1:      #1a1a19;
+    --page-plane:     #0d0d0d;
+    --text-primary:   #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted:     #898781;
+    --gridline:       #2c2c2a;
+    --border:         rgba(255,255,255,0.10);
+    --series-1:       #3987e5;
+    --series-1-wash:  rgba(57,135,229,0.12);
+    --series-2:       #199e70;
+    --series-2-wash:  rgba(25,158,112,0.12);
+  }
+  :root[data-theme="light"] {
+    --surface-1:      #fcfcfb;
+    --page-plane:     #f9f9f7;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --gridline:       #e1e0d9;
+    --border:         rgba(11,11,11,0.10);
+    --series-1:       #2a78d6;
+    --series-1-wash:  rgba(42,120,214,0.08);
+    --series-2:       #1baf7a;
+    --series-2-wash:  rgba(27,175,122,0.08);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page-plane);
+    color: var(--text-primary);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 48px 20px 64px;
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 10px;
+  }
+  h1 {
+    font-size: 30px;
+    font-weight: 650;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+  .subtitle {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin: 0 0 32px;
+  }
+
+  .hero {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .hero-figure {
+    font-size: 72px;
+    font-weight: 650;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .hero-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-top: 10px;
+  }
+  .hero-sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 14px;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.5;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    justify-content: center;
+    padding: 14px 0 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .legend-item { display: flex; align-items: center; gap: 7px; }
+  .swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .swatch.dashed {
+    background: transparent;
+    border: 1.5px dashed var(--text-muted);
+  }
+  .swatch.gray { background: var(--gridline); }
+
+  .section-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 36px 0 12px;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 640px) {
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .card-head .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .card-title { font-size: 14px; font-weight: 600; }
+
+  .card-value {
+    font-size: 42px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    margin: 10px 0 2px;
+  }
+  .card-value-unit {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-left: 6px;
+  }
+  .card-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+
+  .ranked { list-style: none; margin: 0; padding: 0; }
+  .ranked li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    border-top: 1px solid var(--gridline);
+    font-size: 13.5px;
+  }
+  .ranked li:first-child { border-top: none; }
+  .rank-badge {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--gridline);
+    color: var(--text-secondary);
+    font-size: 10.5px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .ranked li.spotlight .rank-badge {
+    background: var(--series-2);
+    color: #fff;
+  }
+  .ranked .repo-name { font-weight: 550; }
+  .ranked .repo-note { color: var(--text-muted); font-size: 12px; margin-left: auto; }
+
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 14px 0 2px;
+  }
+  .tag {
+    font-size: 12.5px;
+    font-weight: 550;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: var(--gridline);
+    color: var(--text-secondary);
+  }
+  .ruled-badge {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border: 1px solid var(--gridline);
+    border-radius: 999px;
+    padding: 3px 9px;
+    margin-left: auto;
+  }
+
+  .adjacent {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin-top: 16px;
+  }
+  .adjacent .icon { font-size: 22px; line-height: 1.3; }
+  .adjacent b { font-weight: 650; }
+  .adjacent p { margin: 4px 0 0; font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; }
+
+  .flow {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .flow-box {
+    flex: 1 1 200px;
+    border-radius: 12px;
+    padding: 16px 16px;
+    font-size: 13px;
+  }
+  .flow-box .fb-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+  .flow-box .fb-name { font-weight: 650; font-size: 14.5px; margin: 5px 0 3px; }
+  .flow-box .fb-state { font-size: 12px; font-weight: 600; }
+  .flow-box.exists {
+    border: 1px solid var(--series-1);
+    background: var(--series-1-wash);
+  }
+  .flow-box.exists.b { border-color: var(--series-2); background: var(--series-2-wash); }
+  .flow-box.exists .fb-state { color: var(--series-1); }
+  .flow-box.exists.b .fb-state { color: var(--series-2); }
+  .flow-box.missing {
+    border: 1.5px dashed var(--text-muted);
+    background: transparent;
+    color: var(--text-muted);
+  }
+  .flow-box.missing .fb-state { color: var(--text-muted); }
+  .flow-op {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: var(--text-muted);
+    padding: 0 2px;
+    flex: 0 0 auto;
+  }
+
+  .questions {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin-top: 16px;
+  }
+  .questions .qtitle { font-size: 13px; font-weight: 650; margin-bottom: 10px; }
+  .questions ol { margin: 0; padding-left: 20px; }
+  .questions li { font-size: 13.5px; color: var(--text-secondary); padding: 4px 0; line-height: 1.5; }
+  .questions li b { color: var(--text-primary); font-weight: 600; }
+
+  footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--gridline);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">Fleet dig · 2026-07-21</p>
+  <h1>The RAG Space</h1>
+  <p class="subtitle">What actually exists in the fleet, right now — dug by 🦉 odin-oracle (4 agents) + 🔍⛏️ digger-oracle (20 agents), independently, on the same question.</p>
+
+  <div class="hero">
+    <div class="hero-figure">0</div>
+    <div class="hero-label">hits for the exact phrase "paper RAG" anywhere in the fleet</div>
+    <div class="hero-sub">The signal is real — it's just scattered across four disconnected clusters that never got assembled into a named system. ยังไม่มีระบบนี้อยู่จริงในฟลีท มีแต่ชิ้นส่วนกระจัดกระจาย</div>
+    <div class="legend">
+      <div class="legend-item"><span class="swatch" style="background:var(--series-1)"></span>RAG / vector / semantic-search</div>
+      <div class="legend-item"><span class="swatch" style="background:var(--series-2)"></span>paper × cosine-similarity</div>
+      <div class="legend-item"><span class="swatch gray"></span>ruled out (generic infra)</div>
+      <div class="legend-item"><span class="swatch dashed"></span>doesn't exist yet</div>
+    </div>
+  </div>
+
+  <p class="section-label">Where the real signal lives</p>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head"><span class="dot" style="background:var(--series-1)"></span><span class="card-title">RAG / Vector / Semantic-search</span></div>
+      <div class="card-value">450<span class="card-value-unit">repo+session hits</span></div>
+      <div class="card-sub">3,323 files touched · rank order only, no per-repo count reported</div>
+      <ol class="ranked">
+        <li><span class="rank-badge">1</span><span class="repo-name">odin-oracle</span></li>
+        <li><span class="rank-badge">2</span><span class="repo-name">maw-rs</span></li>
+        <li><span class="rank-badge">3</span><span class="repo-name">digital-shadow-oracle</span></li>
+        <li><span class="rank-badge">4</span><span class="repo-name">ai-party-oracle</span></li>
+      </ol>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="dot" style="background:var(--series-2)"></span><span class="card-title">Paper × Cosine-Similarity</span></div>
+      <div class="card-value">188<span class="card-value-unit">files</span></div>
+      <div class="card-sub">43 repos · 53 sessions</div>
+      <ol class="ranked">
+        <li class="spotlight"><span class="rank-badge">1</span><span class="repo-name">arra-oracle-v3</span><span class="repo-note">39 hits · clear leader</span></li>
+        <li><span class="rank-badge">–</span><span class="repo-name" style="color:var(--text-muted)">rest scattered thin across 42 other repos</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <p class="section-label">Ruled out — found, but not paper-specific</p>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head"><span class="card-title">Vector-DB / Embedding infra</span><span class="ruled-badge">ruled out</span></div>
+      <div class="card-sub" style="margin-top:10px">Generic vector-search / embedding infrastructure — confirmed unrelated to papers specifically.</div>
+      <div class="tag-row">
+        <span class="tag">vector-oracle-studio</span>
+        <span class="tag">sage-vector-fix-oracle</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">Visualization / ML research</span><span class="ruled-badge">ruled out</span></div>
+      <div class="card-sub" style="margin-top:10px">UMAP / t-SNE references exist — general ML research context, not a paper-similarity visualizer.</div>
+      <div class="tag-row">
+        <span class="tag">DustBoy-PhD</span>
+        <span class="tag">ting-oracle (d3)</span>
+        <span class="tag">transcriber / voice oracles</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="adjacent">
+    <div class="icon">📰</div>
+    <div>
+      <b>Closest thing to a real running system: digital-shadow-oracle</b>
+      <p>Ingests paper metadata hourly — a literature-review pipeline. Wrong shape though: it's ingestion, not similarity / clustering / visualization. This is what odin's independent 4-agent sweep converged on too.</p>
+    </div>
+  </div>
+
+  <p class="section-label">What's buildable today, without starting from scratch</p>
+  <div class="flow">
+    <div class="flow-box exists">
+      <div class="fb-label">Reuse</div>
+      <div class="fb-name">arra-oracle-v3</div>
+      <div>embeddings backend</div>
+      <div class="fb-state">✓ exists</div>
+    </div>
+    <div class="flow-op">+</div>
+    <div class="flow-box exists b">
+      <div class="fb-label">Reuse</div>
+      <div class="fb-name">vector-oracle-studio</div>
+      <div>visualization shell</div>
+      <div class="fb-state">✓ exists</div>
+    </div>
+    <div class="flow-op">+</div>
+    <div class="flow-box missing">
+      <div class="fb-label">Build</div>
+      <div class="fb-name">clustering / similarity layer</div>
+      <div>the actual missing piece</div>
+      <div class="fb-state">✗ missing</div>
+    </div>
+  </div>
+
+  <div class="questions">
+    <div class="qtitle">🔍⛏️ digger's open questions, unanswered so far</div>
+    <ol>
+      <li>Is this <b>new</b>, or did you believe something like it already existed in the fleet?</li>
+      <li>If new — what's the <b>corpus</b> (arXiv PDFs? internal docs?) and what kind of <b>similarity</b> (embedding cosine-similarity vs. citation-graph)?</li>
+      <li>Any specific <b>tool / paper / course name</b> that seeded the idea? A name fragment converges faster than another keyword sweep.</li>
+    </ol>
+  </div>
+
+  <footer>
+    <span>sources: odin trace ψ/memory/traces/2026-07-21/2228_paper-rag-similarity-viz-hunt.md (4d2038a) · digger dig-paper-rag-20x (20 haiku agents)</span>
+    <span>rendered 2026-07-21 22:5x · [m5:ajfon]</span>
+  </footer>
+</div>
